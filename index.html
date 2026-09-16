@@ -1,0 +1,2986 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Vance Report — Deep-Value &amp; Cash Cushion Screen</title>
+    <meta
+      name="description"
+      content="Institutional research terminal screening US common equities for severe 3-day drawdowns backed by a 30% cash-to-price balance sheet gatekeeper."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #0c1014;
+        --ink-2: #12181e;
+        --ink-3: #181f27;
+        --rule: #26303a;
+        --rule-soft: #1c242c;
+        --paper: #e7e3d8;
+        --paper-dim: #a8a79f;
+        --paper-faint: #6f7680;
+        --amber: #e0a33c;
+        --amber-deep: #b97f1f;
+        --pass: #61a887;
+        --fail: #cc6250;
+        --hold: #c9a24a;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+        --serif: "Instrument Serif", Georgia, serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--ink);
+        color: var(--paper);
+        font-family: var(--mono);
+        font-weight: 300;
+        font-size: 14px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* fixed atmosphere layers */
+      .grid-field,
+      .grain {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .grid-field {
+        background-image:
+          linear-gradient(
+            to right,
+            rgba(38, 48, 58, 0.45) 1px,
+            transparent 1px
+          ),
+          linear-gradient(to bottom, rgba(38, 48, 58, 0.3) 1px, transparent 1px);
+        background-size: 96px 96px;
+        mask-image: radial-gradient(
+          ellipse 120% 80% at 70% 0%,
+          #000 10%,
+          transparent 78%
+        );
+      }
+      .grain {
+        opacity: 0.16;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      .shell {
+        position: relative;
+        z-index: 1;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 28px;
+      }
+
+      /* ---------- ticker bar ---------- */
+      .ticker {
+        border-bottom: 1px solid var(--rule);
+        background: rgba(12, 16, 20, 0.86);
+        backdrop-filter: blur(8px);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+      .ticker-in {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        height: 52px;
+      }
+      .mark {
+        display: flex;
+        align-items: baseline;
+        gap: 9px;
+        margin-right: auto;
+      }
+      .mark-glyph {
+        width: 22px;
+        height: 22px;
+        flex: none;
+        border: 1px solid var(--amber);
+        display: grid;
+        place-items: center;
+        color: var(--amber);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        transform: translateY(3px);
+      }
+      .mark-name {
+        font-family: var(--serif);
+        font-size: 21px;
+        letter-spacing: 0.01em;
+      }
+      .mark-sub {
+        font-size: 13px;
+        letter-spacing: 0.22em;
+        color: var(--paper-faint);
+        text-transform: uppercase;
+      }
+      .tick-stat {
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+      }
+      .tick-stat b {
+        color: var(--paper);
+        font-weight: 500;
+      }
+      .blog-link {
+        color: var(--amber);
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.16s ease;
+      }
+      .blog-link:hover {
+        border-bottom-color: var(--amber);
+      }
+      .blog-link:focus-visible {
+        outline: 2px solid var(--paper);
+        outline-offset: 5px;
+      }
+      .live {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--pass);
+      }
+      .live i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--pass);
+        animation: pulse 2.4s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.28;
+        }
+      }
+
+      /* ---------- hero ---------- */
+      .hero {
+        padding: 86px 0 68px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.42fr 0.9fr;
+        gap: 64px;
+        align-items: end;
+      }
+      .eyebrow {
+        font-size: 13px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin: 0 0 26px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .eyebrow::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(to right, var(--amber-deep), transparent);
+      }
+      h1 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: clamp(48px, 7.2vw, 92px);
+        line-height: 0.94;
+        letter-spacing: -0.015em;
+        margin: 0 0 8px;
+      }
+      h1 em {
+        font-style: italic;
+        color: var(--amber);
+      }
+      .hero-lede {
+        max-width: 52ch;
+        color: var(--paper-dim);
+        font-size: 14px;
+        margin: 26px 0 38px;
+      }
+      .hero-lede b {
+        color: var(--paper);
+        font-weight: 500;
+      }
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 18px 26px;
+      }
+
+      /* primary CTA */
+      .btn-cta {
+        position: relative;
+        border: 0;
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+        color: var(--ink);
+        background: var(--amber);
+        padding: 17px 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        transition:
+          transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1),
+          box-shadow 0.18s ease,
+          background 0.18s ease;
+        box-shadow: 5px 5px 0 0 var(--amber-deep);
+      }
+      .btn-cta:hover {
+        background: #eeb84f;
+        transform: translate(-2px, -2px);
+        box-shadow: 8px 8px 0 0 var(--amber-deep);
+      }
+      .btn-cta:active {
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0 0 var(--amber-deep);
+      }
+      .btn-cta:focus-visible {
+        outline: 2px solid var(--paper);
+        outline-offset: 4px;
+      }
+      .btn-cta svg {
+        display: block;
+      }
+      .report-link {
+        color: var(--paper);
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 15px 2px 9px;
+        border-bottom: 1px solid var(--amber);
+        transition:
+          color 0.16s ease,
+          border-color 0.16s ease;
+      }
+      .report-link:hover {
+        color: var(--amber);
+      }
+      .report-link:focus-visible {
+        outline: 2px solid var(--paper);
+        outline-offset: 5px;
+      }
+      .cta-note {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--paper-faint);
+        max-width: 24ch;
+      }
+
+      /* parameters panel */
+      .params {
+        border: 1px solid var(--rule);
+        background: linear-gradient(
+          160deg,
+          var(--ink-2),
+          rgba(12, 16, 20, 0.2)
+        );
+      }
+      .params-head {
+        padding: 13px 18px;
+        font-size: 13px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        cursor: pointer;
+        list-style: none;
+        transition:
+          color 0.16s ease,
+          background 0.16s ease;
+      }
+      .params-head::-webkit-details-marker {
+        display: none;
+      }
+      .params-head:hover {
+        color: var(--paper);
+        background: rgba(255, 255, 255, 0.025);
+      }
+      .params-head:focus-visible {
+        outline: 2px solid var(--paper);
+        outline-offset: -3px;
+      }
+      .params-meta {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        white-space: nowrap;
+      }
+      .params-chevron {
+        color: var(--amber);
+        transition: transform 0.2s ease;
+      }
+      .params[open] .params-head {
+        border-bottom: 1px solid var(--rule);
+      }
+      .params[open] .params-chevron {
+        transform: rotate(180deg);
+      }
+      .params dl {
+        margin: 0;
+        padding: 6px 18px 16px;
+      }
+      .params div {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 16px;
+        padding: 11px 0;
+        border-bottom: 1px dashed var(--rule-soft);
+      }
+      .params div:last-child {
+        border-bottom: 0;
+      }
+      .params dt {
+        font-size: 13px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+      }
+      .params dd {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+      .params dd small {
+        font-size: 13px;
+        color: var(--paper-faint);
+        letter-spacing: 0.1em;
+        font-weight: 300;
+      }
+
+      /* ---------- section chrome ---------- */
+      section.block {
+        padding: 78px 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .sec-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 32px;
+        margin-bottom: 34px;
+        flex-wrap: wrap;
+      }
+      h2 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.02;
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      .sec-meta {
+        font-size: 13px;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+        text-align: right;
+      }
+
+      /* ---------- screen table ---------- */
+      .table-scroll {
+        border: 1px solid var(--rule);
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 920px;
+      }
+      thead th {
+        background: var(--ink-3);
+        text-align: left;
+        font-weight: 500;
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--paper-dim);
+        padding: 15px 18px;
+        border-bottom: 1px solid var(--rule);
+        white-space: nowrap;
+      }
+      thead th.c {
+        text-align: center;
+      }
+      tbody tr {
+        border-bottom: 1px solid var(--rule-soft);
+        transition: background 0.16s ease;
+      }
+      tbody tr:last-child {
+        border-bottom: 0;
+      }
+      tbody tr:hover {
+        background: rgba(224, 163, 60, 0.045);
+      }
+      td {
+        padding: 19px 18px;
+        vertical-align: top;
+        font-size: 15px;
+      }
+      td.c {
+        text-align: center;
+      }
+      .sym {
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+      }
+      .px {
+        font-variant-numeric: tabular-nums;
+        color: var(--paper);
+        font-size: 15px;
+        margin-top: 2px;
+      }
+      .co {
+        color: var(--paper-faint);
+        font-size: 13px;
+        font-style: italic;
+        margin-top: 3px;
+      }
+      .drop {
+        font-variant-numeric: tabular-nums;
+        font-size: 14px;
+        color: var(--fail);
+        font-weight: 500;
+      }
+      .cushion {
+        font-variant-numeric: tabular-nums;
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .cps {
+        font-size: 13px;
+        color: var(--paper-faint);
+        letter-spacing: 0.06em;
+        margin-top: 3px;
+      }
+      .gate {
+        display: inline-block;
+        margin-top: 7px;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        padding: 3px 8px;
+        border: 1px solid currentColor;
+        text-transform: uppercase;
+      }
+      .is-pass {
+        color: var(--pass);
+      }
+      .is-fail {
+        color: var(--fail);
+      }
+      .cushion.is-pass,
+      .cushion.is-fail {
+        display: block;
+      }
+      .mv {
+        font-variant-numeric: tabular-nums;
+        font-size: 15px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .mv-tag {
+        font-size: 12px;
+        letter-spacing: 0.15em;
+        color: var(--paper-faint);
+        margin-top: 4px;
+        text-transform: uppercase;
+      }
+      .tri {
+        width: 0;
+        height: 0;
+        display: inline-block;
+      }
+      .tri.up {
+        border-left: 4.5px solid transparent;
+        border-right: 4.5px solid transparent;
+        border-bottom: 7px solid var(--pass);
+      }
+      .tri.down {
+        border-left: 4.5px solid transparent;
+        border-right: 4.5px solid transparent;
+        border-top: 7px solid var(--fail);
+      }
+      .tri.flat {
+        width: 9px;
+        height: 2px;
+        background: var(--hold);
+      }
+      .up-t {
+        color: var(--pass);
+      }
+      .down-t {
+        color: var(--fail);
+      }
+      .flat-t {
+        color: var(--hold);
+      }
+      .catalyst {
+        color: var(--paper-dim);
+        max-width: 34ch;
+        line-height: 1.5;
+      }
+      a.chart {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 9px;
+        color: var(--amber);
+        text-decoration: none;
+        font-size: 13px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.16s ease;
+      }
+      a.chart:hover {
+        border-bottom-color: var(--amber);
+      }
+
+      /* ---------- custom screen engine ---------- */
+      .engine {
+        border: 1px solid var(--rule);
+        background: linear-gradient(
+          165deg,
+          var(--ink-2),
+          rgba(12, 16, 20, 0.35)
+        );
+      }
+      .engine-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 13px 20px;
+        border-bottom: 1px solid var(--rule);
+        flex-wrap: wrap;
+      }
+      .engine-bar span {
+        font-size: 13px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+      }
+      .engine-bar .on {
+        color: var(--amber);
+      }
+      .console {
+        padding: 26px 20px 22px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .eng-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px 22px;
+      }
+      .eng-field {
+        display: flex;
+        flex-direction: column;
+      }
+      .eng-field label {
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+        margin-bottom: 8px;
+      }
+      .eng-field input,
+      .eng-field select {
+        width: 100%;
+        background: var(--ink);
+        border: 1px solid var(--rule);
+        color: var(--paper);
+        font-family: var(--mono);
+        font-size: 14px;
+        font-weight: 400;
+        padding: 12px 13px;
+        transition: border-color 0.16s ease;
+        -webkit-appearance: none;
+        appearance: none;
+        border-radius: 0;
+      }
+      .eng-field select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6'%3E%3Cpath d='M0 0l4.5 5.5L9 0z' fill='%236f7680'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 13px center;
+        padding-right: 32px;
+      }
+      .eng-field input:focus,
+      .eng-field select:focus {
+        outline: none;
+        border-color: var(--amber);
+      }
+      .eng-field input[aria-invalid="true"] {
+        border-color: var(--fail);
+      }
+      .eng-hint {
+        font-size: 10px;
+        color: var(--paper-faint);
+        letter-spacing: 0.04em;
+        margin: 7px 0 0;
+      }
+      .eng-err {
+        font-size: 10.5px;
+        color: var(--fail);
+        letter-spacing: 0.03em;
+        margin: 7px 0 0;
+      }
+      .eng-err[hidden] {
+        display: none;
+      }
+      .eng-actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+      }
+      .btn-run {
+        border: 0;
+        cursor: pointer;
+        background: var(--amber);
+        color: var(--ink);
+        font-family: var(--mono);
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+        padding: 14px 26px;
+        transition: background 0.16s ease;
+      }
+      .btn-run:hover {
+        background: #eeb84f;
+      }
+      .btn-ghost {
+        background: none;
+        border: 1px solid var(--rule);
+        color: var(--paper-dim);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 13px 18px;
+        transition:
+          border-color 0.16s ease,
+          color 0.16s ease;
+      }
+      .btn-ghost:hover {
+        border-color: var(--amber);
+        color: var(--amber);
+      }
+      .presets {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-left: auto;
+      }
+      .presets b {
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+        font-weight: 400;
+      }
+      /* engine output */
+      .eng-out {
+        padding: 26px 20px 22px;
+      }
+      .eng-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+      }
+      .eng-title {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: clamp(21px, 2.6vw, 29px);
+        line-height: 1.12;
+        margin: 0;
+        letter-spacing: -0.005em;
+      }
+      .eng-count {
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+        white-space: nowrap;
+      }
+      .eng-applied {
+        font-size: 11px;
+        color: var(--paper-faint);
+        letter-spacing: 0.04em;
+        margin: 0 0 20px;
+      }
+      .eng-applied b {
+        color: var(--paper-dim);
+        font-weight: 400;
+      }
+      table.engine-table {
+        min-width: 700px;
+      }
+      .vance {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 7px;
+        color: var(--amber);
+        text-decoration: none;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.16s ease;
+      }
+      .vance:hover {
+        border-bottom-color: var(--amber);
+      }
+      .eng-empty {
+        border: 1px dashed var(--rule);
+        padding: 44px 26px;
+        text-align: center;
+      }
+      .eng-empty p {
+        margin: 0 0 6px;
+        font-family: var(--serif);
+        font-size: 23px;
+        color: var(--paper);
+      }
+      .eng-empty small {
+        font-size: 11.5px;
+        color: var(--paper-faint);
+        letter-spacing: 0.04em;
+      }
+      .eng-note {
+        font-size: 10.5px;
+        color: var(--paper-faint);
+        letter-spacing: 0.04em;
+        margin: 18px 0 0;
+        line-height: 1.7;
+      }
+
+      /* ---------- solvency ledger ---------- */
+      .ledger {
+        display: grid;
+        gap: 0;
+        border-top: 1px solid var(--rule);
+      }
+      .entry {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 38px;
+        padding: 30px 0;
+        border-bottom: 1px solid var(--rule-soft);
+        align-items: start;
+      }
+      .entry:nth-child(even) {
+        padding-left: 52px;
+      }
+      .ratio {
+        font-family: var(--serif);
+        font-size: 46px;
+        line-height: 0.9;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+      .ratio span {
+        display: block;
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        color: var(--paper-faint);
+        margin-top: 9px;
+        text-transform: uppercase;
+      }
+      .entry-body h3 {
+        margin: 0 0 4px;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+      }
+      .entry-body h3 span {
+        color: var(--paper-faint);
+        font-weight: 300;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        font-style: italic;
+      }
+      .metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 22px;
+        margin: 12px 0 14px;
+        font-size: 11px;
+        color: var(--paper-dim);
+        font-variant-numeric: tabular-nums;
+      }
+      .metrics b {
+        color: var(--paper);
+        font-weight: 500;
+      }
+      .thesis {
+        margin: 0;
+        color: var(--paper-dim);
+        max-width: 70ch;
+        font-size: 12.5px;
+      }
+
+      /* ---------- summary note ---------- */
+      .note {
+        border-left: 2px solid var(--amber);
+        padding: 4px 0 4px 22px;
+        max-width: 70ch;
+        color: var(--paper-dim);
+        margin: 0 0 42px;
+        font-size: 13px;
+      }
+      .note b {
+        color: var(--paper);
+        font-weight: 500;
+      }
+
+      /* ---------- footer ---------- */
+      footer {
+        padding: 54px 0 70px;
+      }
+      .foot-grid {
+        display: flex;
+        justify-content: space-between;
+        gap: 30px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+      }
+      .disclaim {
+        font-size: 14px;
+        color: var(--paper-dim);
+        background: rgba(50, 82, 110, 0.34);
+        max-width: 62ch;
+        line-height: 1.7;
+        padding: 16px 18px;
+        border-left: 2px solid #668daf;
+      }
+      .foot-cta {
+        background: none;
+        border: 1px solid var(--rule);
+        color: var(--paper);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 14px 22px;
+        transition:
+          border-color 0.16s ease,
+          color 0.16s ease;
+      }
+      .foot-cta:hover {
+        border-color: var(--amber);
+        color: var(--amber);
+      }
+
+      /* ---------- modal ---------- */
+      .backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background: rgba(6, 9, 12, 0.78);
+        backdrop-filter: blur(5px);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        animation: fade 0.2s ease both;
+      }
+      .backdrop[hidden] {
+        display: none;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .modal {
+        position: relative;
+        width: 100%;
+        max-width: 452px;
+        background: var(--ink-2);
+        border: 1px solid var(--rule);
+        box-shadow: 0 34px 80px -20px rgba(0, 0, 0, 0.9);
+        padding: 38px 34px 34px;
+        animation: rise 0.28s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px) scale(0.985);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .modal::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-top: 2px solid var(--amber);
+        pointer-events: none;
+      }
+      .x {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        background: none;
+        border: 1px solid transparent;
+        color: var(--paper-faint);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        transition:
+          color 0.16s,
+          border-color 0.16s;
+      }
+      .x:hover {
+        color: var(--paper);
+        border-color: var(--rule);
+      }
+      .modal .eyebrow {
+        margin-bottom: 14px;
+      }
+      #modalTitle {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 33px;
+        line-height: 1.04;
+        margin: 0 0 10px;
+      }
+      .modal-sub {
+        margin: 0 0 26px;
+        font-size: 12.5px;
+        color: var(--paper-dim);
+        max-width: 38ch;
+      }
+      .field {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+      }
+      .modal input[type="email"] {
+        width: 100%;
+        background: var(--ink);
+        border: 1px solid var(--rule);
+        color: var(--paper);
+        font-family: var(--mono);
+        font-size: 14px;
+        padding: 14px 15px;
+        transition: border-color 0.16s ease;
+      }
+      .modal input[type="email"]::placeholder {
+        color: #4e565f;
+      }
+      .modal input[type="email"]:focus {
+        outline: none;
+        border-color: var(--amber);
+      }
+      .modal input[type="email"][aria-invalid="true"] {
+        border-color: var(--fail);
+      }
+      .err {
+        margin: 9px 0 0;
+        font-size: 11px;
+        color: var(--fail);
+        letter-spacing: 0.04em;
+      }
+      .err[hidden] {
+        display: none;
+      }
+      .submit {
+        width: 100%;
+        margin-top: 20px;
+        border: 0;
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+        background: var(--amber);
+        color: var(--ink);
+        padding: 16px;
+        transition:
+          background 0.16s ease,
+          opacity 0.16s ease;
+      }
+      .submit:hover {
+        background: #eeb84f;
+      }
+      .submit:disabled {
+        opacity: 0.55;
+        cursor: progress;
+      }
+      .fine {
+        margin: 16px 0 0;
+        font-size: 10px;
+        color: var(--paper-faint);
+        letter-spacing: 0.05em;
+        line-height: 1.6;
+      }
+      .hp {
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      }
+      /* success panel */
+      .done[hidden] {
+        display: none;
+      }
+      .done {
+        text-align: left;
+        animation: fade 0.26s ease both;
+      }
+      .done-mark {
+        width: 44px;
+        height: 44px;
+        border: 1px solid var(--pass);
+        color: var(--pass);
+        display: grid;
+        place-items: center;
+        margin-bottom: 20px;
+      }
+      .done p {
+        margin: 0;
+        font-family: var(--serif);
+        font-size: 25px;
+        line-height: 1.24;
+        color: var(--paper);
+      }
+      .done .fine {
+        margin-top: 16px;
+      }
+
+      @media (max-width: 900px) {
+        .eng-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .presets {
+          margin-left: 0;
+          width: 100%;
+        }
+        .hero-grid {
+          grid-template-columns: 1fr;
+          gap: 44px;
+          align-items: start;
+        }
+        .hero {
+          padding: 58px 0 48px;
+        }
+        .entry {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        .entry:nth-child(even) {
+          padding-left: 0;
+        }
+        .ratio {
+          font-size: 38px;
+        }
+        .tick-stat.hide-sm {
+          display: none;
+        }
+      }
+      @media (max-width: 640px) {
+        .mark-sub {
+          display: none;
+        }
+        .mark-name {
+          font-size: 18px;
+        }
+        .live {
+          white-space: nowrap;
+        }
+        .tick-stat {
+          font-size: 13px;
+        }
+      }
+      @media (max-width: 560px) {
+        .eng-grid {
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+        .eng-actions {
+          gap: 10px;
+        }
+        .btn-run {
+          width: 100%;
+        }
+        .wrap {
+          padding: 0 18px;
+        }
+        .modal {
+          padding: 32px 22px 26px;
+        }
+        .cta-note {
+          max-width: 100%;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+        html {
+          scroll-behavior: auto;
+        }
+      }
+      /* ---------- reader reviews ---------- */
+      .reviews {
+        padding: 78px 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .review-layout {
+        display: grid;
+        grid-template-columns: 0.72fr 1.28fr;
+        gap: 70px;
+        align-items: start;
+      }
+      .review-intro p {
+        color: var(--paper-dim);
+        max-width: 38ch;
+        margin: 20px 0 0;
+      }
+      .review-form {
+        border: 1px solid var(--rule);
+        background: linear-gradient(
+          150deg,
+          var(--ink-2),
+          rgba(12, 16, 20, 0.4)
+        );
+        padding: 26px;
+      }
+      .review-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 22px;
+        padding: 16px 0;
+        border-bottom: 1px dashed var(--rule-soft);
+      }
+      .review-row:first-child {
+        padding-top: 0;
+      }
+      .review-row strong {
+        display: block;
+        font-weight: 500;
+      }
+      .review-row small {
+        color: var(--paper-faint);
+      }
+      .review-choice {
+        display: flex;
+        gap: 8px;
+      }
+      .review-choice input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .review-choice label {
+        cursor: pointer;
+        border: 1px solid var(--rule);
+        padding: 8px 11px;
+        color: var(--paper-dim);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        transition: 0.16s ease;
+      }
+      .review-choice input:focus-visible + label {
+        outline: 2px solid var(--paper);
+        outline-offset: 2px;
+      }
+      .review-choice input[value="like"]:checked + label {
+        border-color: var(--pass);
+        color: var(--pass);
+        background: rgba(97, 168, 135, 0.08);
+      }
+      .review-choice input[value="needs_work"]:checked + label {
+        border-color: var(--fail);
+        color: var(--fail);
+        background: rgba(204, 98, 80, 0.08);
+      }
+      .review-comment {
+        display: block;
+        margin: 20px 0 8px;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+      }
+      .review-form textarea {
+        width: 100%;
+        min-height: 112px;
+        resize: vertical;
+        padding: 13px;
+        border: 1px solid var(--rule);
+        background: var(--ink);
+        color: var(--paper);
+        font: inherit;
+      }
+      .review-form textarea:focus {
+        outline: 1px solid var(--amber);
+        border-color: var(--amber);
+      }
+      .review-actions {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-top: 18px;
+      }
+      .review-submit {
+        border: 0;
+        background: var(--amber);
+        color: var(--ink);
+        padding: 13px 20px;
+        font: 600 11px var(--mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .review-submit:disabled {
+        opacity: 0.5;
+        cursor: wait;
+      }
+      .review-status {
+        font-size: 11px;
+        color: var(--paper-faint);
+      }
+      .review-status.is-error {
+        color: var(--fail);
+      }
+      .review-status.is-success {
+        color: var(--pass);
+      }
+      .top-reviews {
+        padding: 78px 0 84px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .review-cards {
+        display: grid;
+        grid-template-columns: 1.15fr 0.92fr 0.92fr;
+        gap: 14px;
+      }
+      .review-card {
+        min-height: 180px;
+        border: 1px solid var(--rule);
+        padding: 25px;
+        background: var(--ink-2);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .review-card:first-child {
+        border-top: 2px solid var(--amber);
+      }
+      .review-card blockquote {
+        font-family: var(--serif);
+        font-size: 22px;
+        line-height: 1.35;
+        margin: 0;
+        color: var(--paper);
+      }
+      .review-card small {
+        color: var(--paper-faint);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .reviews-empty {
+        color: var(--paper-faint);
+        grid-column: 1/-1;
+        border: 1px dashed var(--rule);
+        padding: 25px;
+      }
+      @media (max-width: 760px) {
+        .review-layout {
+          grid-template-columns: 1fr;
+          gap: 36px;
+        }
+        .review-cards {
+          grid-template-columns: 1fr;
+        }
+        .review-row {
+          grid-template-columns: 1fr;
+        }
+        .review-choice {
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-field" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <div class="shell">
+      <header class="ticker">
+        <div class="wrap ticker-in">
+          <div class="mark">
+            <span class="mark-glyph" aria-hidden="true">VR</span>
+            <span>
+              <span class="mark-name">The Vance Report</span><br />
+              <span class="mark-sub">Institutional research terminal</span>
+            </span>
+          </div>
+          <a class="blog-link" href="blogpost.html"
+            >Field Note <span aria-hidden="true">↗</span></a
+          >
+          <span class="tick-stat hide-sm"
+            >Universe <b>US equities &gt; $200M</b></span
+          >
+          <span class="tick-stat"
+            ><span class="live"
+              ><i aria-hidden="true"></i>Screen live</span
+            ></span
+          >
+        </div>
+      </header>
+
+      <!-- ============ HERO ============ -->
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <p class="eyebrow">Deep-value &amp; cash cushion screen</p>
+            <h1>Find The Signal Inside the Selloff</h1>
+            <p class="hero-lede">
+              Ten US names took a severe three-day drawdown. Seven of them still
+              clear a
+              <b>30.0% cash-to-price</b> gatekeeper — the balance sheet is doing
+              the arguing, not the narrative. Run date <b>September 16, 2026</b>.
+            </p>
+            <div class="cta-row">
+              <button type="button" class="btn-cta" data-open-alerts>
+                Sign up for daily alerts
+                <svg
+                  width="15"
+                  height="9"
+                  viewBox="0 0 15 9"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M0 4.5h13M9.2 1l3.8 3.5L9.2 8"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                  />
+                </svg>
+              </button>
+              <a class="report-link" href="report.html"
+                >View The Vance Report
+                <span aria-hidden="true">&#8599;</span></a
+              >
+              <span class="cta-note"
+                >One screen, delivered each trading morning before the
+                open.</span
+              >
+            </div>
+          </div>
+
+          <details class="params">
+            <summary class="params-head">
+              <span>Screen parameters</span>
+              <span class="params-meta"
+                ><span>REV 04</span
+                ><span class="params-chevron" aria-hidden="true"
+                  >&#9662;</span
+                ></span
+              >
+            </summary>
+            <dl>
+              <div>
+                <dt>Cash gatekeeper</dt>
+                <dd>30.0<small>%</small></dd>
+              </div>
+              <div>
+                <dt>Drawdown window</dt>
+                <dd>3<small> days</small></dd>
+              </div>
+              <div>
+                <dt>Market cap floor</dt>
+                <dd>$200<small>M</small></dd>
+              </div>
+              <div>
+                <dt>Targets screened</dt>
+                <dd>10</dd>
+              </div>
+              <div>
+                <dt>Gatekeeper pass</dt>
+                <dd style="color: var(--pass)">7</dd>
+              </div>
+              <div>
+                <dt>Gatekeeper fail</dt>
+                <dd style="color: var(--fail)">3</dd>
+              </div>
+            </dl>
+          </details>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN TABLE ============ -->
+      <section class="block" id="results">
+        <div class="wrap">
+          <div class="sec-head">
+            <h2>Screening pipeline &amp; gatekeeper results</h2>
+            <p class="sec-meta">
+              Severe 3-day drawdown<br />+ cash/price &ge; 30.0%
+            </p>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Stock &amp; price</th>
+                  <th scope="col" class="c">3-day drop</th>
+                  <th scope="col" class="c">Cash cushion</th>
+                  <th scope="col" class="c">Turnaround</th>
+                  <th scope="col">Catalyst &amp; chart</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="sym">BMEA</div>
+                    <div class="px">$14.20</div>
+                    <div class="co">Biomea Fusion</div>
+                  </td>
+                  <td class="c"><span class="drop">-34.8%</span></td>
+                  <td class="c">
+                    <span class="cushion is-pass">61.3%</span>
+                    <div class="cps">CPS $8.71</div>
+                    <span class="gate is-pass">Pass</span>
+                  </td>
+                  <td class="c">
+                    <span class="mv up-t"
+                      ><span class="tri up" aria-hidden="true"></span
+                      >+2.8%</span
+                    >
+                    <div class="mv-tag">Rebound</div>
+                  </td>
+                  <td>
+                    <div class="catalyst">Phase 1/2 diabetes safety update</div>
+                    <a
+                      class="chart"
+                      href="https://www.tradingview.com/symbols/NASDAQ-BMEA/"
+                      target="_blank"
+                      rel="noopener"
+                      >View chart</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="sym">SEDG</div>
+                    <div class="px">$11.85</div>
+                    <div class="co">SolarEdge Technologies</div>
+                  </td>
+                  <td class="c"><span class="drop">-22.4%</span></td>
+                  <td class="c">
+                    <span class="cushion is-pass">54.8%</span>
+                    <div class="cps">CPS $6.50</div>
+                    <span class="gate is-pass">Pass</span>
+                  </td>
+                  <td class="c">
+                    <span class="mv flat-t"
+                      ><span class="tri flat" aria-hidden="true"></span
+                      >+0.4%</span
+                    >
+                    <div class="mv-tag">Stabilizing</div>
+                  </td>
+                  <td>
+                    <div class="catalyst">
+                      Inverter inventory clearance headwind
+                    </div>
+                    <a
+                      class="chart"
+                      href="https://www.tradingview.com/symbols/NASDAQ-SEDG/"
+                      target="_blank"
+                      rel="noopener"
+                      >View chart</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="sym">PAGS</div>
+                    <div class="px">$8.90</div>
+                    <div class="co">PagSeguro Digital</div>
+                  </td>
+                  <td class="c"><span class="drop">-18.6%</span></td>
+                  <td class="c">
+                    <span class="cushion is-pass">48.3%</span>
+                    <div class="cps">CPS $4.30</div>
+                    <span class="gate is-pass">Pass</span>
+                  </td>
+                  <td class="c">
+                    <span class="mv up-t"
+                      ><span class="tri up" aria-hidden="true"></span
+                      >+1.7%</span
+                    >
+                    <div class="mv-tag">Rebound</div>
+                  </td>
+                  <td>
+                    <div class="catalyst">LatAm FX translation repricing</div>
+                    <a
+                      class="chart"
+                      href="https://www.tradingview.com/symbols/NYSE-PAGS/"
+                      target="_blank"
+                      rel="noopener"
+                      >View chart</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="sym">RUN</div>
+                    <div class="px">$10.10</div>
+                    <div class="co">Sunrun Inc</div>
+                  </td>
+                  <td class="c"><span class="drop">-21.2%</span></td>
+                  <td class="c">
+                    <span class="cushion is-pass">42.6%</span>
+                    <div class="cps">CPS $4.30</div>
+                    <span class="gate is-pass">Pass</span>
+                  </td>
+                  <td class="c">
+                    <span class="mv down-t"
+                      ><span class="tri down" aria-hidden="true"></span
+                      >-1.8%</span
+                    >
+                    <div class="mv-tag">Falling</div>
+                  </td>
+                  <td>
+                    <div class="catalyst">
+                      Utility rate case regulatory overhang
+                    </div>
+                    <a
+                      class="chart"
+                      href="https://www.tradingview.com/symbols/NASDAQ-RUN/"
+                      target="_blank"
+                      rel="noopener"
+                      >View chart</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="sym">LUMN</div>
+                    <div class="px">$3.45</div>
+                    <div class="co">Lumen Technologies</div>
+                  </td>
+                  <td class="c"><span class="drop">-16.8%</span></td>
+                  <td class="c">
+                    <span class="cushion is-pass">37.7%</span>
+                    <div class="cps">CPS $1.30</div>
+                    <span class="gate is-pass">Pass</span>
+                  </td>
+                  <td class="c">
+                    <span class="mv flat-t"
+                      ><span class="tri flat" aria-hidden="true"></span
+                      >0.0%</span
+                    >
+                    <div class="mv-tag">Stabilizing</div>
+                  </td>
+                  <td>
+                    <div class="catalyst">
+                      Fiber buildout CAPEX timing recalibration
+                    </div>
+                    <a
+                      class="chart"
+                      href="https://www.tradingview.com/symbols/NYSE-LUMN/"
+                      target="_blank"
+                      rel="noopener"
+                      >View chart</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="sym">PLUG</div>
+                    <div class="px">$1.82</div>
+                    <div class="co">Plug Power</div>
+                  </td>
+                  <td class="c"><span class="drop">-24.5%</span></td>
+                  <td class="c">
+                    <span class="cushion is-pass">35.2%</span>
+                    <div class="cps">CPS $0.64</div>
+                    <span class="gate is-pass">Pass</span>
+                  </td>
+                  <td class="c">
+                    <span class="mv down-t"
+                      ><span class="tri down" aria-hidden="true"></span
+                      >-3.2%</span
+                    >
+                    <div class="mv-tag">Falling</div>
+                  </td>
+                  <td>
+                    <div class="catalyst">
+                      DOE loan facility dilution concern
+                    </div>
+                    <a
+                      class="chart"
+                      href="https://www.tradingview.com/symbols/NASDAQ-PLUG/"
+                      target="_blank"
+                      rel="noopener"
+                      >View chart</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="sym">WOLF</div>
+                    <div class="px">$7.60</div>
+                    <div class="co">Wolfspeed Inc</div>
+                  </td>
+                  <td class="c"><span class="drop">-28.9%</span></td>
+                  <td class="c">
+                    <span class="cushion is-pass">31.6%</span>
+                    <div class="cps">CPS $2.40</div>
+                    <span class="gate is-pass">Pass</span>
+                  </td>
+                  <td class="c">
+                    <span class="mv up-t"
+                      ><span class="tri up" aria-hidden="true"></span
+                      >+2.1%</span
+                    >
+                    <div class="mv-tag">Rebound</div>
+                  </td>
+                  <td>
+                    <div class="catalyst">
+                      Mohawk Valley fab ramp &amp; wafer yields
+                    </div>
+                    <a
+                      class="chart"
+                      href="https://www.tradingview.com/symbols/NYSE-WOLF/"
+                      target="_blank"
+                      rel="noopener"
+                      >View chart</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="sym">FSRN</div>
+                    <div class="px">$4.15</div>
+                    <div class="co">Fisker Liquidation</div>
+                  </td>
+                  <td class="c"><span class="drop">-38.2%</span></td>
+                  <td class="c">
+                    <span class="cushion is-fail">24.1%</span>
+                    <div class="cps">CPS $1.00</div>
+                    <span class="gate is-fail">Fail</span>
+                  </td>
+                  <td class="c">
+                    <span class="mv down-t"
+                      ><span class="tri down" aria-hidden="true"></span
+                      >-5.4%</span
+                    >
+                    <div class="mv-tag">Falling</div>
+                  </td>
+                  <td>
+                    <div class="catalyst">
+                      Severe restructuring risk &amp; margin call
+                    </div>
+                    <a
+                      class="chart"
+                      href="https://www.tradingview.com/symbols/NYSE-FSRN/"
+                      target="_blank"
+                      rel="noopener"
+                      >View chart</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="sym">UPST</div>
+                    <div class="px">$27.40</div>
+                    <div class="co">Upstart Holdings</div>
+                  </td>
+                  <td class="c"><span class="drop">-17.5%</span></td>
+                  <td class="c">
+                    <span class="cushion is-fail">18.2%</span>
+                    <div class="cps">CPS $5.00</div>
+                    <span class="gate is-fail">Fail</span>
+                  </td>
+                  <td class="c">
+                    <span class="mv flat-t"
+                      ><span class="tri flat" aria-hidden="true"></span
+                      >-0.5%</span
+                    >
+                    <div class="mv-tag">Stabilizing</div>
+                  </td>
+                  <td>
+                    <div class="catalyst">
+                      Prime loan conversion rate compression
+                    </div>
+                    <a
+                      class="chart"
+                      href="https://www.tradingview.com/symbols/NASDAQ-UPST/"
+                      target="_blank"
+                      rel="noopener"
+                      >View chart</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="sym">CHWY</div>
+                    <div class="px">$24.80</div>
+                    <div class="co">Chewy Inc</div>
+                  </td>
+                  <td class="c"><span class="drop">-15.2%</span></td>
+                  <td class="c">
+                    <span class="cushion is-fail">14.1%</span>
+                    <div class="cps">CPS $3.50</div>
+                    <span class="gate is-fail">Fail</span>
+                  </td>
+                  <td class="c">
+                    <span class="mv up-t"
+                      ><span class="tri up" aria-hidden="true"></span
+                      >+1.2%</span
+                    >
+                    <div class="mv-tag">Rebound</div>
+                  </td>
+                  <td>
+                    <div class="catalyst">
+                      Active pet parent net additions miss
+                    </div>
+                    <a
+                      class="chart"
+                      href="https://www.tradingview.com/symbols/NYSE-CHWY/"
+                      target="_blank"
+                      rel="noopener"
+                      >View chart</a
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CUSTOM SCREEN ENGINE ============ -->
+      <section class="block" id="engine">
+        <div class="wrap">
+          <div class="sec-head">
+            <h2>Custom screen engine</h2>
+            <p class="sec-meta">
+              Re-run the gatekeeper<br />on your own thresholds
+            </p>
+          </div>
+
+          <div class="engine">
+            <div class="engine-bar">
+              <span>Parameter console</span>
+              <span class="on" id="engStatus">Ready</span>
+            </div>
+
+            <form class="console" id="engForm" novalidate>
+              <div class="eng-grid">
+                <div class="eng-field">
+                  <label for="engCash">Cash-to-price minimum</label>
+                  <select
+                    id="engCash"
+                    name="cash"
+                    aria-describedby="engCashErr"
+                  >
+                    <option value="0.0">0.0%</option>
+                    <option value="10.0">10.0%</option>
+                    <option value="20.0">20.0%</option>
+                    <option value="30.0" selected>30.0%</option>
+                    <option value="40.0">40.0%</option>
+                    <option value="50.0">50.0%</option>
+                    <option value="60.0">60.0%</option>
+                    <option value="70.0">70.0%</option>
+                    <option value="80.0">80.0%</option>
+                    <option value="90.0">90.0%</option>
+                    <option value="100.0">100.0%</option>
+                  </select>
+                  <p class="eng-hint">Percent. 0.0 to 100.0</p>
+                  <p class="eng-err" id="engCashErr" role="alert" hidden></p>
+                </div>
+
+                <div class="eng-field">
+                  <label for="engDrop">3-day drop minimum</label>
+                  <select
+                    id="engDrop"
+                    name="drop"
+                    aria-describedby="engDropErr"
+                  >
+                    <option value="-1.0">-1.0%</option>
+                    <option value="-3.0" selected>-3.0%</option>
+                    <option value="-5.0">-5.0%</option>
+                    <option value="-10.0">-10.0%</option>
+                    <option value="-15.0">-15.0%</option>
+                    <option value="-20.0">-20.0%</option>
+                    <option value="-25.0">-25.0%</option>
+                    <option value="-30.0">-30.0%</option>
+                    <option value="-40.0">-40.0%</option>
+                    <option value="-50.0">-50.0%</option>
+                  </select>
+                  <p class="eng-hint">Percent. -1.0 to -50.0</p>
+                  <p class="eng-err" id="engDropErr" role="alert" hidden></p>
+                </div>
+
+                <div class="eng-field">
+                  <label for="engCap">Minimum market cap</label>
+                  <select id="engCap" name="cap" aria-describedby="engCapErr">
+                    <option value="0">No minimum</option>
+                    <option value="200" selected>$200M</option>
+                    <option value="500">$500M</option>
+                    <option value="1000">$1B</option>
+                    <option value="2000">$2B</option>
+                    <option value="5000">$5B</option>
+                    <option value="10000">$10B</option>
+                  </select>
+                  <p class="eng-hint">US dollars, millions</p>
+                  <p class="eng-err" id="engCapErr" role="alert" hidden></p>
+                </div>
+
+                <div class="eng-field">
+                  <label for="engMom">Momentum filter</label>
+                  <select id="engMom" name="momentum">
+                    <option value="">Any momentum</option>
+                    <option value="REBOUNDING">Rebounding</option>
+                    <option value="STABILIZING">Stabilizing</option>
+                    <option value="FALLING">Falling</option>
+                  </select>
+                  <p class="eng-hint">Optional</p>
+                </div>
+              </div>
+
+              <div class="eng-actions">
+                <button type="submit" class="btn-run" title="Run Screener">
+                  Run Screener
+                </button>
+                <button type="button" class="btn-ghost" id="engReset">
+                  Reset to defaults
+                </button>
+                <div class="presets">
+                  <b>Presets</b>
+                  <button type="button" class="btn-ghost" data-preset="30|-3">
+                    30% / -3%
+                  </button>
+                  <button type="button" class="btn-ghost" data-preset="40|-5">
+                    40% / -5%
+                  </button>
+                  <button type="button" class="btn-ghost" data-preset="50|-20">
+                    50% / -20%
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <div class="eng-out" id="engOutput" hidden>
+              <div class="eng-head">
+                <h3 class="eng-title" id="engTitle">
+                  The Vance Report: Custom Screen
+                </h3>
+                <span class="eng-count" id="engCount"></span>
+              </div>
+              <p class="eng-applied" id="engApplied"></p>
+
+              <div id="engResults" aria-live="polite"></div>
+
+              <p class="eng-note">
+                Screen runs against the indexed universe from the September 16, 2026
+                snapshot. Cash-per-share figures are drawn from the most recent
+                reported balance sheet.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SOLVENCY BREAKDOWN ============ -->
+      <section class="block">
+        <div class="wrap">
+          <div class="sec-head">
+            <h2>Gatekeeper pass breakdown</h2>
+            <p class="sec-meta">
+              Institutional solvency summary<br />7 of 10 targets
+            </p>
+          </div>
+
+          <p class="note">
+            Seven of the 10 screen targets meet or exceed the mandatory
+            <b>30.0% cash cushion</b> threshold, confirming asset-backed balance
+            sheet downside protection.
+          </p>
+
+          <div class="ledger">
+            <article class="entry">
+              <div class="ratio">61.3%<span>Cash / price</span></div>
+              <div class="entry-body">
+                <h3>BMEA &mdash; <span>Biomea Fusion, NASDAQ</span></h3>
+                <p class="metrics">
+                  <span>Price <b>$14.20</b></span
+                  ><span>Cash/share <b>$8.71</b></span
+                  ><span>3-day drop <b>-34.8%</b></span
+                  ><span>Momentum <b class="up-t">+2.8% rebounding</b></span>
+                </p>
+                <p class="thesis">
+                  Pristine cash runway covering over 18 months of burn despite
+                  clinical trial headline volatility. Bouncing sharply off
+                  technical intraday support.
+                </p>
+                <a
+                  class="chart"
+                  href="https://www.tradingview.com/symbols/NASDAQ-BMEA/"
+                  target="_blank"
+                  rel="noopener"
+                  >Company profile</a
+                >
+              </div>
+            </article>
+
+            <article class="entry">
+              <div class="ratio">54.8%<span>Cash / price</span></div>
+              <div class="entry-body">
+                <h3>
+                  SEDG &mdash; <span>SolarEdge Technologies, NASDAQ</span>
+                </h3>
+                <p class="metrics">
+                  <span>Price <b>$11.85</b></span
+                  ><span>Cash/share <b>$6.50</b></span
+                  ><span>3-day drop <b>-22.4%</b></span
+                  ><span>Momentum <b class="flat-t">+0.4% stabilizing</b></span>
+                </p>
+                <p class="thesis">
+                  De-risked valuation trading at close to net cash value.
+                  Inventory channel write-downs are nearing terminal stage while
+                  enterprise value approaches floor.
+                </p>
+                <a
+                  class="chart"
+                  href="https://www.tradingview.com/symbols/NASDAQ-SEDG/"
+                  target="_blank"
+                  rel="noopener"
+                  >Company profile</a
+                >
+              </div>
+            </article>
+
+            <article class="entry">
+              <div class="ratio">48.3%<span>Cash / price</span></div>
+              <div class="entry-body">
+                <h3>PAGS &mdash; <span>PagSeguro Digital, NYSE</span></h3>
+                <p class="metrics">
+                  <span>Price <b>$8.90</b></span
+                  ><span>Cash/share <b>$4.30</b></span
+                  ><span>3-day drop <b>-18.6%</b></span
+                  ><span>Momentum <b class="up-t">+1.7% rebounding</b></span>
+                </p>
+                <p class="thesis">
+                  High cash cushion backed by steady merchant banking operations
+                  and Brazilian central bank float dynamics. Price showing
+                  immediate rebound momentum.
+                </p>
+                <a
+                  class="chart"
+                  href="https://www.tradingview.com/symbols/NYSE-PAGS/"
+                  target="_blank"
+                  rel="noopener"
+                  >Company profile</a
+                >
+              </div>
+            </article>
+
+            <article class="entry">
+              <div class="ratio">42.6%<span>Cash / price</span></div>
+              <div class="entry-body">
+                <h3>RUN &mdash; <span>Sunrun Inc, NASDAQ</span></h3>
+                <p class="metrics">
+                  <span>Price <b>$10.10</b></span
+                  ><span>Cash/share <b>$4.30</b></span
+                  ><span>3-day drop <b>-21.2%</b></span
+                  ><span>Momentum <b class="down-t">-1.8% falling</b></span>
+                </p>
+                <p class="thesis">
+                  Significant net cash and tax credit liquidity, though
+                  continued interest-rate headwinds keep short-term momentum
+                  negative.
+                </p>
+                <a
+                  class="chart"
+                  href="https://www.tradingview.com/symbols/NASDAQ-RUN/"
+                  target="_blank"
+                  rel="noopener"
+                  >Company profile</a
+                >
+              </div>
+            </article>
+
+            <article class="entry">
+              <div class="ratio">37.7%<span>Cash / price</span></div>
+              <div class="entry-body">
+                <h3>LUMN &mdash; <span>Lumen Technologies, NYSE</span></h3>
+                <p class="metrics">
+                  <span>Price <b>$3.45</b></span
+                  ><span>Cash/share <b>$1.30</b></span
+                  ><span>3-day drop <b>-16.8%</b></span
+                  ><span>Momentum <b class="flat-t">0.0% stabilizing</b></span>
+                </p>
+                <p class="thesis">
+                  Fiber connectivity deals with hyperscalers provide substantial
+                  milestone cash inflows that create a tangible liquidity
+                  buffer.
+                </p>
+                <a
+                  class="chart"
+                  href="https://www.tradingview.com/symbols/NYSE-LUMN/"
+                  target="_blank"
+                  rel="noopener"
+                  >Company profile</a
+                >
+              </div>
+            </article>
+
+            <article class="entry">
+              <div class="ratio">35.2%<span>Cash / price</span></div>
+              <div class="entry-body">
+                <h3>PLUG &mdash; <span>Plug Power, NASDAQ</span></h3>
+                <p class="metrics">
+                  <span>Price <b>$1.82</b></span
+                  ><span>Cash/share <b>$0.64</b></span
+                  ><span>3-day drop <b>-24.5%</b></span
+                  ><span>Momentum <b class="down-t">-3.2% falling</b></span>
+                </p>
+                <p class="thesis">
+                  Meets strict balance sheet test, but negative momentum
+                  reflects burn pace and market sensitivity to secondary
+                  offerings. Strict risk management advised.
+                </p>
+                <a
+                  class="chart"
+                  href="https://www.tradingview.com/symbols/NASDAQ-PLUG/"
+                  target="_blank"
+                  rel="noopener"
+                  >Company profile</a
+                >
+              </div>
+            </article>
+
+            <article class="entry">
+              <div class="ratio">31.6%<span>Cash / price</span></div>
+              <div class="entry-body">
+                <h3>WOLF &mdash; <span>Wolfspeed Inc, NYSE</span></h3>
+                <p class="metrics">
+                  <span>Price <b>$7.60</b></span
+                  ><span>Cash/share <b>$2.40</b></span
+                  ><span>3-day drop <b>-28.9%</b></span
+                  ><span>Momentum <b class="up-t">+2.1% rebounding</b></span>
+                </p>
+                <p class="thesis">
+                  Silicon carbide production fab ramp-up hurdles triggered
+                  selling, but CHIPS Act grants and cash reserves hold a durable
+                  balance sheet backstop.
+                </p>
+                <a
+                  class="chart"
+                  href="https://www.tradingview.com/symbols/NYSE-WOLF/"
+                  target="_blank"
+                  rel="noopener"
+                  >Company profile</a
+                >
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="reviews" id="reviews">
+        <div class="wrap review-layout">
+          <div class="review-intro">
+            <p class="eyebrow">Reader desk / 04</p>
+            <h2>Review the report.</h2>
+            <p>
+              Mark each part of the experience, then leave a note for the
+              research desk. Every response goes directly to the review
+              dashboard.
+            </p>
+          </div>
+          <form class="review-form" id="reviewForm">
+            <div class="review-row">
+              <div>
+                <strong>Useful signal</strong
+                ><small>Did the screen surface worthwhile ideas?</small>
+              </div>
+              <div class="review-choice">
+                <input
+                  id="signalLike"
+                  type="radio"
+                  name="useful_signal"
+                  value="like"
+                  required
+                /><label for="signalLike">Like</label
+                ><input
+                  id="signalWork"
+                  type="radio"
+                  name="useful_signal"
+                  value="needs_work"
+                /><label for="signalWork">Needs work</label>
+              </div>
+            </div>
+            <div class="review-row">
+              <div>
+                <strong>Clear analysis</strong
+                ><small>Was the reasoning easy to follow?</small>
+              </div>
+              <div class="review-choice">
+                <input
+                  id="analysisLike"
+                  type="radio"
+                  name="clear_analysis"
+                  value="like"
+                  required
+                /><label for="analysisLike">Like</label
+                ><input
+                  id="analysisWork"
+                  type="radio"
+                  name="clear_analysis"
+                  value="needs_work"
+                /><label for="analysisWork">Needs work</label>
+              </div>
+            </div>
+            <div class="review-row">
+              <div>
+                <strong>Actionable format</strong
+                ><small>Could you use the report efficiently?</small>
+              </div>
+              <div class="review-choice">
+                <input
+                  id="formatLike"
+                  type="radio"
+                  name="actionable_format"
+                  value="like"
+                  required
+                /><label for="formatLike">Like</label
+                ><input
+                  id="formatWork"
+                  type="radio"
+                  name="actionable_format"
+                  value="needs_work"
+                /><label for="formatWork">Needs work</label>
+              </div>
+            </div>
+            <label class="review-comment" for="reviewComment"
+              >Written comment</label
+            ><textarea
+              id="reviewComment"
+              name="comment"
+              minlength="2"
+              maxlength="1000"
+              required
+              placeholder="What worked, and what should change?"
+            ></textarea>
+            <div class="review-actions">
+              <button class="review-submit" type="submit">Submit review</button
+              ><span
+                class="review-status"
+                id="reviewStatus"
+                role="status"
+                aria-live="polite"
+              ></span>
+            </div>
+          </form>
+        </div>
+      </section>
+      <section class="top-reviews" aria-labelledby="topReviewsTitle">
+        <div class="wrap">
+          <div class="sec-head">
+            <div>
+              <p class="eyebrow">Reader response / 05</p>
+              <h2 id="topReviewsTitle">Top positive reviews.</h2>
+            </div>
+            <p class="sec-meta">Selected by positive marks<br />Updated live</p>
+          </div>
+          <div class="review-cards" id="topReviews">
+            <p class="reviews-empty">Loading reader reviews…</p>
+          </div>
+        </div>
+      </section>
+      <footer>
+        <div class="wrap foot-grid">
+          <p class="disclaim">
+            The Vance Report exists for information purposes only. Information
+            posted is based on publicly available information and are not
+            investment advice, an offer, or a solicitation. Cash-per-share
+            values are drawn from the most recent reported balance sheet and may
+            lag subsequent financings or burn. You should always perform your
+            own analysis based upon our screen results before investing.
+          </p>
+          <button type="button" class="foot-cta" data-open-alerts>
+            Sign up for daily alerts
+          </button>
+        </div>
+      </footer>
+    </div>
+    <!-- /shell -->
+
+    <!-- ============ ALERTS MODAL ============ -->
+    <div class="backdrop" id="alertsModal" hidden>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+        aria-describedby="modalSub"
+      >
+        <button
+          type="button"
+          class="x"
+          data-close-alerts
+          aria-label="Close dialog"
+        >
+          <svg width="13" height="13" viewBox="0 0 13 13" aria-hidden="true">
+            <path
+              d="M1 1l11 11M12 1L1 12"
+              stroke="currentColor"
+              stroke-width="1.3"
+            />
+          </svg>
+        </button>
+
+        <div id="alertsPane">
+          <p class="eyebrow">Daily distribution</p>
+          <h2 id="modalTitle">Daily alerts</h2>
+          <p class="modal-sub" id="modalSub">
+            The screen output, every trading morning before the open.
+          </p>
+
+          <form
+            name="daily-alerts"
+            method="POST"
+            data-netlify="true"
+            netlify-honeypot="bot-field"
+            id="alertsForm"
+            novalidate
+          >
+            <input type="hidden" name="form-name" value="daily-alerts" />
+            <p class="hp">
+              <label
+                >Do not fill this out: <input name="bot-field" tabindex="-1"
+              /></label>
+            </p>
+
+            <label class="field" for="alertsEmail">Email address</label>
+            <input
+              type="email"
+              id="alertsEmail"
+              name="email"
+              required
+              autocomplete="email"
+              placeholder="name@firm.com"
+              aria-describedby="alertsError"
+            />
+            <p class="err" id="alertsError" role="alert" hidden></p>
+
+            <button type="submit" class="submit" id="alertsSubmit">
+              Submit
+            </button>
+            <p class="fine">
+              One email per trading day. Unsubscribe from any issue.
+            </p>
+          </form>
+        </div>
+
+        <div class="done" id="alertsDone" hidden tabindex="-1">
+          <div class="done-mark" aria-hidden="true">
+            <svg width="20" height="15" viewBox="0 0 20 15" fill="none">
+              <path
+                d="M1 7.5l6 6L19 1.5"
+                stroke="currentColor"
+                stroke-width="1.6"
+              />
+            </svg>
+          </div>
+          <p>Thank you! You're on the list for daily alerts.</p>
+          <p class="fine">
+            The next screen lands in your inbox before the opening bell.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var modal = document.getElementById("alertsModal");
+        var pane = document.getElementById("alertsPane");
+        var form = document.getElementById("alertsForm");
+        var email = document.getElementById("alertsEmail");
+        var errEl = document.getElementById("alertsError");
+        var submit = document.getElementById("alertsSubmit");
+        var done = document.getElementById("alertsDone");
+        var opener = null;
+
+        function showError(msg) {
+          errEl.textContent = msg;
+          errEl.hidden = false;
+          email.setAttribute("aria-invalid", "true");
+        }
+        function clearError() {
+          errEl.hidden = true;
+          errEl.textContent = "";
+          email.removeAttribute("aria-invalid");
+        }
+
+        function openModal(trigger) {
+          opener = trigger || null;
+          modal.hidden = false;
+          document.body.style.overflow = "hidden";
+          // reset to the form state on every open
+          pane.hidden = false;
+          done.hidden = true;
+          submit.disabled = false;
+          submit.textContent = "Submit";
+          clearError();
+          form.reset();
+          setTimeout(function () {
+            email.focus();
+          }, 30);
+        }
+
+        function closeModal() {
+          modal.hidden = true;
+          document.body.style.overflow = "";
+          if (opener) opener.focus();
+        }
+
+        document.querySelectorAll("[data-open-alerts]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            openModal(btn);
+          });
+        });
+        document
+          .querySelectorAll("[data-close-alerts]")
+          .forEach(function (btn) {
+            btn.addEventListener("click", closeModal);
+          });
+
+        // click the backdrop (not the panel) to dismiss
+        modal.addEventListener("mousedown", function (e) {
+          if (e.target === modal) closeModal();
+        });
+
+        document.addEventListener("keydown", function (e) {
+          if (modal.hidden) return;
+          if (e.key === "Escape") {
+            closeModal();
+            return;
+          }
+          if (e.key !== "Tab") return;
+          // keep focus inside the dialog
+          var panel = modal.querySelector(".modal");
+          var items = panel.querySelectorAll(
+            'button, [href], input:not([type=hidden]):not([tabindex="-1"])',
+          );
+          var live = Array.prototype.filter.call(items, function (el) {
+            return el.offsetParent !== null;
+          });
+          if (!live.length) return;
+          var first = live[0],
+            last = live[live.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        });
+
+        email.addEventListener("input", clearError);
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          clearError();
+
+          var value = email.value.trim();
+          if (!value) {
+            showError("Enter an email address to receive the alerts.");
+            email.focus();
+            return;
+          }
+          if (!email.checkValidity()) {
+            showError("That email address does not look right.");
+            email.focus();
+            return;
+          }
+
+          submit.disabled = true;
+          submit.textContent = "Submitting";
+
+          fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams(new FormData(form)).toString(),
+          })
+            .then(function (res) {
+              if (!res.ok)
+                throw new Error("Request failed with status " + res.status);
+              pane.hidden = true;
+              done.hidden = false;
+              done.focus();
+            })
+            .catch(function () {
+              submit.disabled = false;
+              submit.textContent = "Submit";
+              showError("Could not sign you up just now. Please try again.");
+            });
+        });
+      })();
+    </script>
+    <script>
+      /* ===== Custom Screen Engine =====================================================
+   Filters the pre-indexed US equity universe against user-supplied thresholds.
+
+   NOTE ON marketCap: the September 16, 2026 report published price, 3-day drop,
+   cash cushion, cash-per-share and momentum for each name, but NOT market cap.
+   The marketCap values below are placeholders (US$ millions) added only so the
+   market-cap floor filter has something to act on. Replace them with the real
+   indexed figures before treating this output as research.
+   ============================================================================= */
+      (function () {
+        var UNIVERSE = [
+          {
+            sym: "BMEA",
+            name: "Biomea Fusion",
+            exch: "NASDAQ",
+            price: 14.2,
+            drop: -34.8,
+            cash: 61.3,
+            cps: 8.71,
+            mom: "REBOUNDING",
+            marketCap: 512,
+          },
+          {
+            sym: "SEDG",
+            name: "SolarEdge Technologies",
+            exch: "NASDAQ",
+            price: 11.85,
+            drop: -22.4,
+            cash: 54.8,
+            cps: 6.5,
+            mom: "STABILIZING",
+            marketCap: 683,
+          },
+          {
+            sym: "PAGS",
+            name: "PagSeguro Digital",
+            exch: "NYSE",
+            price: 8.9,
+            drop: -18.6,
+            cash: 48.3,
+            cps: 4.3,
+            mom: "REBOUNDING",
+            marketCap: 2840,
+          },
+          {
+            sym: "RUN",
+            name: "Sunrun Inc",
+            exch: "NASDAQ",
+            price: 10.1,
+            drop: -21.2,
+            cash: 42.6,
+            cps: 4.3,
+            mom: "FALLING",
+            marketCap: 2270,
+          },
+          {
+            sym: "LUMN",
+            name: "Lumen Technologies",
+            exch: "NYSE",
+            price: 3.45,
+            drop: -16.8,
+            cash: 37.7,
+            cps: 1.3,
+            mom: "STABILIZING",
+            marketCap: 3410,
+          },
+          {
+            sym: "PLUG",
+            name: "Plug Power",
+            exch: "NASDAQ",
+            price: 1.82,
+            drop: -24.5,
+            cash: 35.2,
+            cps: 0.64,
+            mom: "FALLING",
+            marketCap: 1650,
+          },
+          {
+            sym: "WOLF",
+            name: "Wolfspeed Inc",
+            exch: "NYSE",
+            price: 7.6,
+            drop: -28.9,
+            cash: 31.6,
+            cps: 2.4,
+            mom: "REBOUNDING",
+            marketCap: 964,
+          },
+          {
+            sym: "FSRN",
+            name: "Fisker Liquidation",
+            exch: "NYSE",
+            price: 4.15,
+            drop: -38.2,
+            cash: 24.1,
+            cps: 1.0,
+            mom: "FALLING",
+            marketCap: 218,
+          },
+          {
+            sym: "UPST",
+            name: "Upstart Holdings",
+            exch: "NASDAQ",
+            price: 27.4,
+            drop: -17.5,
+            cash: 18.2,
+            cps: 5.0,
+            mom: "STABILIZING",
+            marketCap: 2480,
+          },
+          {
+            sym: "CHWY",
+            name: "Chewy Inc",
+            exch: "NYSE",
+            price: 24.8,
+            drop: -15.2,
+            cash: 14.1,
+            cps: 3.5,
+            mom: "REBOUNDING",
+            marketCap: 10600,
+          },
+        ];
+
+        var DEFAULTS = { cash: 30.0, drop: -3.0, cap: 200, momentum: "" };
+        var MAX_ROWS = 10;
+        var LIMITS = {
+          cashMin: 0.0,
+          cashMax: 100.0,
+          dropMax: -1.0,
+          dropMin: -50.0,
+        };
+
+        var form = document.getElementById("engForm");
+        var elCash = document.getElementById("engCash");
+        var elDrop = document.getElementById("engDrop");
+        var elCap = document.getElementById("engCap");
+        var elMom = document.getElementById("engMom");
+        var errCash = document.getElementById("engCashErr");
+        var errDrop = document.getElementById("engDropErr");
+        var errCap = document.getElementById("engCapErr");
+        var out = document.getElementById("engResults");
+        var output = document.getElementById("engOutput");
+        var title = document.getElementById("engTitle");
+        var count = document.getElementById("engCount");
+        var applied = document.getElementById("engApplied");
+        var status = document.getElementById("engStatus");
+
+        function setErr(input, node, msg) {
+          if (msg) {
+            node.textContent = msg;
+            node.hidden = false;
+            input.setAttribute("aria-invalid", "true");
+          } else {
+            node.hidden = true;
+            node.textContent = "";
+            input.removeAttribute("aria-invalid");
+          }
+        }
+
+        function esc(v) {
+          return String(v)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        /* ---- Step 1: read & validate parameters ---- */
+        function readParams() {
+          var raw = {
+            cash: elCash.value.trim(),
+            drop: elDrop.value.trim(),
+            cap: elCap.value.trim(),
+          };
+          var errors = 0;
+
+          var cash = parseFloat(raw.cash.replace("%", ""));
+          if (isNaN(cash) || cash < LIMITS.cashMin || cash > LIMITS.cashMax) {
+            setErr(
+              elCash,
+              errCash,
+              "Enter a cash-to-price minimum between 0.0% and 100.0%.",
+            );
+            errors++;
+          } else setErr(elCash, errCash, null);
+
+          // accept "5" or "-5" — a drop is always negative
+          var drop = parseFloat(raw.drop.replace("%", ""));
+          if (!isNaN(drop) && drop > 0) drop = -drop;
+          if (isNaN(drop) || drop > LIMITS.dropMax || drop < LIMITS.dropMin) {
+            setErr(
+              elDrop,
+              errDrop,
+              "Enter a 3-day drop minimum between -1.0% and -50.0%.",
+            );
+            errors++;
+          } else setErr(elDrop, errDrop, null);
+
+          var cap = parseFloat(raw.cap.replace(/[$,]/g, ""));
+          if (isNaN(cap) || cap < 0) {
+            setErr(
+              elCap,
+              errCap,
+              "Enter a market cap floor in millions, e.g. 200.",
+            );
+            errors++;
+          } else setErr(elCap, errCap, null);
+
+          if (errors) return null;
+          return { cash: cash, drop: drop, cap: cap, momentum: elMom.value };
+        }
+
+        /* ---- Step 2: filter the universe ---- */
+        function filterUniverse(p) {
+          return UNIVERSE.filter(function (r) {
+            return (
+              r.cash >= p.cash && // cash-to-price floor
+              r.drop <= p.drop && // drop at least this severe
+              r.marketCap >= p.cap && // market cap floor
+              (!p.momentum || r.mom === p.momentum)
+            ); // optional momentum
+          })
+            .sort(function (a, b) {
+              return b.cash - a.cash;
+            }) // descending cash-to-price
+            .slice(0, MAX_ROWS);
+        }
+
+        /* ---- Step 3: output formatting ---- */
+        function momCell(r) {
+          var cls =
+            r.mom === "REBOUNDING"
+              ? "up"
+              : r.mom === "FALLING"
+                ? "down"
+                : "flat";
+          var tone = cls + "-t";
+          return (
+            '<span class="mv ' +
+            tone +
+            '"><span class="tri ' +
+            cls +
+            '" aria-hidden="true"></span>' +
+            esc(r.mom.charAt(0) + r.mom.slice(1).toLowerCase()) +
+            "</span>"
+          );
+        }
+
+        function fmtCap(m) {
+          return m >= 1000 ? "$" + (m / 1000).toFixed(1) + "B" : "$" + m + "M";
+        }
+
+        function render(rows, p) {
+          // dynamic header
+          title.textContent =
+            "The Vance Report: Custom Screen (" +
+            p.cash.toFixed(1) +
+            "% Cash-to-Price | " +
+            p.drop.toFixed(1) +
+            "% Drop)";
+
+          applied.innerHTML =
+            "Cash-to-price <b>&ge; " +
+            p.cash.toFixed(1) +
+            "%</b> &nbsp;&middot;&nbsp; " +
+            "3-day move <b>&le; " +
+            p.drop.toFixed(1) +
+            "%</b> &nbsp;&middot;&nbsp; " +
+            "Market cap <b>&ge; " +
+            esc(fmtCap(p.cap)) +
+            "</b> &nbsp;&middot;&nbsp; " +
+            "Momentum <b>" +
+            esc(
+              p.momentum
+                ? p.momentum.charAt(0) + p.momentum.slice(1).toLowerCase()
+                : "any",
+            ) +
+            "</b>";
+
+          if (!rows.length) {
+            count.textContent = "0 candidates";
+            status.textContent = "No matches";
+            out.innerHTML =
+              '<div class="eng-empty"><p>No candidates clear these thresholds.</p>' +
+              "<small>Loosen the cash-to-price floor or the drop requirement, then run the screen again.</small></div>";
+            return;
+          }
+
+          count.textContent =
+            rows.length + (rows.length === 1 ? " candidate" : " candidates");
+          status.textContent = "Screen complete";
+
+          var body = rows
+            .map(function (r) {
+              var url =
+                "https://www.tradingview.com/chart/?symbol=" +
+                encodeURIComponent(r.exch) +
+                ":" +
+                encodeURIComponent(r.sym);
+              return (
+                "" +
+                "<tr>" +
+                "<td>" +
+                '<div class="sym">' +
+                esc(r.sym) +
+                "</div>" +
+                '<div class="co">' +
+                esc(r.name) +
+                "</div>" +
+                '<a class="vance" href="' +
+                esc(url) +
+                '" target="_blank" rel="noopener">View Chart</a>' +
+                "</td>" +
+                '<td class="c"><span class="px">$' +
+                r.price.toFixed(2) +
+                "</span></td>" +
+                '<td class="c"><span class="drop">' +
+                r.drop.toFixed(1) +
+                "%</span></td>" +
+                '<td class="c">' +
+                '<span class="cushion ' +
+                (r.cash >= 30 ? "is-pass" : "is-fail") +
+                '">' +
+                r.cash.toFixed(1) +
+                "%</span>" +
+                '<div class="cps">CPS $' +
+                r.cps.toFixed(2) +
+                "</div>" +
+                "</td>" +
+                '<td class="c">' +
+                momCell(r) +
+                '<div class="mv-tag">' +
+                esc(fmtCap(r.marketCap)) +
+                " cap</div></td>" +
+                "</tr>"
+              );
+            })
+            .join("");
+
+          out.innerHTML =
+            '<div class="table-scroll"><table class="engine-table">' +
+            "<thead><tr>" +
+            '<th scope="col">Symbol</th>' +
+            '<th scope="col" class="c">Price</th>' +
+            '<th scope="col" class="c">3-day move</th>' +
+            '<th scope="col" class="c">Cash cushion</th>' +
+            '<th scope="col" class="c">Momentum</th>' +
+            "</tr></thead>" +
+            "<tbody>" +
+            body +
+            "</tbody>" +
+            "</table></div>";
+        }
+
+        function run() {
+          var p = readParams();
+          if (!p) {
+            status.textContent = "Check parameters";
+            return false;
+          }
+          output.hidden = false;
+          render(filterUniverse(p), p);
+          return true;
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          run();
+        });
+
+        document
+          .getElementById("engReset")
+          .addEventListener("click", function () {
+            elCash.value = DEFAULTS.cash.toFixed(1);
+            elDrop.value = DEFAULTS.drop.toFixed(1);
+            elCap.value = String(DEFAULTS.cap);
+            elMom.value = DEFAULTS.momentum;
+            setErr(elCash, errCash, null);
+            setErr(elDrop, errDrop, null);
+            setErr(elCap, errCap, null);
+            output.hidden = true;
+            status.textContent = "Ready";
+          });
+
+        document.querySelectorAll("[data-preset]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var parts = btn.getAttribute("data-preset").split("|");
+            elCash.value = parseFloat(parts[0]).toFixed(1);
+            elDrop.value = parseFloat(parts[1]).toFixed(1);
+            output.hidden = true;
+            status.textContent = "Ready";
+          });
+        });
+
+        [elCash, elDrop, elCap].forEach(function (el) {
+          el.addEventListener("input", function () {
+            status.textContent = "Ready";
+          });
+        });
+      })();
+    </script>
+    <script>
+      (function () {
+        var form = document.getElementById("reviewForm"),
+          status = document.getElementById("reviewStatus"),
+          cards = document.getElementById("topReviews");
+        function safe(text) {
+          var el = document.createElement("span");
+          el.textContent = text;
+          return el.innerHTML;
+        }
+        function draw(reviews) {
+          if (!reviews.length) {
+            cards.innerHTML =
+              '<p class="reviews-empty">No positive reviews yet. Be the first to leave one.</p>';
+            return;
+          }
+          cards.innerHTML = reviews
+            .map(function (r) {
+              var date = new Date(r.created_at).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              });
+              return (
+                '<article class="review-card"><blockquote>“' +
+                safe(r.comment) +
+                "”</blockquote><small>" +
+                r.positive_score +
+                " of 3 positive · " +
+                safe(date) +
+                "</small></article>"
+              );
+            })
+            .join("");
+        }
+        function load() {
+          fetch("/api/reviews")
+            .then(function (r) {
+              if (!r.ok) throw Error();
+              return r.json();
+            })
+            .then(function (data) {
+              draw(data.reviews || []);
+            })
+            .catch(function () {
+              cards.innerHTML =
+                '<p class="reviews-empty">Reviews are temporarily unavailable.</p>';
+            });
+        }
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var button = form.querySelector("button");
+          button.disabled = true;
+          status.className = "review-status";
+          status.textContent = "Saving…";
+          var data = Object.fromEntries(new FormData(form));
+          fetch("/api/reviews", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          })
+            .then(function (r) {
+              return r.json().then(function (body) {
+                if (!r.ok) throw Error(body.error || "Unable to save review.");
+                return body;
+              });
+            })
+            .then(function () {
+              form.reset();
+              status.className = "review-status is-success";
+              status.textContent = "Review saved. Thank you.";
+              load();
+            })
+            .catch(function (err) {
+              status.className = "review-status is-error";
+              status.textContent = err.message;
+            })
+            .finally(function () {
+              button.disabled = false;
+            });
+        });
+        load();
+      })();
+    </script>
+  </body>
+</html>
