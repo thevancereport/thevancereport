@@ -1366,7 +1366,7 @@
               Ten US names took a severe three-day drawdown. Seven of them still
               clear a
               <b>30.0% cash-to-price</b> gatekeeper — the balance sheet is doing
-              the arguing, not the narrative. Run date <b>September 16, 2026</b>.
+              the arguing, not the narrative. Run date <b id="hero-run-date">September 16, 2026</b>.
             </p>
             <div class="cta-row">
               <button type="button" class="btn-cta" data-open-alerts>
@@ -2853,5 +2853,28 @@
       });
   })();
     </script>
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const today = new Date();
+    
+    // Formats dynamically to current live date
+    const fullDate = today.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+
+    // Formats short date for card header
+    const shortMonth = today.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+    const shortDate = `${shortMonth} ${today.getDate()}, ${today.getFullYear()}`;
+
+    // Target elements by ID
+    const runDateEl = document.getElementById('hero-run-date');
+    const cardDateEl = document.getElementById('summary-card-date');
+
+    if (runDateEl) runDateEl.textContent = fullDate;
+    if (cardDateEl) cardDateEl.textContent = shortDate;
+  });
+</script>
   </body>
 </html>
