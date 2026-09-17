@@ -1,0 +1,52 @@
+{
+  "BMEA": {
+    "cps": "$8.71 (61.3% Cushion)",
+    "catalyst": "Phase 1/2 diabetes safety update",
+    "notes": "Strong cash cushion above gatekeeper threshold."
+  },
+  "SEDG": {
+    "cps": "$6.50 (54.8% Cushion)",
+    "catalyst": "Inverter inventory clearance headwind",
+    "notes": "Severe 3-day drop under automated monitor. Balance sheet passes CPS gate."
+  },
+  "PAGS": {
+    "cps": "48.3% Cushion",
+    "catalyst": "LatAm FX translation repricing",
+    "notes": "Passes safety margin requirements."
+  },
+  "RUN": {
+    "cps": "37.7% Cushion",
+    "catalyst": "Utility rate case regulatory overhang",
+    "notes": "Monitored for solar policy stabilization."
+  },
+  "LUMN": {
+    "cps": "$1.30 (37.7% Cushion)",
+    "catalyst": "Fiber buildout CAPEX timing recalibration",
+    "notes": "Restructuring underway."
+  },
+  "PLUG": {
+    "cps": "Cushion Pass",
+    "catalyst": "DOE loan facility dilution concern",
+    "notes": "High volatility play."
+  },
+  "WOLF": {
+    "cps": "$2.40 (31.6% Cushion)",
+    "catalyst": "Mohawk Valley fab ramp & wafer yields",
+    "notes": "Fab scaling bottleneck."
+  },
+  "FSRN": {
+    "cps": "$1.00 (24.1% Cushion)",
+    "catalyst": "Severe restructuring risk & margin call",
+    "notes": "Failed CPS gatekeeper floor."
+  },
+  "UPST": {
+    "cps": "$5.00 (18.2% Cushion)",
+    "catalyst": "Prime loan conversion rate compression",
+    "notes": "Failed CPS gatekeeper floor."
+  },
+  "CHWY": {
+    "cps": "$3.50 (14.1% Cushion)",
+    "catalyst": "Active pet parent net additions miss",
+    "notes": "Failed CPS gatekeeper floor."
+  }
+}
