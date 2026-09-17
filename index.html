@@ -1449,43 +1449,24 @@
             </div>
           </div>
 
-          <details class="params">
-            <summary class="params-head">
-              <span>Screen parameters</span>
-              <span class="params-meta"
-                ><span>REV 04</span
-                ><span class="params-chevron" aria-hidden="true"
-                  >&#9662;</span
-                ></span
-              >
-            </summary>
-            <dl>
-              <div>
-                <dt>Cash gatekeeper</dt>
-                <dd>30.0<small>%</small></dd>
-              </div>
-              <div>
-                <dt>Drawdown window</dt>
-                <dd>3<small> days</small></dd>
-              </div>
-              <div>
-                <dt>Market cap floor</dt>
-                <dd>$200<small>M</small></dd>
-              </div>
-              <div>
-                <dt>Targets screened</dt>
-                <dd>10</dd>
-              </div>
-              <div>
-                <dt>Gatekeeper pass</dt>
-                <dd style="color: var(--pass)">7</dd>
-              </div>
-              <div>
-                <dt>Gatekeeper fail</dt>
-                <dd style="color: var(--fail)">3</dd>
-              </div>
-            </dl>
-          </details>
+          <div style="border: 1px solid var(--rule); background: var(--ink-2); padding: 24px;">
+  <div style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); margin-bottom: 16px; border-bottom: 1px solid var(--rule-soft); padding-bottom: 8px;">
+    Daily Screen Summary — Sep 16, 2026
+  </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+    <div>
+      <div style="font-size: 11px; color: var(--paper-faint); text-transform: uppercase;">Universe Screened</div>
+      <div style="font-size: 22px; font-weight: 600; color: var(--paper);">10 Names</div>
+    </div>
+    <div>
+      <div style="font-size: 11px; color: var(--paper-faint); text-transform: uppercase;">Gatekeeper Cleared</div>
+      <div style="font-size: 22px; font-weight: 600; color: var(--pass);">7 Qualified</div>
+    </div>
+  </div>
+  <div style="font-size: 12px; color: var(--paper-dim); line-height: 1.5; border-top: 1px dashed var(--rule-soft); padding-top: 12px;">
+    <strong style="color: var(--paper);">Gatekeeper Rule:</strong> Minimum 30.0% Cash-to-Price ratio following a severe 3-day drawdown.
+  </div>
+</div>
         </div>
       </section>
 
