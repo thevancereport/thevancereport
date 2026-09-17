@@ -2556,7 +2556,7 @@
                 '<a href="stock.html?symbol=' + symbol + '" style="color: var(--paper); text-decoration: none; font-weight: 700;">' +
                   symbol + ' <span style="color: var(--amber); font-size: 11px;">&rarr;</span>' +
                 '</a>' +
-              '<div style="font-size: 13px; font-weight: 600; color: var(--paper);">' + (item.price ? '$' + item.price.toFixed(2) : '') + '</div>' +
+             '<div style="font-size: 13px; font-weight: 600; color: var(--paper);">' + (item.price ? '$' + Number(item.price).toFixed(2) : '') + '</div>' +
 '<div style="font-size: 11px; color: var(--paper-dim);">' + (item.name || '') + '</div>' +
               '</td>' +
               '<td class="c" style="color: #e57373;">' + (item.three_day_drop || '--') + '</td>' +
@@ -2576,31 +2576,31 @@
   })();
     </script>
 <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const today = new Date();
-    
-    // Formats: September 17, 2026
-    const fullDate = today.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric' 
-    });
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
 
-    // Formats: SEP 17, 2026
-    const shortMonth = today.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-    const shortDate = `${shortMonth} ${today.getDate()}, ${today.getFullYear()}`;
+  // Formats: September 17, 2026
+  const fullDate = today.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+ );
 
-    // Elements
-    const runEl = document.getElementById('hero-run-date');
-    const cardEl = document.getElementById('summary-card-date');
+  // Formats: SEP 17, 2026
+  const shortMonth = today.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+  const shortDate = `${shortMonth} ${today.getDate()}, ${today.getFullYear()}`;
 
-    // Safe execution with block braces
-    if (runEl) {
-      runEl.textContent = fullDate;
-    }
-    if (cardEl) {
-      cardEl.textContent = shortDate;
-    }
-  });
+  // Elements
+  const runEl = document.getElementById('hero-run-date');
+  const cardEl = document.getElementById('summary-card-date');
+
+  // Safe execution with block braces
+  if (runEl) {
+    runEl.textContent = fullDate;
+  }
+  if (cardEl) {
+    cardEl.textContent = shortDate;
+  }
+});
 </script>
 </html>
