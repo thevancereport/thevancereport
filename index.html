@@ -2133,117 +2133,20 @@
         </div>
       </section>
 
-      <section class="reviews" id="reviews">
-        <div class="wrap review-layout">
-          <div class="review-intro">
-            <p class="eyebrow">Reader desk / 04</p>
-            <h2>Review the report.</h2>
-            <p>
-              Mark each part of the experience, then leave a note for the
-              research desk. Every response goes directly to the review
-              dashboard.
-            </p>
-          </div>
-          <form class="review-form" id="reviewForm">
-            <div class="review-row">
-              <div>
-                <strong>Useful signal</strong
-                ><small>Did the screen surface worthwhile ideas?</small>
-              </div>
-              <div class="review-choice">
-                <input
-                  id="signalLike"
-                  type="radio"
-                  name="useful_signal"
-                  value="like"
-                  required
-                /><label for="signalLike">Like</label
-                ><input
-                  id="signalWork"
-                  type="radio"
-                  name="useful_signal"
-                  value="needs_work"
-                /><label for="signalWork">Needs work</label>
-              </div>
-            </div>
-            <div class="review-row">
-              <div>
-                <strong>Clear analysis</strong
-                ><small>Was the reasoning easy to follow?</small>
-              </div>
-              <div class="review-choice">
-                <input
-                  id="analysisLike"
-                  type="radio"
-                  name="clear_analysis"
-                  value="like"
-                  required
-                /><label for="analysisLike">Like</label
-                ><input
-                  id="analysisWork"
-                  type="radio"
-                  name="clear_analysis"
-                  value="needs_work"
-                /><label for="analysisWork">Needs work</label>
-              </div>
-            </div>
-            <div class="review-row">
-              <div>
-                <strong>Actionable format</strong
-                ><small>Could you use the report efficiently?</small>
-              </div>
-              <div class="review-choice">
-                <input
-                  id="formatLike"
-                  type="radio"
-                  name="actionable_format"
-                  value="like"
-                  required
-                /><label for="formatLike">Like</label
-                ><input
-                  id="formatWork"
-                  type="radio"
-                  name="actionable_format"
-                  value="needs_work"
-                /><label for="formatWork">Needs work</label>
-              </div>
-            </div>
-            <label class="review-comment" for="reviewComment"
-              >Written comment</label
-            ><textarea
-              id="reviewComment"
-              name="comment"
-              minlength="2"
-              maxlength="1000"
-              required
-              placeholder="What worked, and what should change?"
-            ></textarea>
-            <div class="review-actions">
-              <button class="review-submit" type="submit">Submit review</button
-              ><span
-                class="review-status"
-                id="reviewStatus"
-                role="status"
-                aria-live="polite"
-              ></span>
-            </div>
-          </form>
-        </div>
-      </section>
-      <section class="top-reviews" aria-labelledby="topReviewsTitle">
+<!-- ============ READER DESK / 04 ============ -->
+      <section class="block" id="feedback" style="padding: 48px 0; border-top: 1px solid var(--rule-soft);">
         <div class="wrap">
-          <div class="sec-head">
-            <div>
-              <p class="eyebrow">Reader response / 05</p>
-              <h2 id="topReviewsTitle">Top positive reviews.</h2>
-            </div>
-            <p class="sec-meta">Selected by positive marks<br />Updated live</p>
-          </div>
-          <div class="review-cards" id="topReviews">
-            <p class="reviews-empty">Loading reader reviews…</p>
+          <div style="background-color: var(--ink-2); border: 1px solid var(--rule); border-radius: 8px; padding: 32px; text-align: center; max-width: 680px; margin: 0 auto;">
+            <p class="eyebrow" style="font-family: var(--mono); font-size: 11px; color: var(--amber); letter-spacing: 0.15em; text-transform: uppercase;">READER DESK / 04</p>
+            <h3 style="font-family: var(--serif); font-size: 26px; color: var(--paper); margin: 12px 0 8px;">Direct Research Feedback</h3>
+            <p style="color: var(--paper-dim); font-size: 14px; margin-bottom: 20px; line-height: 1.5;">
+              Have feedback on our 30.0% Cash-to-Price screen or a specific stock setup? Subscribe to our newsletter to reply directly to daily research updates.
+            </p>
+            <iframe src="https://thevancereport.substack.com/embed" width="100%" height="150" style="border:none; background:transparent;" frameborder="0" scrolling="no"></iframe>
           </div>
         </div>
       </section>
+
       <footer>
         <div class="wrap foot-grid">
           <p class="disclaim">
@@ -2260,6 +2163,7 @@
         </div>
       </footer>
     </div>
+    <!-- /shell -->
     <!-- /shell -->
 
     <!-- ============ ALERTS MODAL ============ -->
