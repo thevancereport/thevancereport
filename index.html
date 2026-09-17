@@ -2868,7 +2868,41 @@
             });
         });
         load();
-      })();
+        load();
+
+    // Dynamically render screening table rows from research.json
+    fetch('research.json')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        var tbody = document.querySelector('table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        Object.keys(data).forEach(function(symbol) {
+          var item = data[symbol];
+          tbody.innerHTML += 
+            '<tr>' +
+              '<td>' +
+                '<a href="stock.html?symbol=' + symbol + '" style="color: var(--paper); text-decoration: none; font-weight: 700;">' +
+                  symbol + ' <span style="color: var(--amber); font-size: 11px;">&rarr;</span>' +
+                '</a>' +
+                '<div style="font-size: 11px; color: var(--paper-dim);">' + (item.name || '') + '</div>' +
+              '</td>' +
+              '<td class="c" style="color: #e57373;">' + (item.three_day_drop || '--') + '</td>' +
+              '<td class="c" style="color: var(--amber);">' + (item.cps || '--') + '</td>' +
+              '<td class="c">' + (item.catalyst || '--') + '</td>' +
+              '<td>' +
+                '<a href="stock.html?symbol=' + symbol + '" style="color: var(--amber); font-family: var(--mono); font-size: 11px; text-decoration: none;">' +
+                  'VIEW THESIS &amp; PLAYS &rarr;' +
+                '</a>' +
+              '</td>' +
+            '</tr>';
+        });
+      })
+      .catch(function(err) {
+        console.error('Error loading research.json:', err);
+      });
+  })();
     </script>
   </body>
 </html>
