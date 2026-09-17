@@ -2835,7 +2835,8 @@
                 '<a href="stock.html?symbol=' + symbol + '" style="color: var(--paper); text-decoration: none; font-weight: 700;">' +
                   symbol + ' <span style="color: var(--amber); font-size: 11px;">&rarr;</span>' +
                 '</a>' +
-                '<div style="font-size: 11px; color: var(--paper-dim);">' + (item.name || '') + '</div>' +
+              '<div style="font-size: 13px; font-weight: 600; color: var(--paper);">' + (item.price ? '$' + item.price.toFixed(2) : '') + '</div>' +
+'<div style="font-size: 11px; color: var(--paper-dim);">' + (item.name || '') + '</div>' +
               '</td>' +
               '<td class="c" style="color: #e57373;">' + (item.three_day_drop || '--') + '</td>' +
               '<td class="c" style="color: var(--amber);">' + (item.cps || '--') + '</td>' +
