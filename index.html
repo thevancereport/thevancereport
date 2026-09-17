@@ -2853,28 +2853,32 @@
       });
   })();
     </script>
-    <script>
-  document.addEventListener("DOMContentLoaded", () => {
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
     const today = new Date();
     
-    // Formats dynamically to current live date
+    // Formats: September 17, 2026
     const fullDate = today.toLocaleDateString('en-US', { 
       month: 'long', 
       day: 'numeric', 
       year: 'numeric' 
     });
 
-    // Formats short date for card header
+    // Formats: SEP 17, 2026
     const shortMonth = today.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
     const shortDate = `${shortMonth} ${today.getDate()}, ${today.getFullYear()}`;
 
-    // Target elements by ID
-    const runDateEl = document.getElementById('hero-run-date');
-    const cardDateEl = document.getElementById('summary-card-date');
+    // Elements
+    const runEl = document.getElementById('hero-run-date');
+    const cardEl = document.getElementById('summary-card-date');
 
-    if (runDateEl) runDateEl.textContent = fullDate;
-    if (cardDateEl) cardDateEl.textContent = shortDate;
+    // Safe execution with block braces
+    if (runEl) {
+      runEl.textContent = fullDate;
+    }
+    if (cardEl) {
+      cardEl.textContent = shortDate;
+    }
   });
 </script>
-  </body>
 </html>
