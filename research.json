@@ -1,52 +1,89 @@
 {
   "BMEA": {
-    "cps": "$8.71 (61.3% Cushion)",
-    "catalyst": "Phase 1/2 diabetes safety update",
-    "notes": "Strong cash cushion above gatekeeper threshold."
+    "name": "Biomea Fusion, Inc.",
+    "price": 1.78,
+    "intrinsic_value": 7.00,
+    "drop": "-34.8%",
+    "trend": "REBOUND",
+    "cps": "8.71",
+    "cps_cushion": "61.3%",
+    "gate": "Pass",
+    "target_zone": "$1.60 - $1.80",
+    "catalyst": "Phase 1/2 diabetes safety update and clinical data readout.",
+    "thesis": "Biomea experienced a steep 3-day technical sell-off triggered by temporary phase trial delays. The balance sheet remains heavily capitalized with $8.71 in cash per share, giving a 61.3% cash cushion that severely limits insolvency risk during clinical development.",
+    "risks": [
+      "FDA clinical hold or regulatory review extensions.",
+      "High R&D cash burn rate reducing CPS over next 4 quarters.",
+      "Biotech sector macro headwinds."
+    ]
   },
   "SEDG": {
-    "cps": "$6.50 (54.8% Cushion)",
-    "catalyst": "Inverter inventory clearance headwind",
-    "notes": "Severe 3-day drop under automated monitor. Balance sheet passes CPS gate."
+    "name": "SolarEdge Technologies, Inc.",
+    "price": 11.85,
+    "intrinsic_value": 24.50,
+    "drop": "-22.4%",
+    "trend": "STABILIZING",
+    "cps": "6.50",
+    "cps_cushion": "54.8%",
+    "gate": "Pass",
+    "target_zone": "$11.20 - $11.85",
+    "catalyst": "European inverter channel inventory clearance recalibration.",
+    "thesis": "Severe supply chain over-inventory in European distribution channels caused revenue compression. However, SolarEdge's balance sheet maintains a robust $6.50 CPS (54.8% cushion), providing ample time to clear distributor inventory without debt dilution.",
+    "risks": [
+      "Extended high-interest-rate environment slowing residential solar adoption.",
+      "Margin pressure from tier-1 competitors.",
+      "Slower-than-expected channel inventory drawdown."
+    ]
   },
   "PAGS": {
-    "cps": "48.3% Cushion",
-    "catalyst": "LatAm FX translation repricing",
-    "notes": "Passes safety margin requirements."
+    "name": "PagSeguro Digital Ltd.",
+    "price": 8.40,
+    "intrinsic_value": 14.20,
+    "drop": "-18.6%",
+    "trend": "REBOUND",
+    "cps": "4.05",
+    "cps_cushion": "48.3%",
+    "gate": "Pass",
+    "target_zone": "$8.00 - $8.50",
+    "catalyst": "LatAm FX translation repricing & quarterly volume update.",
+    "thesis": "Short-term currency translation volatility hit foreign investor sentiment. Fundamentals remain intact with strong payment volume growth and net margin expansion.",
+    "risks": [
+      "Brazilian real currency fluctuations against USD.",
+      "Central bank interest rate decisions in key South American markets."
+    ]
   },
   "RUN": {
-    "cps": "37.7% Cushion",
-    "catalyst": "Utility rate case regulatory overhang",
-    "notes": "Monitored for solar policy stabilization."
+    "name": "Sunrun Inc.",
+    "price": 12.40,
+    "intrinsic_value": 21.00,
+    "drop": "-16.8%",
+    "trend": "STABILIZING",
+    "cps": "4.67",
+    "cps_cushion": "37.7%",
+    "gate": "Pass",
+    "target_zone": "$12.00 - $12.80",
+    "catalyst": "Utility rate case regulatory overhang & storage attachment growth.",
+    "thesis": "Regulatory changes around net metering created near-term friction, but shifting sales strategy toward battery storage integration is expanding margins per subscriber.",
+    "risks": [
+      "State-level regulatory changes to solar incentives.",
+      "Higher capital costs for installation financing."
+    ]
   },
   "LUMN": {
-    "cps": "$1.30 (37.7% Cushion)",
-    "catalyst": "Fiber buildout CAPEX timing recalibration",
-    "notes": "Restructuring underway."
-  },
-  "PLUG": {
-    "cps": "Cushion Pass",
-    "catalyst": "DOE loan facility dilution concern",
-    "notes": "High volatility play."
-  },
-  "WOLF": {
-    "cps": "$2.40 (31.6% Cushion)",
-    "catalyst": "Mohawk Valley fab ramp & wafer yields",
-    "notes": "Fab scaling bottleneck."
-  },
-  "FSRN": {
-    "cps": "$1.00 (24.1% Cushion)",
-    "catalyst": "Severe restructuring risk & margin call",
-    "notes": "Failed CPS gatekeeper floor."
-  },
-  "UPST": {
-    "cps": "$5.00 (18.2% Cushion)",
-    "catalyst": "Prime loan conversion rate compression",
-    "notes": "Failed CPS gatekeeper floor."
-  },
-  "CHWY": {
-    "cps": "$3.50 (14.1% Cushion)",
-    "catalyst": "Active pet parent net additions miss",
-    "notes": "Failed CPS gatekeeper floor."
+    "price": 3.40,
+    "intrinsic_value": 6.80,
+    "name": "Lumen Technologies, Inc.",
+    "drop": "-16.8%",
+    "trend": "STABILIZING",
+    "cps": "1.30",
+    "cps_cushion": "37.7%",
+    "gate": "Pass",
+    "target_zone": "$3.20 - $3.45",
+    "catalyst": "Fiber buildout CAPEX timing recalibration & enterprise AI connectivity expansion.",
+    "thesis": "Turnaround play focused on expanding fiber connectivity for hyperscale data centers. Cash cushion exceeds the 30% gate floor, supporting ongoing debt restructuring.",
+    "risks": [
+      "Legacy copper revenue decline outpacing fiber growth.",
+      "Substantial total debt load requiring refinancing."
+    ]
   }
 }
