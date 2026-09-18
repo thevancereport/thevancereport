@@ -37,7 +37,9 @@ CASH_GATE = 30.0            # cash per share as % of price needed to pass
 MOMENTUM_MOVE = 1.0         # day-over-day % move to call REBOUND / FALLING
 MIN_MARKET_CAP = 50_000_000
 MIN_VOLUME = 50_000
-MAX_HISTORY_CALLS = 150     # ceiling on per-ticker history requests per run
+MIN_DOLLAR_VOLUME = 250_000  # price x volume; a liquidity floor, not a price floor
+MAX_PER_SECTOR = 3           # cap on any one sector in the published list
+MAX_HISTORY_CALLS = 150      # ceiling on per-ticker history requests per run
 MIN_FRAME_ROWS = 2000       # keep merging EDGAR quarters until this many filers
 
 # The SEC asks that automated clients identify themselves. Requests without a
@@ -262,6 +264,13 @@ def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_
         if volume is not None and volume < MIN_VOLUME:
             continue
 
+        # A liquidity floor rather than a price floor. Screening out cheap stocks
+        # would cut exactly the dislocated names this service exists to find; what
+        # actually needs excluding is the untradeable. A 60-cent stock turning over
+        # a million shares stays, a 60-cent stock turning over four thousand does not.
+        if volume is not None and price * volume < MIN_DOLLAR_VOLUME:
+            continue
+
         cik = ticker_cik.get(symbol)
         if cik is None:
             continue
@@ -328,6 +337,7 @@ def build_record(candidate, drop_pct, previous):
         "trend": resolve_momentum(return_pct),
         "cps": candidate["cps"],
         "cash_cushion_pct": candidate["cash_cushion_pct"],
+        "sector": candidate.get("sector"),
         "gross_cash_per_share": candidate.get("gross_cash_per_share"),
         "liabilities_per_share": candidate.get("liabilities_per_share"),
         "gate": gate,
@@ -365,6 +375,37 @@ def load_json(path):
             return json.load(fh)
     except Exception:
         return {}
+
+
+def cap_by_sector(ranked, limit, per_sector):
+    """
+    Take the best `limit` names, allowing at most `per_sector` from any one sector.
+
+    Cash-rich companies trading below net cash are overwhelmingly clinical-stage
+    biotech: they raise large cash piles against small market caps, then halve on
+    trial news. That is the anomaly this screen looks for, so the concentration is
+    real rather than a bug -- but a published list that is 10-for-10 biotech every
+    day is a sector bet wearing a screen's clothes. Raising the market-cap floor
+    does not help; the names span 66m to 1.4bn and are biotech at every size.
+    """
+    taken, counts, overflow = [], {}, []
+    for symbol, record in ranked:
+        sector = record.get("sector") or "Unclassified"
+        if counts.get(sector, 0) >= per_sector:
+            overflow.append((symbol, record))
+            continue
+        counts[sector] = counts.get(sector, 0) + 1
+        taken.append((symbol, record))
+        if len(taken) == limit:
+            return taken, counts
+
+    # Backfill from the names held back, rather than publishing a short list
+    # purely to honour the cap.
+    for item in overflow:
+        if len(taken) == limit:
+            break
+        taken.append(item)
+    return taken, counts
 
 
 def update_database():
@@ -425,14 +466,19 @@ def update_database():
 
     passing = {t: r for t, r in evaluated.items() if r["gate"] == "PASS"}
     ranked = sorted(passing.items(), key=lambda kv: kv[1]["cash_cushion_pct"], reverse=True)
-    research_out = dict(ranked[:10])          # the site shows a top ten
+    published, sector_counts = cap_by_sector(ranked, 10, MAX_PER_SECTOR)
+    if sector_counts:
+        print("Sector mix published: " + ", ".join(
+            f"{name} {count}" for name, count in sorted(sector_counts.items())
+        ))
+    research_out = dict(published)            # the site shows a top ten
     research_out["_meta"] = {"generated_at": generated_at}
     with open(RESEARCH_FILE, "w") as fh:
         json.dump(research_out, fh, indent=2)
 
     print(
         f"Done. {len(evaluated)} evaluated, {len(passing)} passing both gates, "
-        f"{len(ranked[:10])} published."
+        f"{len(published)} published."
     )
 
 
