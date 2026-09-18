@@ -4,7 +4,7 @@
     <title>The Vance Report | Daily Cash Cushion Stock Screener & Market Metrics</title>
     <meta name="description" content="Daily institutional value research, cash cushion stock screening metrics, and fundamental risk-reward analysis to find high-conviction market signals inside selloffs.">
     <meta name="keywords" content="Daily Cash Cushion Stock Screener, Fundamental Value Metrics Report, stock screening, market metrics, value investing, financial report">
-        
+
     <meta property="og:title" content="The Vance Report | Daily Cash Cushion Stock Screener">
     <meta property="og:description" content="Find high-conviction financial signals and fundamental value metrics inside market selloffs.">
     <meta property="og:type" content="website">
@@ -17,7 +17,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="The Vance Report | Daily Cash Cushion Screener">
     <meta name="twitter:description" content="Find high-conviction financial signals and fundamental value metrics inside market selloffs.">
-    <meta name="twitter:image" content="https://thevancereport.com/favicon.png">    
+    <meta name="twitter:image" content="https://thevancereport.com/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -120,6 +120,9 @@
         color: var(--paper);
         font-weight: 500;
       }
+      @media (max-width: 640px) {
+        .hide-sm { display: none; }
+      }
       .blog-link {
         color: var(--amber);
         text-decoration: none;
@@ -140,11 +143,13 @@
         gap: 7px;
         color: var(--pass);
       }
+      .live.is-stale { color: var(--hold); }
+      .live.is-error { color: var(--fail); }
       .live i {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: var(--pass);
+        background: currentColor;
         animation: pulse 2.4s ease-in-out infinite;
       }
       @keyframes pulse {
@@ -278,6 +283,14 @@
         padding: 13px 20px;
         border-bottom: 1px solid var(--rule);
       }
+      .engine-bar .on {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--pass);
+      }
+      .engine-bar .on.is-loading { color: var(--hold); }
+      .engine-bar .on.is-error { color: var(--fail); }
       .console { padding: 26px 20px 22px; border-bottom: 1px solid var(--rule); }
       .eng-grid {
         display: grid;
@@ -313,6 +326,29 @@
         text-transform: uppercase;
         padding: 14px 26px;
       }
+      .btn-run:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .eng-out h3 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 24px;
+        margin: 0 0 6px;
+      }
+      .eng-out #engCount {
+        display: block;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+        margin-bottom: 4px;
+      }
+      .eng-out #engApplied {
+        font-size: 12px;
+        color: var(--paper-faint);
+        margin: 0 0 14px;
+      }
 
       /* --------- ledger --------- */
       .ledger { border-top: 1px solid var(--rule); }
@@ -324,6 +360,37 @@
         padding: 30px 0;
         border-bottom: 1px solid var(--rule-soft);
       }
+      .entry-body h3 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 26px;
+        margin: 0 0 10px;
+      }
+      .entry-body h3 span {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--paper-faint);
+        letter-spacing: 0.05em;
+      }
+      .metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 22px;
+        margin: 0 0 14px;
+        font-size: 12.5px;
+        color: var(--paper-faint);
+        letter-spacing: 0.04em;
+      }
+      .metrics b {
+        color: var(--paper);
+        font-weight: 500;
+      }
+      .thesis {
+        max-width: 62ch;
+        color: var(--paper-dim);
+        font-size: 13.5px;
+        margin: 0 0 4px;
+      }
 
       a.chart {
         display: inline-flex;
@@ -331,7 +398,7 @@
         gap: 6px;
         margin-top: 12px;
         color: var(--amber, #e0a33c);
-        font-size: 26px;
+        font-size: 12px;
         font-weight: 500;
         text-decoration: none;
         letter-spacing: 0.1em;
@@ -362,6 +429,12 @@
       .down-t { color: var(--fail); }
       .flat-t { color: var(--hold); }
 
+      .state-msg {
+        padding: 24px 0;
+        color: var(--paper-faint);
+      }
+      .state-msg.is-error { color: var(--fail); }
+
       /* ---------- footer & modal ---------- */
       footer { padding: 54px 0 70px; }
       .backdrop {
@@ -382,6 +455,22 @@
         border: 1px solid var(--rule);
         padding: 38px 34px 34px;
       }
+      .modal h2 {
+        font-size: 26px;
+        margin: 0 0 18px;
+      }
+      .modal .x {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: none;
+        border: 0;
+        color: var(--paper-faint);
+        font-size: 16px;
+        cursor: pointer;
+        padding: 6px;
+      }
+      .modal .x:hover { color: var(--paper); }
       .modal input[type="email"] {
         width: 100%;
         background: var(--ink);
@@ -403,6 +492,14 @@
         color: var(--ink);
         padding: 16px;
       }
+      .submit:disabled { opacity: 0.6; cursor: not-allowed; }
+      .form-note {
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--paper-faint);
+      }
+      .form-note.is-error { color: var(--fail); }
+      .form-note.is-ok { color: var(--pass); }
     </style>
   </head>
   <body>
@@ -413,8 +510,8 @@
       <header class="ticker">
         <div class="wrap ticker-in" style="justify-content: center; gap: 24px;">
           <a class="blog-link" href="blogpost.html">Field Note <span aria-hidden="true">↗</span></a>
-          <span class="tick-stat hide-sm">Universe <b>US equities &gt; $200M</b></span>
-          <span class="tick-stat"><span class="live"><i aria-hidden="true"></i>Screen live</span></span>
+          <span class="tick-stat hide-sm">Universe <b>US equities &gt; $50M</b></span>
+          <span class="tick-stat"><span class="live" id="liveIndicator"><i aria-hidden="true"></i><span id="liveLabel">Loading&hellip;</span></span></span>
         </div>
       </header>
 
@@ -428,10 +525,10 @@
             <p class="eyebrow">Deep-value &amp; cash cushion screen</p>
             <h1>Find The Signal Inside the Selloff</h1>
             <p class="hero-lede">
-              Ten US names took a severe three-day drawdown. Seven of them still
-              clear a
-              <b>30.0% cash-to-price</b> gatekeeper — the balance sheet is doing
-              the arguing, not the narrative. Run date <b id="hero-run-date">September 16, 2026</b>.
+              <span id="hero-universe-count">&mdash;</span> US names currently clear the daily screen's
+              <b>30.0% cash-to-price</b> gatekeeper after a 5-day drop of at least 15% —
+              the balance sheet is doing the arguing, not the narrative.
+              Data as of <b id="hero-run-date">&mdash;</b>.
             </p>
             <div class="cta-row">
               <button type="button" class="btn-cta" data-open-alerts>
@@ -443,16 +540,16 @@
 
           <div style="border: 1px solid var(--rule); background: var(--ink-2); padding: 24px;">
             <div style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); margin-bottom: 16px; border-bottom: 1px solid var(--rule-soft); padding-bottom: 8px;">
-              Daily Screen Summary &ndash; <span id="summary-card-date">Sep 16, 2026</span>
+              Daily Screen Summary &ndash; <span id="summary-card-date">&mdash;</span>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
               <div>
-                <div style="font-size: 11px; color: var(--paper-faint); text-transform: uppercase;">Universe Screened</div>
-                <div style="font-size: 22px; font-weight: 600; color: var(--paper);">10 Names</div>
+                <div style="font-size: 11px; color: var(--paper-faint); text-transform: uppercase;">Names Clearing Gate</div>
+                <div style="font-size: 22px; font-weight: 600; color: var(--pass);" id="summary-qualified-count">&mdash;</div>
               </div>
               <div>
-                <div style="font-size: 11px; color: var(--paper-faint); text-transform: uppercase;">Gatekeeper Cleared</div>
-                <div style="font-size: 22px; font-weight: 600; color: var(--pass);">7 Qualified</div>
+                <div style="font-size: 11px; color: var(--paper-faint); text-transform: uppercase;">Avg. Cash Cushion</div>
+                <div style="font-size: 22px; font-weight: 600; color: var(--paper);" id="summary-avg-cushion">&mdash;</div>
               </div>
             </div>
           </div>
@@ -464,13 +561,13 @@
         <div class="wrap">
           <div class="sec-head">
             <h2>Custom screen engine</h2>
-            <p class="sec-meta">Re-run the gatekeeper</p>
+            <p class="sec-meta">Re-filter today's gate-clearing names</p>
           </div>
 
           <div class="engine">
             <div class="engine-bar">
               <span>Parameter console</span>
-              <span class="on" id="engStatus">Ready</span>
+              <span class="on" id="engStatus">Loading data&hellip;</span>
             </div>
 
             <form class="console" id="engForm" novalidate>
@@ -484,17 +581,18 @@
                   </select>
                 </div>
                 <div class="eng-field">
-                  <label for="engDrop">3-day drop minimum</label>
+                  <label for="engDrop">5-day drop minimum</label>
                   <select id="engDrop" name="drop">
-                    <option value="-3.0" selected>-3.0%</option>
-                    <option value="-5.0">-5.0%</option>
-                    <option value="-10.0">-10.0%</option>
+                    <option value="-15.0" selected>-15.0%</option>
+                    <option value="-20.0">-20.0%</option>
+                    <option value="-30.0">-30.0%</option>
                   </select>
                 </div>
                 <div class="eng-field">
                   <label for="engCap">Minimum market cap</label>
                   <select id="engCap" name="cap">
-                    <option value="200" selected>$200M</option>
+                    <option value="50" selected>$50M</option>
+                    <option value="200">$200M</option>
                     <option value="500">$500M</option>
                   </select>
                 </div>
@@ -502,12 +600,14 @@
                   <label for="engMom">Momentum filter</label>
                   <select id="engMom" name="momentum">
                     <option value="">Any momentum</option>
-                    <option value="REBOUNDING">Rebounding</option>
+                    <option value="REBOUND">Rebounding</option>
+                    <option value="STABILIZING">Stabilizing</option>
+                    <option value="FALLING">Falling</option>
                   </select>
                 </div>
               </div>
               <div style="margin-top:20px;">
-                <button type="submit" class="btn-run">Run Screener</button>
+                <button type="submit" class="btn-run" id="engSubmit" disabled>Run Screener</button>
               </div>
             </form>
             <div class="eng-out" id="engOutput" hidden style="padding: 20px;">
@@ -526,7 +626,9 @@
           <div class="sec-head">
             <h2>Gatekeeper pass breakdown</h2>
           </div>
-          <div class="ledger" id="dynamicLedgerResults"></div>
+          <div class="ledger" id="dynamicLedgerResults">
+            <div class="state-msg" id="ledgerState">Loading today's screen&hellip;</div>
+          </div>
         </div>
       </section>
     </div>
@@ -534,190 +636,287 @@
     <!-- ============ ALERTS MODAL ============ -->
     <div class="backdrop" id="alertsModal" hidden>
       <div class="modal">
-        <button type="button" class="x" data-close-alerts>✕</button>
+        <button type="button" class="x" data-close-alerts aria-label="Close">✕</button>
         <div id="alertsPane">
           <h2>Daily alerts</h2>
           <form id="alertsForm">
             <input type="email" id="alertsEmail" placeholder="name@firm.com" required />
             <button type="submit" class="submit" id="alertsSubmit">Submit</button>
+            <p class="form-note" id="alertsNote" hidden></p>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- ============ CORE ENGINE & RENDER SCRIPT ============ -->
+    <!-- ============ DATA + RENDER SCRIPT ============ -->
     <script>
       (function () {
-        var UNIVERSE = [
-          { sym: "BMEA", name: "Biomea Fusion", exch: "NASDAQ", price: 14.2, drop: -34.8, cash: 61.3, cps: 8.71, mom: "REBOUNDING", marketCap: 512 },
-          { sym: "SEDG", name: "SolarEdge Technologies", exch: "NASDAQ", price: 11.85, drop: -22.4, cash: 54.8, cps: 6.5, mom: "STABILIZING", marketCap: 683 },
-          { sym: "PAGS", name: "PagSeguro Digital", exch: "NYSE", price: 8.9, drop: -18.6, cash: 48.3, cps: 4.3, mom: "REBOUNDING", marketCap: 2840 },
-          { sym: "RUN", name: "Sunrun Inc", exch: "NASDAQ", price: 10.1, drop: -21.2, cash: 42.6, cps: 4.3, mom: "FALLING", marketCap: 2270 },
-          { sym: "LUMN", name: "Lumen Technologies", exch: "NYSE", price: 3.45, drop: -16.8, cash: 37.7, cps: 1.3, mom: "STABILIZING", marketCap: 3410 },
-          { sym: "PLUG", name: "Plug Power", exch: "NASDAQ", price: 1.82, drop: -24.5, cash: 35.2, cps: 0.64, mom: "FALLING", marketCap: 1650 },
-          { sym: "WOLF", name: "Wolfspeed Inc", exch: "NYSE", price: 7.6, drop: -28.9, cash: 31.6, cps: 2.4, mom: "REBOUNDING", marketCap: 964 }
-        ];
+        // research.json is produced daily by .github/workflows/daily_update.yml
+        // running scripts/update_research.py. It's an object keyed by ticker,
+        // plus a reserved "_meta" key holding { generated_at }.
+        var DATA_URL = "research.json";
 
-        var FIXED_PARAMS = {
-          cash: 30.0,
-          drop: -3.0,
-          cap: 200,
-          momentum: ""
-        };
+        var state = { rows: [], generatedAt: null, status: "loading" }; // loading | ok | error
 
-        var THESES = {
-          BMEA: "Pristine cash runway covering over 18 months of burn despite clinical trial headline volatility. Bouncing sharply off technical intraday support.",
-          SEDG: "De-risked valuation trading at close to net cash value. Inventory channel write-downs are nearing terminal stage while enterprise value approaches floor.",
-          PAGS: "High cash cushion backed by steady merchant banking operations and Brazilian central bank float dynamics. Price showing immediate rebound momentum.",
-          RUN: "Significant net cash and tax credit liquidity, though continued interest-rate headwinds keep short-term momentum negative.",
-          LUMN: "Fiber connectivity deals with hyperscalers provide substantial milestone cash inflows that create a tangible liquidity buffer.",
-          PLUG: "Meets strict balance sheet test, but negative momentum reflects burn pace and market sensitivity to secondary offerings. Strict risk management advised.",
-          WOLF: "Silicon carbide production fab ramp-up hurdles triggered selling, but CHIPS Act grants and cash reserves hold a durable balance sheet backstop."
-        };
-
-        window.filterUniverse = function (p, source) {
-          var universe = source || UNIVERSE;
-
-          return universe.filter(function (r) {
-            var cashVal = r.cash !== undefined ? r.cash : (r.cashCushion || 0);
-            var dropVal = r.drop !== undefined ? r.drop : (r.threeDayDrop || 0);
-            var capVal = r.marketCap !== undefined ? r.marketCap : (r.cap || 9999);
-
-            return (
-              cashVal >= p.cash &&
-              dropVal <= p.drop &&
-              capVal >= p.cap &&
-              (!p.momentum || r.mom === p.momentum)
-            );
-          }).sort(function (a, b) {
-            var aCash = a.cash !== undefined ? a.cash : (a.cashCushion || 0);
-            var bCash = b.cash !== undefined ? b.cash : (b.cashCushion || 0);
-            return bCash - aCash;
-          });
-        };
-
-        function formatMomentum(mom) {
-          if (mom === "REBOUNDING") {
-            return '<b class="up-t">+ Rebounding</b>';
-          } else if (mom === "FALLING") {
-            return '<b class="down-t">- Falling</b>';
-          } else {
-            return '<b class="flat-t">0.0% Stabilizing</b>';
-          }
+        function parsePercent(v) {
+          // Handles "-34.8%" -> -34.8, or a plain number already.
+          if (typeof v === "number") return v;
+          if (typeof v === "string") return parseFloat(v.replace("%", ""));
+          return 0;
         }
 
-        function renderSolvencyBreakdown() {
+        function normalizeRecord(sym, r) {
+          return {
+            sym: sym,
+            name: r.name || sym,
+            exch: r.exchange || "NASDAQ",
+            price: typeof r.price === "number" ? r.price : parseFloat(r.price),
+            cps: parsePercent(r.cps),
+            cash: parsePercent(r.cps_cushion),      // "61.3%" -> 61.3
+            drop: parsePercent(r.drop),              // "-34.8%" -> -34.8
+            mom: r.trend || "STABILIZING",            // REBOUND | STABILIZING | FALLING
+            marketCap: typeof r.market_cap === "number" ? r.market_cap : null, // raw dollars, or null if not yet refreshed
+            thesis: r.thesis || "Asset-backed balance sheet meeting minimum cash cushion threshold.",
+          };
+        }
+
+        function filterUniverse(p, source) {
+          var universe = source || state.rows;
+          return universe.filter(function (r) {
+            return (
+              r.cash >= p.cash &&
+              r.drop <= p.drop &&
+              // marketCap can be null for tickers not yet refreshed by the new
+              // pipeline logic — don't silently exclude those, just don't cap-filter them.
+              (r.marketCap == null || r.marketCap >= p.cap * 1000000) &&
+              (!p.momentum || r.mom === p.momentum)
+            );
+          }).sort(function (a, b) { return b.cash - a.cash; });
+        }
+        window.filterUniverse = filterUniverse; // exposed for console debugging
+
+        function formatMomentum(mom) {
+          if (mom === "REBOUND") return '<b class="up-t">&#9650; Rebounding</b>';
+          if (mom === "FALLING") return '<b class="down-t">&#9660; Falling</b>';
+          return '<b class="flat-t">&#9679; Stabilizing</b>';
+        }
+
+        function escapeHtml(s) {
+          return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+          });
+        }
+
+        function rowCard(r, opts) {
+          opts = opts || {};
+          var price = isFinite(r.price) ? r.price.toFixed(2) : "—";
+          var cps = isFinite(r.cps) ? r.cps.toFixed(2) : "—";
+          var drop = isFinite(r.drop) ? r.drop.toFixed(1) : "—";
+          var cash = isFinite(r.cash) ? r.cash.toFixed(1) : "—";
+          var thesis = opts.showThesis === false ? "" :
+            '<p class="thesis">' + escapeHtml(r.thesis) + "</p>";
+
+          return (
+            '<article class="entry">' +
+              '<div class="ratio">' + cash + '%<span>Cash / price</span></div>' +
+              '<div class="entry-body">' +
+                "<h3>" + escapeHtml(r.sym) + " &mdash; <span>" + escapeHtml(r.name) + ", " + escapeHtml(r.exch) + "</span></h3>" +
+                '<p class="metrics">' +
+                  "<span>Price <b>$" + price + "</b></span>" +
+                  "<span>Cash/share <b>$" + cps + "</b></span>" +
+                  "<span>5-day drop <b>" + drop + "%</b></span>" +
+                  "<span>Momentum " + formatMomentum(r.mom) + "</span>" +
+                "</p>" +
+                thesis +
+                '<a class="chart" href="stock.html?symbol=' + encodeURIComponent(r.sym) + '">Company profile &rarr;</a>' +
+              "</div>" +
+            "</article>"
+          );
+        }
+
+        function renderLedger() {
           var container = document.getElementById("dynamicLedgerResults");
-          if (!container || typeof window.filterUniverse !== "function") return;
+          if (!container) return;
 
-          var passedRows = window.filterUniverse(FIXED_PARAMS);
-
-          if (!passedRows.length) {
-            container.innerHTML = '<div style="padding: 24px 0; color: var(--paper-faint);">No tickers clear the 30% Cash-to-Price gatekeeper.</div>';
+          if (state.status === "loading") {
+            container.innerHTML = '<div class="state-msg">Loading today\u2019s screen&hellip;</div>';
+            return;
+          }
+          if (state.status === "error") {
+            container.innerHTML = '<div class="state-msg is-error">Today\u2019s screen data is temporarily unavailable. We do not show stale prices as if they were current \u2014 please check back shortly.</div>';
             return;
           }
 
-          container.innerHTML = passedRows.map(function (r) {
-            var thesis = THESES[r.sym] || "Asset-backed balance sheet meeting minimum cash cushion threshold.";
-            var price = typeof r.price === "number" ? r.price.toFixed(2) : r.price;
-            var cps = typeof r.cps === "number" ? r.cps.toFixed(2) : r.cps;
-            var drop = typeof r.drop === "number" ? r.drop.toFixed(1) : r.drop;
-            var cash = typeof r.cash === "number" ? r.cash.toFixed(1) : r.cash;
+          if (!state.rows.length) {
+            container.innerHTML = '<div class="state-msg">No tickers cleared the gate in today\u2019s run.</div>';
+          } else {
+            var sorted = state.rows.slice().sort(function (a, b) { return b.cash - a.cash; });
+            container.innerHTML = sorted.map(function (r) { return rowCard(r, { showThesis: true }); }).join("");
+          }
 
-            return `
-              <article class="entry">
-                <div class="ratio">${cash}%<span>Cash / price</span></div>
-                <div class="entry-body">
-                  <h3>${r.sym} &mdash; <span>${r.name}, ${r.exch || 'NASDAQ'}</span></h3>
-                  <p class="metrics">
-                    <span>Price <b>$${price}</b></span>
-                    <span>Cash/share <b>$${cps}</b></span>
-                    <span>3-day drop <b>${drop}%</b></span>
-                    <span>Momentum ${formatMomentum(r.mom)}</span>
-                  </p>
-                  <p class="thesis">${thesis}</p>
-                  <a class="chart" href="stock.html?symbol=${r.sym}">
-                    Company profile &rarr;
-                  </a>
-                </div>
-              </article>
-            `;
-          }).join("");
+          var total = state.rows.length;
+          var avgCushion = total ? (state.rows.reduce(function (sum, r) { return sum + r.cash; }, 0) / total) : 0;
+          document.getElementById("hero-universe-count").textContent = total;
+          document.getElementById("summary-qualified-count").textContent = total + " Qualified";
+          document.getElementById("summary-avg-cushion").textContent = total ? avgCushion.toFixed(1) + "%" : "—";
         }
 
-        // Handle Custom Screener Submission
+        function updateLiveIndicator() {
+          var el = document.getElementById("liveIndicator");
+          var label = document.getElementById("liveLabel");
+          var engStatus = document.getElementById("engStatus");
+          var engSubmit = document.getElementById("engSubmit");
+          if (!el) return;
+
+          el.classList.remove("is-stale", "is-error");
+          if (state.status === "loading") {
+            label.textContent = "Loading\u2026";
+            el.classList.add("is-stale");
+            if (engStatus) { engStatus.textContent = "Loading data\u2026"; engStatus.className = "on is-loading"; }
+          } else if (state.status === "error") {
+            label.textContent = "Data unavailable";
+            el.classList.add("is-error");
+            if (engStatus) { engStatus.textContent = "Unavailable"; engStatus.className = "on is-error"; }
+          } else {
+            label.textContent = "Screen updated daily";
+            if (engStatus) { engStatus.textContent = "Ready"; engStatus.className = "on"; }
+          }
+          if (engSubmit) engSubmit.disabled = state.status !== "ok";
+        }
+
+        function updateDates() {
+          var runEl = document.getElementById("hero-run-date");
+          var cardEl = document.getElementById("summary-card-date");
+          if (!state.generatedAt) {
+            if (runEl) runEl.textContent = "unknown (pipeline hasn't run since this fix shipped)";
+            if (cardEl) cardEl.textContent = "unknown";
+            return;
+          }
+          var d = new Date(state.generatedAt);
+          var fullDate = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) +
+            " " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
+          var shortDate = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+          if (runEl) runEl.textContent = fullDate;
+          if (cardEl) cardEl.textContent = shortDate;
+        }
+
+        async function loadData() {
+          state.status = "loading";
+          renderLedger();
+          updateLiveIndicator();
+
+          try {
+            var res = await fetch(DATA_URL, { cache: "no-store", headers: { accept: "application/json" } });
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            var raw = await res.json();
+            if (!raw || typeof raw !== "object") throw new Error("Malformed research.json");
+
+            var rows = [];
+            Object.keys(raw).forEach(function (key) {
+              if (key.indexOf("_") === 0) return; // skip reserved keys like _meta
+              rows.push(normalizeRecord(key, raw[key]));
+            });
+
+            state.rows = rows;
+            state.generatedAt = raw._meta && raw._meta.generated_at ? raw._meta.generated_at : null;
+            state.status = "ok";
+          } catch (err) {
+            console.error("Failed to load research.json:", err);
+            state.status = "error";
+          }
+
+          renderLedger();
+          updateLiveIndicator();
+          updateDates();
+        }
+
+        // Custom screener submission
         var form = document.getElementById("engForm");
         if (form) {
           form.addEventListener("submit", function (e) {
             e.preventDefault();
+            if (state.status !== "ok") return;
+
             var p = {
               cash: parseFloat(document.getElementById("engCash").value),
               drop: parseFloat(document.getElementById("engDrop").value),
               cap: parseFloat(document.getElementById("engCap").value),
-              momentum: document.getElementById("engMom").value
+              momentum: document.getElementById("engMom").value,
             };
 
-            var rows = window.filterUniverse(p);
+            var rows = filterUniverse(p);
             var resultsContainer = document.getElementById("engResults");
             var outputSection = document.getElementById("engOutput");
 
             if (outputSection) outputSection.removeAttribute("hidden");
-            if (document.getElementById("engCount")) {
-              document.getElementById("engCount").innerText = rows.length + " candidates found";
+            var countEl = document.getElementById("engCount");
+            if (countEl) countEl.textContent = rows.length + " candidates found";
+            var appliedEl = document.getElementById("engApplied");
+            if (appliedEl) {
+              appliedEl.textContent =
+                "Cash \u2265 " + p.cash + "% \u00b7 5-day drop \u2264 " + p.drop + "% \u00b7 Cap \u2265 $" + p.cap + "M" +
+                (p.momentum ? " \u00b7 Momentum: " + p.momentum : "");
             }
 
-            if (!rows.length) {
-              resultsContainer.innerHTML = '<div style="padding: 24px 0; color: var(--paper-faint);">No tickers match these criteria.</div>';
-              return;
-            }
-
-            resultsContainer.innerHTML = '<div class="ledger">' + rows.map(function (r) {
-              var price = typeof r.price === "number" ? r.price.toFixed(2) : r.price;
-              var cps = typeof r.cps === "number" ? r.cps.toFixed(2) : r.cps;
-              var drop = typeof r.drop === "number" ? r.drop.toFixed(1) : r.drop;
-              var cash = typeof r.cash === "number" ? r.cash.toFixed(1) : r.cash;
-
-              return `
-                <article class="entry">
-                  <div class="ratio">${cash}%<span>Cash / price</span></div>
-                  <div class="entry-body">
-                    <h3>${r.sym} &mdash; <span>${r.name}, ${r.exch || 'NASDAQ'}</span></h3>
-                    <p class="metrics">
-                      <span>Price <b>$${price}</b></span>
-                      <span>Cash/share <b>$${cps}</b></span>
-                      <span>3-day drop <b>${drop}%</b></span>
-                    </p>
-                    <a class="chart" href="stock.html?symbol=${r.sym}">
-                      Company profile &rarr;
-                    </a>
-                  </div>
-                </article>
-              `;
-            }).join("") + '</div>';
+            resultsContainer.innerHTML = rows.length
+              ? '<div class="ledger">' + rows.map(function (r) { return rowCard(r, { showThesis: false }); }).join("") + "</div>"
+              : '<div class="state-msg">No tickers match these criteria.</div>';
           });
         }
 
+        function init() {
+          loadData();
+        }
+
         if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", renderSolvencyBreakdown);
+          document.addEventListener("DOMContentLoaded", init);
         } else {
-          renderSolvencyBreakdown();
+          init();
         }
       })();
     </script>
 
+    <!-- ============ ALERTS MODAL BEHAVIOR ============ -->
     <script>
-      window.addEventListener('DOMContentLoaded', () => {
-        const today = new Date();
-        const fullDate = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        const shortMonth = today.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-        const shortDate = `${shortMonth} ${today.getDate()}, ${today.getFullYear()}`;
+      // NOTE: this only opens/closes the modal and prevents the default page
+      // reload on submit. It does NOT send the email anywhere yet — there was
+      // no submit handler at all before, and no backend for it was found in
+      // netlify/functions. Wire this up to whatever should actually receive
+      // signups (Netlify Forms, an email service, etc.) before relying on it.
+      (function () {
+        var modal = document.getElementById("alertsModal");
+        var openBtns = document.querySelectorAll("[data-open-alerts]");
+        var closeBtns = document.querySelectorAll("[data-close-alerts]");
+        var form = document.getElementById("alertsForm");
+        var note = document.getElementById("alertsNote");
 
-        const runEl = document.getElementById('hero-run-date');
-        const cardEl = document.getElementById('summary-card-date');
+        function openModal() {
+          modal.hidden = false;
+          var emailInput = document.getElementById("alertsEmail");
+          if (emailInput) emailInput.focus();
+        }
+        function closeModal() {
+          modal.hidden = true;
+        }
 
-        if (runEl) runEl.textContent = fullDate;
-        if (cardEl) cardEl.textContent = shortDate;
-      });
+        openBtns.forEach(function (b) { b.addEventListener("click", openModal); });
+        closeBtns.forEach(function (b) { b.addEventListener("click", closeModal); });
+        modal.addEventListener("click", function (e) {
+          if (e.target === modal) closeModal();
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && !modal.hidden) closeModal();
+        });
+
+        if (form) {
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            note.textContent = "Signup isn't wired to a backend yet — see the code comment above this script.";
+            note.className = "form-note is-error";
+            note.hidden = false;
+          });
+        }
+      })();
     </script>
 
     <!-- ============ BOTTOM FLOATING DISCLAIMER ============ -->
