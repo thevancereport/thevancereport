@@ -1,112 +1,200 @@
+"""
+The Vance Report -- daily cash-cushion screen.
+
+Data sources, all free and keyless:
+
+  SEC EDGAR XBRL frames   cash and shares outstanding for every US filer.
+                          One request each returns the whole market, so the
+                          fundamentals cost two calls no matter how many
+                          companies are screened.
+  Nasdaq screener         last price, market cap and volume for every listed
+                          US stock, in a single request.
+  Nasdaq historical       daily closes, fetched ONLY for names that already
+                          clear the cash gate, which keeps this to ~100 calls.
+
+This replaces an implementation built on Financial Modeling Prep's v3 API,
+which FMP retired on 2025-08-31 (HTTP 403 "Legacy Endpoint") and whose
+replacement paywalls the screener endpoint (HTTP 402) on the free plan.
+
+Gate order matters. Cash cushion is computed first because it is free for the
+entire market; price history is only fetched for the survivors. The previous
+implementation did it the other way round and would have needed one call per
+candidate just to begin.
+"""
+
 import json
 import os
+import time
 from datetime import datetime, timezone
-import requests
+from urllib.parse import quote
+from urllib.request import Request, urlopen
 
-API_KEY = os.environ.get("FMP_API_KEY")
 RESEARCH_FILE = "research.json"
 SNAPSHOT_FILE = "screen_snapshot.json"
 
-DROP_THRESHOLD = -15.0   # 5-day drop must be at least this bad to enter the screen
-CASH_GATE = 30.0         # cash-per-share as % of price must clear this to pass
-MOMENTUM_MOVE = 1.0      # day-over-day % move needed to call REBOUND/FALLING vs STABILIZING
-SCREENER_LIMIT = 25      # candidates pulled per run; each one costs API calls below.
-                         # Held low because the FMP free plan allows 250 calls/day:
-                         # one run costs 1 + SCREENER_LIMIT + one balance sheet per
-                         # name clearing the drop gate.
+DROP_THRESHOLD = -15.0      # 5-day move must be at least this bad to qualify
+CASH_GATE = 30.0            # cash per share as % of price needed to pass
+MOMENTUM_MOVE = 1.0         # day-over-day % move to call REBOUND / FALLING
+MIN_MARKET_CAP = 50_000_000
+MIN_VOLUME = 50_000
+MAX_HISTORY_CALLS = 150     # ceiling on per-ticker history requests per run
+
+# The SEC asks that automated clients identify themselves. Requests without a
+# real contact address get throttled or blocked.
+SEC_UA = "TheVanceReport/1.0 (contact: ardenkvance@gmail.com)"
+BROWSER_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/125.0 Safari/537.36"
+)
+
+SEC_TICKERS = "https://www.sec.gov/files/company_tickers.json"
+SEC_FRAME = "https://data.sec.gov/api/xbrl/frames/{taxonomy}/{tag}/{unit}/{period}.json"
+NASDAQ_SCREENER = (
+    "https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=0&offset=0&download=true"
+)
+NASDAQ_HISTORY = (
+    "https://api.nasdaq.com/api/quote/{symbol}/historical"
+    "?assetclass=stocks&fromdate={start}&todate={end}&limit=30"
+)
 
 
-def fetch_screener_candidates():
-    url = (
-        "https://financialmodelingprep.com/stable/company-screener"
-        "?marketCapMoreThan=50000000&volumeMoreThan=50000"
-        f"&isActivelyTrading=true&country=US&limit={SCREENER_LIMIT}&apikey={API_KEY}"
-    )
+# --------------------------------------------------------------------------
+# HTTP helpers
+# --------------------------------------------------------------------------
+
+def fetch_json(url, user_agent, timeout=60, attempts=3):
+    """GET and parse JSON, retrying transient failures. Returns None on failure."""
+    headers = {
+        "User-Agent": user_agent,
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    for attempt in range(1, attempts + 1):
+        try:
+            with urlopen(Request(url, headers=headers), timeout=timeout) as resp:
+                return json.loads(resp.read().decode("utf-8", "replace"))
+        except Exception as exc:
+            if attempt == attempts:
+                print(f"  request failed after {attempts} attempts: {url[:90]} -- {exc}")
+                return None
+            time.sleep(1.5 * attempt)
+    return None
+
+
+def money(text):
+    """'$1,234.50' or '1234.50' -> float. Returns None if unparseable."""
+    if text is None:
+        return None
+    if isinstance(text, (int, float)):
+        return float(text)
+    cleaned = str(text).replace("$", "").replace(",", "").replace("%", "").strip()
+    if not cleaned or cleaned in ("--", "N/A", "NA"):
+        return None
     try:
-        resp = requests.get(url, timeout=20)
-    except Exception as e:
-        print(f"Error reaching FMP Screener: {e}")
+        return float(cleaned)
+    except ValueError:
+        return None
+
+
+def current_quarter_frames():
+    """
+    Candidate EDGAR frame periods, newest first.
+
+    Frames are published per calendar quarter and a quarter only becomes
+    populated once filings arrive, so the newest one is often empty for weeks.
+    Walking backwards means the screen still runs early in a quarter.
+    """
+    now = datetime.now(timezone.utc)
+    year, quarter = now.year, (now.month - 1) // 3 + 1
+    periods = []
+    for _ in range(4):
+        periods.append(f"CY{year}Q{quarter}I")
+        quarter -= 1
+        if quarter == 0:
+            quarter, year = 4, year - 1
+    return periods
+
+
+# --------------------------------------------------------------------------
+# Source fetchers
+# --------------------------------------------------------------------------
+
+def fetch_ticker_to_cik():
+    data = fetch_json(SEC_TICKERS, SEC_UA)
+    if not isinstance(data, dict):
+        print("SEC ticker map unavailable.")
+        return {}
+    mapping = {}
+    for row in data.values():
+        if isinstance(row, dict) and row.get("ticker") and row.get("cik_str") is not None:
+            mapping[str(row["ticker"]).upper()] = int(row["cik_str"])
+    print(f"SEC ticker map: {len(mapping):,} tickers.")
+    return mapping
+
+
+def fetch_frame(taxonomy, tag, unit):
+    """Return {cik: value} for the newest populated quarter of one XBRL concept."""
+    for period in current_quarter_frames():
+        url = SEC_FRAME.format(taxonomy=taxonomy, tag=tag, unit=unit, period=period)
+        data = fetch_json(url, SEC_UA)
+        rows = data.get("data") if isinstance(data, dict) else None
+        if rows:
+            out = {}
+            for row in rows:
+                cik, val = row.get("cik"), row.get("val")
+                if cik is not None and isinstance(val, (int, float)):
+                    out[int(cik)] = float(val)
+            print(f"EDGAR {tag} [{period}]: {len(out):,} filers.")
+            return out
+        print(f"EDGAR {tag} [{period}]: empty, trying previous quarter.")
+    print(f"EDGAR {tag}: no populated quarter found.")
+    return {}
+
+
+def fetch_market_rows():
+    data = fetch_json(NASDAQ_SCREENER, BROWSER_UA)
+    rows = None
+    if isinstance(data, dict):
+        rows = (data.get("data") or {}).get("rows")
+        if rows is None:
+            rows = ((data.get("data") or {}).get("table") or {}).get("rows")
+    if not rows:
+        print("Nasdaq screener returned no rows.")
         return []
-
-    try:
-        data = resp.json()
-    except Exception:
-        print(f"FMP Screener returned non-JSON (HTTP {resp.status_code}): {resp.text[:400]}")
-        return []
-
-    # FMP reports quota, plan and auth problems as a JSON OBJECT, not a list.
-    # Iterating that object yields its KEYS -- plain strings -- which is what
-    # produced "AttributeError: 'str' object has no attribute 'get'" and killed
-    # the run instead of reporting why. Surface the payload and bail cleanly.
-    if not isinstance(data, list):
-        print(
-            f"FMP Screener returned {type(data).__name__}, not a list "
-            f"(HTTP {resp.status_code}): {str(data)[:400]}"
-        )
-        return []
-
-    print(f"FMP Screener returned {len(data)} candidates.")
-    return data
+    print(f"Nasdaq screener: {len(rows):,} listed symbols.")
+    return rows
 
 
-def fetch_drop_pct(ticker):
-    url = (
-        "https://financialmodelingprep.com/stable/stock-price-change"
-        f"?symbol={ticker}&apikey={API_KEY}"
+def fetch_five_day_drop(symbol):
+    """Percentage move from the close 5 sessions ago to the latest close."""
+    now = time.time()
+    url = NASDAQ_HISTORY.format(
+        symbol=quote(symbol),
+        start=time.strftime("%Y-%m-%d", time.gmtime(now - 20 * 86400)),
+        end=time.strftime("%Y-%m-%d", time.gmtime(now)),
     )
-    try:
-        data = requests.get(url, timeout=20).json()
-        if isinstance(data, dict):
-            data = [data]
-        if data and isinstance(data, list) and isinstance(data[0], dict):
-            row = data[0]
-            for key in ("5D", "5d", "fiveDay"):
-                if key in row:
-                    return row[key]
-            print(f"{ticker}: no 5-day field in price-change payload; keys={list(row.keys())[:14]}")
-    except Exception as e:
-        print(f"Error fetching price change for {ticker}: {e}")
-    return 0.0
+    data = fetch_json(url, BROWSER_UA, timeout=30, attempts=2)
+    rows = (((data or {}).get("data") or {}).get("tradesTable") or {}).get("rows")
+    if not rows:
+        return None
+
+    closes = [money(r.get("close")) for r in rows if money(r.get("close"))]
+    if len(closes) < 6:
+        return None
+
+    latest, prior = closes[0], closes[5]   # Nasdaq returns newest first
+    if not prior:
+        return None
+    return round((latest - prior) / prior * 100, 1)
 
 
-def fetch_cash_and_shares(ticker, price, market_cap):
-    url = (
-        "https://financialmodelingprep.com/stable/balance-sheet-statement"
-        f"?symbol={ticker}&period=quarter&limit=1&apikey={API_KEY}"
-    )
-    try:
-        bs_data = requests.get(url, timeout=20).json()
-    except Exception as e:
-        print(f"Error fetching balance sheet for {ticker}: {e}")
-        return None, None
-
-    # Plan restrictions and quota errors arrive as a JSON object, not a list.
-    # Say so per ticker, otherwise a paywalled figure is indistinguishable from
-    # a company that simply reports no cash.
-    if isinstance(bs_data, dict):
-        print(f"{ticker}: balance sheet unavailable -> {str(bs_data)[:220]}")
-        return None, None
-
-    if not bs_data or not isinstance(bs_data, list):
-        print(f"{ticker}: unexpected balance sheet payload type {type(bs_data).__name__}")
-        return None, None
-
-    row = bs_data[0] if isinstance(bs_data[0], dict) else {}
-    cash = None
-    for key in ("cashAndCashEquivalents", "cashAndShortTermInvestments", "cashAndCashEquivalentsAtCarryingValue"):
-        if key in row:
-            cash = row[key]
-            break
-    if cash is None:
-        print(f"{ticker}: no cash field in balance sheet; keys={list(row.keys())[:14]}")
-        return None, None
-    shares = market_cap / price if price > 0 else 1
-    return cash, shares
-
+# --------------------------------------------------------------------------
+# Screen
+# --------------------------------------------------------------------------
 
 def resolve_momentum(return_pct):
     if return_pct is None:
-        return "STABILIZING"  # no baseline yet — neutral rather than a guess
+        return "STABILIZING"          # no baseline yet -- neutral, not a guess
     if return_pct >= MOMENTUM_MOVE:
         return "REBOUND"
     if return_pct <= -MOMENTUM_MOVE:
@@ -114,160 +202,174 @@ def resolve_momentum(return_pct):
     return "STABILIZING"
 
 
-def build_record(item, previous):
-    """
-    Evaluates one ticker fully (drop gate + cash gate) and returns a record
-    for screen_snapshot.json (pass or fail), or None if it doesn't even clear
-    the 5-day-drop gate to be considered a candidate at all.
+def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik):
+    """Names clearing the cash gate. Costs no extra requests."""
+    candidates = []
+    for row in rows:
+        symbol = (row.get("symbol") or "").strip().upper()
+        if not symbol or "." in symbol or "^" in symbol:
+            continue
 
-    `previous` is that ticker's record from the LAST screen_snapshot.json, if
-    it was evaluated then — used purely for day-over-day price comparison and
-    to carry editorial fields (thesis/catalyst/risks) forward. Never used to
-    invent a gate result.
-    """
-    ticker = item.get("symbol")
-    price = item.get("price", 0.0)
-    market_cap = item.get("marketCap", 0.0)
+        price = money(row.get("lastsale"))
+        market_cap = money(row.get("marketCap"))
+        volume = money(row.get("volume"))
+        if not price or price <= 0:
+            continue
+        if not market_cap or market_cap < MIN_MARKET_CAP:
+            continue
+        if volume is not None and volume < MIN_VOLUME:
+            continue
 
-    if not ticker or price <= 0:
-        return None
+        cik = ticker_cik.get(symbol)
+        if cik is None:
+            continue
+        cash, shares = cash_by_cik.get(cik), shares_by_cik.get(cik)
+        if not cash or not shares or shares <= 0:
+            continue
 
-    drop_pct = fetch_drop_pct(ticker)
-    if drop_pct > DROP_THRESHOLD:
-        return None  # doesn't even clear the initial dislocation screen
+        cps = cash / shares
+        cushion = cps / price * 100
+        if cushion < CASH_GATE:
+            continue
 
-    cash, shares = fetch_cash_and_shares(ticker, price, market_cap)
-    cps = None
-    cash_cushion_pct = None
-    if cash is not None and shares:
-        cps = cash / shares if shares > 0 else 0.0
-        cash_cushion_pct = (cps / price) * 100 if price > 0 else None
+        candidates.append({
+            "symbol": symbol,
+            "name": (row.get("name") or symbol).replace(" Common Stock", "").strip(),
+            "price": round(price, 2),
+            "market_cap": round(market_cap),
+            "cps": round(cps, 2),
+            "cash_cushion_pct": round(cushion, 1),
+            "sector": row.get("sector") or None,
+        })
 
-    # Explicit unknown state, never a silent passing default. A missing
-    # balance-sheet figure is "gate unknown," not "gate pass."
-    if cash_cushion_pct is None:
-        gate = "UNKNOWN"
-    elif cash_cushion_pct >= CASH_GATE:
-        gate = "PASS"
-    else:
-        gate = "FAIL"
+    candidates.sort(key=lambda c: c["cash_cushion_pct"], reverse=True)
+    return candidates
 
-    # Real day-over-day tracking: compare today's price to the price stored
-    # in yesterday's snapshot for this same ticker, not a fabricated number.
+
+def build_record(candidate, drop_pct, previous):
+    price = candidate["price"]
     previous_price = previous.get("price") if previous else None
+
     if previous_price and previous_price > 0:
         dollar_change = price - previous_price
         return_pct = (dollar_change / previous_price) * 100
     else:
-        dollar_change = None
-        return_pct = None
+        dollar_change = return_pct = None
+
+    passes = drop_pct is not None and drop_pct <= DROP_THRESHOLD
+    gate = "PASS" if passes else ("UNKNOWN" if drop_pct is None else "FAIL")
 
     record = {
-        "name": item.get("companyName", ticker),
-        "exchange": item.get("exchangeShortName", "NASDAQ"),
-        "price": round(price, 2),
+        "name": candidate["name"],
+        "exchange": None,
+        "price": price,
         "previous_price": round(previous_price, 2) if previous_price else None,
         "dollar_change": round(dollar_change, 2) if dollar_change is not None else None,
         "return_pct": round(return_pct, 2) if return_pct is not None else None,
-        "market_cap": round(market_cap) if market_cap else None,
-        "five_day_drop_pct": round(drop_pct, 1),
+        "market_cap": candidate["market_cap"],
+        "five_day_drop_pct": drop_pct,
         "trend": resolve_momentum(return_pct),
-        "cps": round(cps, 2) if cps is not None else None,
-        "cash_cushion_pct": round(cash_cushion_pct, 1) if cash_cushion_pct is not None else None,
+        "cps": candidate["cps"],
+        "cash_cushion_pct": candidate["cash_cushion_pct"],
         "gate": gate,
         "target_zone": f"${round(price * 0.95, 2)} - ${round(price * 1.02, 2)}",
     }
 
-    if previous:
-        record["catalyst"] = previous.get("catalyst", "Automated candidate discovery via Vance Report Cash-to-Price screener.")
-        record["thesis"] = previous.get("thesis") or (
-            f"{record['name']} cleared the automated dislocation screen with a "
-            f"{'%.1f' % cash_cushion_pct + '%' if cash_cushion_pct is not None else 'pending'} cash cushion."
-        )
+    # Editorial fields are carried forward from the previous snapshot so a
+    # hand-written thesis survives; only generated for names never seen before.
+    if previous and previous.get("thesis"):
+        record["catalyst"] = previous.get("catalyst", "Automated candidate discovery via the Vance Report cash-to-price screen.")
+        record["thesis"] = previous["thesis"]
         record["risks"] = previous.get("risks", ["Pending fundamental desk review."])
     else:
-        print(f"New candidate evaluated: {ticker} ({gate})")
-        record["catalyst"] = "Automated candidate discovery via Vance Report Cash-to-Price screener."
+        record["catalyst"] = "Automated candidate discovery via the Vance Report cash-to-price screen."
         record["thesis"] = (
-            f"{record['name']} cleared the automated dislocation screen with a "
-            f"{'%.1f' % cash_cushion_pct + '%' if cash_cushion_pct is not None else 'pending'} cash cushion."
+            f"{record['name']} holds ${candidate['cps']:.2f} of cash per share against a "
+            f"${price:.2f} price, a {candidate['cash_cushion_pct']:.1f}% cash cushion. "
+            "Cash and share counts are taken from the company's most recent SEC filing."
         )
         record["risks"] = ["Pending fundamental desk review."]
 
     return record
 
 
-def run_screen(previous_snapshot):
-    print("Running Vance Report Screener Pipeline...")
-    candidates = fetch_screener_candidates()
-    if not candidates:
-        print("No candidates returned from screener.")
-        return {}
-
-    evaluated = {}
-    for item in candidates:
-        if not isinstance(item, dict):
-            print(f"Skipping unexpected screener entry: {str(item)[:120]}")
-            continue
-        ticker = item.get("symbol")
-        if not ticker:
-            continue
-        previous = previous_snapshot.get(ticker)
-        record = build_record(item, previous)
-        if record is not None:
-            evaluated[ticker] = record
-
-    return evaluated
+def strip_meta(data):
+    return {k: v for k, v in data.items() if not k.startswith("_")}
 
 
 def load_json(path):
     if not os.path.exists(path):
         return {}
-    with open(path, "r") as f:
-        try:
-            return json.load(f)
-        except Exception:
-            return {}
-
-
-def strip_meta(data):
-    return {k: v for k, v in data.items() if not k.startswith("_")}
+    try:
+        with open(path) as fh:
+            return json.load(fh)
+    except Exception:
+        return {}
 
 
 def update_database():
-    previous_snapshot = strip_meta(load_json(SNAPSHOT_FILE))
+    print("Running Vance Report screen (SEC EDGAR + Nasdaq)...")
 
-    evaluated = run_screen(previous_snapshot)
+    rows = fetch_market_rows()
+    if not rows:
+        print("No market data; leaving files unchanged.")
+        return
+
+    ticker_cik = fetch_ticker_to_cik()
+    cash_by_cik = fetch_frame("us-gaap", "CashAndCashEquivalentsAtCarryingValue", "USD")
+    shares_by_cik = fetch_frame("dei", "EntityCommonStockSharesOutstanding", "shares")
+
+    if not ticker_cik or not cash_by_cik or not shares_by_cik:
+        print("SEC fundamentals unavailable; leaving files unchanged.")
+        return
+
+    candidates = build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik)
+    print(f"{len(candidates)} names clear the {CASH_GATE:.0f}% cash gate.")
+    if not candidates:
+        print("Nothing cleared the cash gate; leaving files unchanged.")
+        return
+
+    checked = candidates[:MAX_HISTORY_CALLS]
+    if len(candidates) > MAX_HISTORY_CALLS:
+        print(f"Checking price history for the top {MAX_HISTORY_CALLS} by cushion.")
+
+    previous_snapshot = strip_meta(load_json(SNAPSHOT_FILE))
+    evaluated = {}
+    for i, candidate in enumerate(checked, 1):
+        drop_pct = fetch_five_day_drop(candidate["symbol"])
+        evaluated[candidate["symbol"]] = build_record(
+            candidate, drop_pct, previous_snapshot.get(candidate["symbol"])
+        )
+        if i % 25 == 0:
+            print(f"  ...{i}/{len(checked)} price histories fetched")
+        time.sleep(0.2)   # be a considerate client
+
     if not evaluated:
-        print("Screener returned nothing usable this run; leaving files unchanged.")
+        print("Nothing usable this run; leaving files unchanged.")
         return
 
     generated_at = datetime.now(timezone.utc).isoformat()
     previous_meta = load_json(SNAPSHOT_FILE).get("_meta", {})
-    previous_generated_at = previous_meta.get("generated_at")
 
-    # screen_snapshot.json: everything evaluated this run, pass or fail —
-    # the full audit trail report.html needs.
     snapshot_out = dict(evaluated)
     snapshot_out["_meta"] = {
         "generated_at": generated_at,
-        "previous_generated_at": previous_generated_at,
+        "previous_generated_at": previous_meta.get("generated_at"),
+        "sources": ["SEC EDGAR XBRL frames", "Nasdaq screener"],
     }
-    with open(SNAPSHOT_FILE, "w") as f:
-        json.dump(snapshot_out, f, indent=2)
+    with open(SNAPSHOT_FILE, "w") as fh:
+        json.dump(snapshot_out, fh, indent=2)
 
-    # research.json: only the current winners — the clean list index.html
-    # and stock.html show. A ticker that no longer passes is dropped here
-    # even though it stays visible in screen_snapshot.json.
     passing = {t: r for t, r in evaluated.items() if r["gate"] == "PASS"}
-    research_out = dict(passing)
+    ranked = sorted(passing.items(), key=lambda kv: kv[1]["cash_cushion_pct"], reverse=True)
+    research_out = dict(ranked[:10])          # the site shows a top ten
     research_out["_meta"] = {"generated_at": generated_at}
-    with open(RESEARCH_FILE, "w") as f:
-        json.dump(research_out, f, indent=2)
+    with open(RESEARCH_FILE, "w") as fh:
+        json.dump(research_out, fh, indent=2)
 
     print(
-        f"Database update complete. {len(evaluated)} evaluated, "
-        f"{len(passing)} currently passing."
+        f"Done. {len(evaluated)} evaluated, {len(passing)} passing both gates, "
+        f"{len(ranked[:10])} published."
     )
 
 
