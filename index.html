@@ -266,49 +266,6 @@
         text-align: right;
       }
 
-      /* ---------- table ---------- */
-      .table-scroll {
-        border: 1px solid var(--rule);
-        overflow-x: auto;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 920px;
-      }
-      thead th {
-        background: var(--ink-3);
-        text-align: left;
-        font-weight: 500;
-        font-size: 13px;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--paper-dim);
-        padding: 15px 18px;
-        border-bottom: 1px solid var(--rule);
-      }
-      thead th.c { text-align: center; }
-      tbody tr {
-        border-bottom: 1px solid var(--rule-soft);
-      }
-      tbody tr:hover {
-        background: rgba(224, 163, 60, 0.045);
-      }
-      td {
-        padding: 19px 18px;
-        vertical-align: top;
-        font-size: 15px;
-      }
-      td.c { text-align: center; }
-      .sym { font-size: 16px; font-weight: 600; }
-      .px { color: var(--paper); font-size: 15px; margin-top: 2px; }
-      .co { color: var(--paper-faint); font-size: 13px; font-style: italic; margin-top: 3px; }
-      .drop { font-size: 14px; color: var(--fail); font-weight: 500; }
-      .cushion { font-size: 16px; font-weight: 600; }
-      .cps { font-size: 13px; color: var(--paper-faint); margin-top: 3px; }
-      .is-pass { color: var(--pass); }
-      .is-fail { color: var(--fail); }
-
       /* ---------- custom engine ---------- */
       .engine {
         border: 1px solid var(--rule);
@@ -357,36 +314,36 @@
         padding: 14px 26px;
       }
 
-     /* --------- ledger --------- */
-.ledger { border-top: 1px solid var(--rule); }
+      /* --------- ledger --------- */
+      .ledger { border-top: 1px solid var(--rule); }
 
-.entry {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 38px;
-  padding: 30px 0;
-  border-bottom: 1px solid var(--rule-soft);
-}
+      .entry {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 38px;
+        padding: 30px 0;
+        border-bottom: 1px solid var(--rule-soft);
+      }
 
-a.chart {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  color: var(--amber, #e0a33c); /* Theme orange */
-  font-size: 26px;              /* Doubled size from 13px */
-  font-weight: 500;
-  text-decoration: none;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.16s ease, color 0.16s ease;
-}
+      a.chart {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        color: var(--amber, #e0a33c);
+        font-size: 26px;
+        font-weight: 500;
+        text-decoration: none;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        border-bottom: 2px solid transparent;
+        transition: border-color 0.16s ease, color 0.16s ease;
+      }
 
-a.chart:hover {
-  color: #eeb84f;
-  border-bottom-color: var(--amber, #e0a33c);
-}
+      a.chart:hover {
+        color: #eeb84f;
+        border-bottom-color: var(--amber, #e0a33c);
+      }
       .ratio {
         font-family: var(--serif);
         font-size: 46px;
@@ -401,16 +358,12 @@ a.chart:hover {
         margin-top: 9px;
       }
 
+      .up-t { color: var(--pass); }
+      .down-t { color: var(--fail); }
+      .flat-t { color: var(--hold); }
+
       /* ---------- footer & modal ---------- */
       footer { padding: 54px 0 70px; }
-      .disclaim {
-        font-size: 14px;
-        color: var(--paper-dim);
-        background: rgba(50, 82, 110, 0.34);
-        max-width: 62ch;
-        padding: 16px 18px;
-        border-left: 2px solid #668daf;
-      }
       .backdrop {
         position: fixed;
         inset: 0;
@@ -558,105 +511,26 @@ a.chart:hover {
               </div>
             </form>
             <div class="eng-out" id="engOutput" hidden style="padding: 20px;">
-      <h3 id="engTitle">The Vance Report: Custom Screen</h3>
-      <span id="engCount"></span>
-      <p id="engApplied"></p>
-      <div id="engResults"></div>
-    </div>
-  </div>
-</div>
-</section>
-<!-- ============ SOLVENCY BREAKDOWN ============ -->
-<section class="block">
-  <div class="wrap">
-    <div class="sec-head">
-      <h2>Gatekeeper pass breakdown</h2>
-    </div>
-
-    <!-- Target container for JS dynamic cards -->
-    <div class="ledger" id="dynamicLedgerResults"></div>
-  </div>
-</section>
-<!-- PASTE SCRIPT HERE - OUTSIDE THE ENG-OUT CONTAINER -->
-<script>
-  (function () {
-    // Fixed gatekeeper parameters
-    var FIXED_PARAMS = {
-      cash: 30.0,
-      drop: -3.0,
-      cap: 200,
-      momentum: ""
-    };
-
-    // Editorial investment theses mapped by ticker
-    var THESES = {
-      BMEA: "Pristine cash runway covering over 18 months of burn despite clinical trial headline volatility. Bouncing sharply off technical intraday support.",
-      SEDG: "De-risked valuation trading at close to net cash value. Inventory channel write-downs are nearing terminal stage while enterprise value approaches floor.",
-      PAGS: "High cash cushion backed by steady merchant banking operations and Brazilian central bank float dynamics. Price showing immediate rebound momentum.",
-      RUN: "Significant net cash and tax credit liquidity, though continued interest-rate headwinds keep short-term momentum negative.",
-LUMN: "Fiber connectivity deals with hyperscalers provide substantial milestone cash inflows that create a tangible liquidity buffer.",
-      PLUG: "Meets strict balance sheet test, but negative momentum reflects burn pace and market sensitivity to secondary offerings. Strict risk management advised.",
-      WOLF: "Silicon carbide production fab ramp-up hurdles triggered selling, but CHIPS Act grants and cash reserves hold a durable balance sheet backstop."
-    };
-
-    function formatMomentum(mom) {
-      if (mom === "REBOUNDING") {
-        return '<b class="up-t">+ Rebounding</b>';
-      } else if (mom === "FALLING") {
-        return '<b class="down-t">- Falling</b>';
-      } else {
-        return '<b class="flat-t">0.0% Stabilizing</b>';
-      }
-    }
-
-    function renderSolvencyBreakdown() {
-      var container = document.getElementById("dynamicLedgerResults");
-      if (!container || typeof window.filterUniverse !== "function") return;
-
-      // Filter the stock universe with the fixed 30% gatekeeper rule
-      var passedRows = window.filterUniverse(FIXED_PARAMS);
-
-      if (!passedRows.length) {
-        container.innerHTML = '<div style="padding: 24px 0; color: var(--paper-faint);">No tickers clear the 30% Cash-to-Price gatekeeper.</div>';
-        return;
-      }
-
-      // Render cards dynamically
-      container.innerHTML = passedRows.map(function (r) {
-        var thesis = THESES[r.sym] || "Asset-backed balance sheet meeting minimum cash cushion threshold.";
-        var price = typeof r.price === "number" ? r.price.toFixed(2) : r.price;
-        var cps = typeof r.cps === "number" ? r.cps.toFixed(2) : r.cps;
-        var drop = typeof r.drop === "number" ? r.drop.toFixed(1) : r.drop;
-        var cash = typeof r.cash === "number" ? r.cash.toFixed(1) : r.cash;
-
-        return `
-          <article class="entry">
-            <div class="ratio">${cash}%<span>Cash / price</span></div>
-            <div class="entry-body">
-              <h3>${r.sym} &mdash; <span>${r.name}, ${r.exch || 'NASDAQ'}</span></h3>
-              <p class="metrics">
-                <span>Price <b>$${price}</b></span>
-               <span>Cash/share <b>$${cps}</b></span>
-                <span>3-day drop <b>${drop}%</b></span>
-                <span>Momentum ${formatMomentum(r.mom)}</span>
-              </p>
-              <p class="thesis">${thesis}</p>
-              <a class="chart" href="stock.html?symbol=${r.sym}" style="color: var(--amber, #e0a33c); font-size: 26px; font-weight: 500;">
-                Company profile &rarr;
-              </a>
+              <h3 id="engTitle">The Vance Report: Custom Screen</h3>
+              <span id="engCount"></span>
+              <p id="engApplied"></p>
+              <div id="engResults"></div>
             </div>
-          </article>
-        `;
-      }).join("");
-    }
+          </div>
+        </div>
+      </section>
 
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", renderSolvencyBreakdown);
-    } else {
-      renderSolvencyBreakdown();
-    }
-  })();
-</script>   
+      <!-- ============ SOLVENCY BREAKDOWN ============ -->
+      <section class="block">
+        <div class="wrap">
+          <div class="sec-head">
+            <h2>Gatekeeper pass breakdown</h2>
+          </div>
+          <div class="ledger" id="dynamicLedgerResults"></div>
+        </div>
+      </section>
+    </div>
+
     <!-- ============ ALERTS MODAL ============ -->
     <div class="backdrop" id="alertsModal" hidden>
       <div class="modal">
@@ -671,7 +545,7 @@ LUMN: "Fiber connectivity deals with hyperscalers provide substantial milestone 
       </div>
     </div>
 
-    <!-- ============ SCRIPTS ============ -->
+    <!-- ============ CORE ENGINE & RENDER SCRIPT ============ -->
     <script>
       (function () {
         var UNIVERSE = [
@@ -683,6 +557,23 @@ LUMN: "Fiber connectivity deals with hyperscalers provide substantial milestone 
           { sym: "PLUG", name: "Plug Power", exch: "NASDAQ", price: 1.82, drop: -24.5, cash: 35.2, cps: 0.64, mom: "FALLING", marketCap: 1650 },
           { sym: "WOLF", name: "Wolfspeed Inc", exch: "NYSE", price: 7.6, drop: -28.9, cash: 31.6, cps: 2.4, mom: "REBOUNDING", marketCap: 964 }
         ];
+
+        var FIXED_PARAMS = {
+          cash: 30.0,
+          drop: -3.0,
+          cap: 200,
+          momentum: ""
+        };
+
+        var THESES = {
+          BMEA: "Pristine cash runway covering over 18 months of burn despite clinical trial headline volatility. Bouncing sharply off technical intraday support.",
+          SEDG: "De-risked valuation trading at close to net cash value. Inventory channel write-downs are nearing terminal stage while enterprise value approaches floor.",
+          PAGS: "High cash cushion backed by steady merchant banking operations and Brazilian central bank float dynamics. Price showing immediate rebound momentum.",
+          RUN: "Significant net cash and tax credit liquidity, though continued interest-rate headwinds keep short-term momentum negative.",
+          LUMN: "Fiber connectivity deals with hyperscalers provide substantial milestone cash inflows that create a tangible liquidity buffer.",
+          PLUG: "Meets strict balance sheet test, but negative momentum reflects burn pace and market sensitivity to secondary offerings. Strict risk management advised.",
+          WOLF: "Silicon carbide production fab ramp-up hurdles triggered selling, but CHIPS Act grants and cash reserves hold a durable balance sheet backstop."
+        };
 
         window.filterUniverse = function (p, source) {
           var universe = source || UNIVERSE;
@@ -705,97 +596,112 @@ LUMN: "Fiber connectivity deals with hyperscalers provide substantial milestone 
           });
         };
 
-      var form = document.getElementById("engForm");
-if (form) {
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var p = {
-      cash: parseFloat(document.getElementById("engCash").value),
-      drop: parseFloat(document.getElementById("engDrop").value),
-      cap: parseFloat(document.getElementById("engCap").value),
-      momentum: document.getElementById("engMom").value
-    };
-
-    var rows = window.filterUniverse(p);
-    var resultsContainer = document.getElementById("engResults");
-    var outputSection = document.getElementById("engOutput");
-
-    if (outputSection) outputSection.removeAttribute("hidden");
-    if (document.getElementById("engCount")) {
-      document.getElementById("engCount").innerText = rows.length + " candidates found";
-    }
-
-    if (!rows.length) {
-      resultsContainer.innerHTML = '<div style="padding: 24px 0; color: var(--paper-faint);">No tickers match these criteria.</div>';
-      return;
-    }
-
-    // Render HTML cards wrapped in .ledger to apply the CSS grid layout
-    resultsContainer.innerHTML = '<div class="ledger">' + rows.map(function (r) {
-      var price = typeof r.price === "number" ? r.price.toFixed(2) : r.price;
-      var cps = typeof r.cps === "number" ? r.cps.toFixed(2) : r.cps;
-      var drop = typeof r.drop === "number" ? r.drop.toFixed(1) : r.drop;
-      var cash = typeof r.cash === "number" ? r.cash.toFixed(1) : r.cash;
-
-      return `
-        <article class="entry">
-          <div class="ratio">${cash}%<span>Cash / price</span></div>
-          <div class="entry-body">
-            <h3>${r.sym} &mdash; <span>${r.name}, ${r.exch || 'NASDAQ'}</span></h3>
-            <p class="metrics">
-              <span>Price <b>$${price}</b></span>
-              <span>Cash/share <b>$${cps}</b></span>
-              <span>3-day drop <b>${drop}%</b></span>
-            </p>
-            <a class="chart" href="stock.html?symbol=${r.sym}" style="color: var(--amber, #e0a33c); font-size: 26px; font-weight: 500;">
-              Company profile &rarr;
-            </a>
-          </div>
-        </article>
-      `;
-    }).join("") + '</div>';
-  });
-}
-      (async function () {
-        async function loadLiveUniverse() {
-          try {
-            const response = await fetch("/.netlify/functions/quotes");
-            if (!response.ok) throw new Error("Endpoint returned status " + response.status);
-            const quotes = await response.json();
-
-            const p = { cash: 30.0, drop: -3.0, cap: 200, momentum: "" };
-            const rows = window.filterUniverse(p, quotes);
-
-            const pipelineTarget = document.getElementById("pipelineResults");
-            if (pipelineTarget && rows.length > 0) {
-              pipelineTarget.innerHTML = rows.map(function(row) {
-                const symbol = row.sym || row.symbol || "N/A";
-                const price = row.price ? `$${Number(row.price).toFixed(2)}` : "—";
-                const drop = row.drop !== undefined ? `${row.drop}%` : (row.threeDayDrop || "—");
-                const cash = row.cash !== undefined ? `${row.cash}%` : (row.cashCushion || "—");
-                const mom = row.mom || "STABILIZING";
-                const name = row.name || "";
-
-                return `
-                <tr>
-                    <td>
-                      <div class="sym">${symbol}</div>
-                      <div class="px">${price}</div>
-                      <div class="co">${name}</div>
-                    </td>
-                    <td class="c"><span class="drop">${drop}</span></td>
-                    <td class="c"><span class="cushion is-pass">${cash}</span></td>
-                    <td class="c">${mom}</td>
-                    <td><a href="stock.html?symbol=${symbol}" class="chart">View Profile &rarr;</a></td>
-                </tr>`;
-              }).join("");
-            }
-          } catch (err) {
-            console.warn("Could not load live quotes function, using default snapshot.", err);
+        function formatMomentum(mom) {
+          if (mom === "REBOUNDING") {
+            return '<b class="up-t">+ Rebounding</b>';
+          } else if (mom === "FALLING") {
+            return '<b class="down-t">- Falling</b>';
+          } else {
+            return '<b class="flat-t">0.0% Stabilizing</b>';
           }
         }
 
-        loadLiveUniverse();
+        function renderSolvencyBreakdown() {
+          var container = document.getElementById("dynamicLedgerResults");
+          if (!container || typeof window.filterUniverse !== "function") return;
+
+          var passedRows = window.filterUniverse(FIXED_PARAMS);
+
+          if (!passedRows.length) {
+            container.innerHTML = '<div style="padding: 24px 0; color: var(--paper-faint);">No tickers clear the 30% Cash-to-Price gatekeeper.</div>';
+            return;
+          }
+
+          container.innerHTML = passedRows.map(function (r) {
+            var thesis = THESES[r.sym] || "Asset-backed balance sheet meeting minimum cash cushion threshold.";
+            var price = typeof r.price === "number" ? r.price.toFixed(2) : r.price;
+            var cps = typeof r.cps === "number" ? r.cps.toFixed(2) : r.cps;
+            var drop = typeof r.drop === "number" ? r.drop.toFixed(1) : r.drop;
+            var cash = typeof r.cash === "number" ? r.cash.toFixed(1) : r.cash;
+
+            return `
+              <article class="entry">
+                <div class="ratio">${cash}%<span>Cash / price</span></div>
+                <div class="entry-body">
+                  <h3>${r.sym} &mdash; <span>${r.name}, ${r.exch || 'NASDAQ'}</span></h3>
+                  <p class="metrics">
+                    <span>Price <b>$${price}</b></span>
+                    <span>Cash/share <b>$${cps}</b></span>
+                    <span>3-day drop <b>${drop}%</b></span>
+                    <span>Momentum ${formatMomentum(r.mom)}</span>
+                  </p>
+                  <p class="thesis">${thesis}</p>
+                  <a class="chart" href="stock.html?symbol=${r.sym}">
+                    Company profile &rarr;
+                  </a>
+                </div>
+              </article>
+            `;
+          }).join("");
+        }
+
+        // Handle Custom Screener Submission
+        var form = document.getElementById("engForm");
+        if (form) {
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var p = {
+              cash: parseFloat(document.getElementById("engCash").value),
+              drop: parseFloat(document.getElementById("engDrop").value),
+              cap: parseFloat(document.getElementById("engCap").value),
+              momentum: document.getElementById("engMom").value
+            };
+
+            var rows = window.filterUniverse(p);
+            var resultsContainer = document.getElementById("engResults");
+            var outputSection = document.getElementById("engOutput");
+
+            if (outputSection) outputSection.removeAttribute("hidden");
+            if (document.getElementById("engCount")) {
+              document.getElementById("engCount").innerText = rows.length + " candidates found";
+            }
+
+            if (!rows.length) {
+              resultsContainer.innerHTML = '<div style="padding: 24px 0; color: var(--paper-faint);">No tickers match these criteria.</div>';
+              return;
+            }
+
+            resultsContainer.innerHTML = '<div class="ledger">' + rows.map(function (r) {
+              var price = typeof r.price === "number" ? r.price.toFixed(2) : r.price;
+              var cps = typeof r.cps === "number" ? r.cps.toFixed(2) : r.cps;
+              var drop = typeof r.drop === "number" ? r.drop.toFixed(1) : r.drop;
+              var cash = typeof r.cash === "number" ? r.cash.toFixed(1) : r.cash;
+
+              return `
+                <article class="entry">
+                  <div class="ratio">${cash}%<span>Cash / price</span></div>
+                  <div class="entry-body">
+                    <h3>${r.sym} &mdash; <span>${r.name}, ${r.exch || 'NASDAQ'}</span></h3>
+                    <p class="metrics">
+                      <span>Price <b>$${price}</b></span>
+                      <span>Cash/share <b>$${cps}</b></span>
+                      <span>3-day drop <b>${drop}%</b></span>
+                    </p>
+                    <a class="chart" href="stock.html?symbol=${r.sym}">
+                      Company profile &rarr;
+                    </a>
+                  </div>
+                </article>
+              `;
+            }).join("") + '</div>';
+          });
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", renderSolvencyBreakdown);
+        } else {
+          renderSolvencyBreakdown();
+        }
       })();
     </script>
 
@@ -813,242 +719,239 @@ if (form) {
         if (cardEl) cardEl.textContent = shortDate;
       });
     </script>
+
     <!-- ============ BOTTOM FLOATING DISCLAIMER ============ -->
-<!-- ============ BOTTOM FLOATING DISCLAIMER ============ -->
-<div id="financialDisclaimerBar" class="disc-bar" role="region" aria-label="Financial Disclaimer">
-  <div class="wrap disc-wrap">
-    <div class="disc-main">
-      <div class="disc-text">
-        <span class="disc-badge">Notice</span>
-        <strong>Educational Research Only:</strong> The Vance Report is an independent research publisher, not a registered investment advisor or broker-dealer. Cash-to-price metrics rely on lagging balance sheet data and do not constitute investment advice.
-      </div>
-      <div class="disc-actions">
-        <button type="button" class="disc-toggle" id="discToggle" aria-expanded="false" aria-controls="discContent">
-          <span>Full Disclaimer</span>
-          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" class="disc-chevron" aria-hidden="true">
-            <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3"/>
-          </svg>
-        </button>
-        <button type="button" class="disc-close" id="discClose" aria-label="Dismiss disclaimer">
-          ✕
-        </button>
+    <div id="financialDisclaimerBar" class="disc-bar" role="region" aria-label="Financial Disclaimer">
+      <div class="wrap disc-wrap">
+        <div class="disc-main">
+          <div class="disc-text">
+            <span class="disc-badge">Notice</span>
+            <strong>Educational Research Only:</strong> The Vance Report is an independent research publisher, not a registered investment advisor or broker-dealer. Cash-to-price metrics rely on lagging balance sheet data and do not constitute investment advice.
+          </div>
+          <div class="disc-actions">
+            <button type="button" class="disc-toggle" id="discToggle" aria-expanded="false" aria-controls="discContent">
+              <span>Full Disclaimer</span>
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" class="disc-chevron" aria-hidden="true">
+                <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3"/>
+              </svg>
+            </button>
+            <button type="button" class="disc-close" id="discClose" aria-label="Dismiss disclaimer">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="disc-content" id="discContent">
+          <div class="disc-divider"></div>
+          <div class="disc-grid">
+            <div>
+              <b class="disc-heading">1. No Fiduciary Duty</b>
+              <p>Content, daily screening outputs, and engine results are generated strictly for informational and educational purposes. No user relationship creates advisory or fiduciary obligations under SEC regulations.</p>
+            </div>
+            <div>
+              <b class="disc-heading">2. Balance Sheet &amp; Data Lag</b>
+              <p>Cash-per-share figures utilize reported quarterly disclosures. They do not account for ongoing burn rate, debt dilution, or material events occurring after filing dates.</p>
+            </div>
+            <div>
+              <b class="disc-heading">3. High Risk &amp; Due Diligence</b>
+              <p>Securities clearing the 30% Cash-to-Price gatekeeper often experience acute distress. Solvency metrics do not guarantee price recovery. Perform independent research before trading.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Dropdown expandable content -->
-    <div class="disc-content" id="discContent">
-      <div class="disc-divider"></div>
-      <div class="disc-grid">
-        <div>
-          <b class="disc-heading">1. No Fiduciary Duty</b>
-          <p>Content, daily screening outputs, and engine results are generated strictly for informational and educational purposes. No user relationship creates advisory or fiduciary obligations under SEC regulations.</p>
-        </div>
-        <div>
-          <b class="disc-heading">2. Balance Sheet &amp; Data Lag</b>
-          <p>Cash-per-share figures utilize reported quarterly disclosures. They do not account for ongoing burn rate, debt dilution, or material events occurring after filing dates.</p>
-        </div>
-        <div>
-          <b class="disc-heading">3. High Risk &amp; Due Diligence</b>
-          <p>Securities clearing the 30% Cash-to-Price gatekeeper often experience acute distress. Solvency metrics do not guarantee price recovery. Perform independent research before trading.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<style>
-  /* ---------- Bottom Disclaimer Component ---------- */
-  .disc-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 90;
-    background: rgba(12, 16, 20, 0.96);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--rule, #26303a);
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
-    color: var(--paper-dim, #a8a79f);
-    font-family: var(--mono, "IBM Plex Mono", monospace);
-    font-size: 14px; /* Increased font size */
-    line-height: 1.6;
-  }
-
-  .disc-bar[hidden] {
-    display: none !important;
-  }
-
-  .disc-wrap {
-    padding-top: 14px;
-    padding-bottom: 14px;
-  }
-
-  .disc-main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-  }
-
-  .disc-text {
-    flex: 1;
-    color: var(--paper-dim, #a8a79f);
-    font-size: 14px; /* Increased text size */
-  }
-
-  .disc-text strong {
-    color: var(--paper, #e7e3d8);
-    font-weight: 500;
-  }
-
-  .disc-badge {
-    display: inline-block;
-    border: 1px solid var(--amber, #e0a33c);
-    color: var(--amber, #e0a33c);
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 2px 7px;
-    margin-right: 8px;
-    vertical-align: middle;
-  }
-
-  .disc-actions {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-shrink: 0;
-  }
-
-  .disc-toggle {
-    background: none;
-    border: 1px solid var(--rule, #26303a);
-    color: var(--paper-dim, #a8a79f);
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 8px 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: color 0.16s ease, border-color 0.16s ease;
-  }
-
-  .disc-toggle:hover {
-    border-color: var(--amber, #e0a33c);
-    color: var(--amber, #e0a33c);
-  }
-
-  .disc-chevron {
-    transition: transform 0.2s ease;
-  }
-
-  .disc-bar.is-expanded .disc-chevron {
-    transform: rotate(180deg);
-  }
-
-  .disc-close {
-    background: none;
-    border: 0;
-    color: var(--paper-faint, #6f7680);
-    cursor: pointer;
-    font-size: 16px;
-    padding: 4px 8px;
-    transition: color 0.16s ease;
-  }
-
-  .disc-close:hover {
-    color: var(--paper, #e7e3d8);
-  }
-
-  /* Expandable Area Fix */
-  .disc-content {
-    display: none;
-  }
-
-  .disc-bar.is-expanded .disc-content {
-    display: block;
-  }
-
-  .disc-divider {
-    height: 1px;
-    background: var(--rule-soft, #1c242c);
-    margin: 14px 0 18px;
-  }
-
-  .disc-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 22px;
-    padding-bottom: 6px;
-  }
-
-  .disc-heading {
-    display: block;
-    color: var(--amber, #e0a33c);
-    font-size: 12px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-
-  .disc-grid p {
-    margin: 0;
-    font-size: 12.5px; /* Increased grid text size */
-    color: var(--paper-dim, #a8a79f);
-    line-height: 1.6;
-  }
-
-  @media (max-width: 840px) {
-    .disc-main {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .disc-actions {
-      width: 100%;
-      justify-content: space-between;
-      margin-top: 8px;
-    }
-    .disc-grid {
-      grid-template-columns: 1fr;
-      gap: 16px;
-    }
-  }
-</style>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    var bar = document.getElementById("financialDisclaimerBar");
-    var toggle = document.getElementById("discToggle");
-    var closeBtn = document.getElementById("discClose");
-
-    if (!bar || !toggle || !closeBtn) return;
-
-    if (localStorage.getItem("vance_disclaimer_dismissed") === "true") {
-      bar.hidden = true;
-      return;
-    }
-
-    toggle.addEventListener("click", function (e) {
-      e.preventDefault();
-      var isExpanded = bar.classList.contains("is-expanded");
-      if (isExpanded) {
-        bar.classList.remove("is-expanded");
-        toggle.setAttribute("aria-expanded", "false");
-      } else {
-        bar.classList.add("is-expanded");
-        toggle.setAttribute("aria-expanded", "true");
+    <style>
+      .disc-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 90;
+        background: rgba(12, 16, 20, 0.96);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--rule, #26303a);
+        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
+        color: var(--paper-dim, #a8a79f);
+        font-family: var(--mono, "IBM Plex Mono", monospace);
+        font-size: 14px;
+        line-height: 1.6;
       }
-    });
 
-    closeBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-      bar.hidden = true;
-      localStorage.setItem("vance_disclaimer_dismissed", "true");
-    });
-  });
-</script>
+      .disc-bar[hidden] {
+        display: none !important;
+      }
+
+      .disc-wrap {
+        padding-top: 14px;
+        padding-bottom: 14px;
+      }
+
+      .disc-main {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .disc-text {
+        flex: 1;
+        color: var(--paper-dim, #a8a79f);
+        font-size: 14px;
+      }
+
+      .disc-text strong {
+        color: var(--paper, #e7e3d8);
+        font-weight: 500;
+      }
+
+      .disc-badge {
+        display: inline-block;
+        border: 1px solid var(--amber, #e0a33c);
+        color: var(--amber, #e0a33c);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+
+      .disc-actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-shrink: 0;
+      }
+
+      .disc-toggle {
+        background: none;
+        border: 1px solid var(--rule, #26303a);
+        color: var(--paper-dim, #a8a79f);
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 8px 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.16s ease, border-color 0.16s ease;
+      }
+
+      .disc-toggle:hover {
+        border-color: var(--amber, #e0a33c);
+        color: var(--amber, #e0a33c);
+      }
+
+      .disc-chevron {
+        transition: transform 0.2s ease;
+      }
+
+      .disc-bar.is-expanded .disc-chevron {
+        transform: rotate(180deg);
+      }
+
+      .disc-close {
+        background: none;
+        border: 0;
+        color: var(--paper-faint, #6f7680);
+        cursor: pointer;
+        font-size: 16px;
+        padding: 4px 8px;
+        transition: color 0.16s ease;
+      }
+
+      .disc-close:hover {
+        color: var(--paper, #e7e3d8);
+      }
+
+      .disc-content {
+        display: none;
+      }
+
+      .disc-bar.is-expanded .disc-content {
+        display: block;
+      }
+
+      .disc-divider {
+        height: 1px;
+        background: var(--rule-soft, #1c242c);
+        margin: 14px 0 18px;
+      }
+
+      .disc-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+        padding-bottom: 6px;
+      }
+
+      .disc-heading {
+        display: block;
+        color: var(--amber, #e0a33c);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+
+      .disc-grid p {
+        margin: 0;
+        font-size: 12.5px;
+        color: var(--paper-dim, #a8a79f);
+        line-height: 1.6;
+      }
+
+      @media (max-width: 840px) {
+        .disc-main {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .disc-actions {
+          width: 100%;
+          justify-content: space-between;
+          margin-top: 8px;
+        }
+        .disc-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+      }
+    </style>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var bar = document.getElementById("financialDisclaimerBar");
+        var toggle = document.getElementById("discToggle");
+        var closeBtn = document.getElementById("discClose");
+
+        if (!bar || !toggle || !closeBtn) return;
+
+        if (localStorage.getItem("vance_disclaimer_dismissed") === "true") {
+          bar.hidden = true;
+          return;
+        }
+
+        toggle.addEventListener("click", function (e) {
+          e.preventDefault();
+          var isExpanded = bar.classList.contains("is-expanded");
+          if (isExpanded) {
+            bar.classList.remove("is-expanded");
+            toggle.setAttribute("aria-expanded", "false");
+          } else {
+            bar.classList.add("is-expanded");
+            toggle.setAttribute("aria-expanded", "true");
+          }
+        });
+
+        closeBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          bar.hidden = true;
+          localStorage.setItem("vance_disclaimer_dismissed", "true");
+        });
+      });
+    </script>
   </body>
 </html>
