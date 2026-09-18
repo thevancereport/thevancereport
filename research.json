@@ -1,50 +1,4 @@
 {
-  "ARTV": {
-    "name": "Artiva Biotherapeutics Inc.",
-    "exchange": null,
-    "price": 8.61,
-    "previous_price": 8.61,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 420943942,
-    "five_day_drop_pct": -19.0,
-    "trend": "STABILIZING",
-    "cps": 5.73,
-    "cash_cushion_pct": 66.6,
-    "sector": "Health Care",
-    "gross_cash_per_share": 6.17,
-    "liabilities_per_share": 0.43,
-    "gate": "PASS",
-    "target_zone": "$8.18 - $8.78",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Artiva Biotherapeutics Inc. holds $6.17 of cash per share against a $8.61 price, a 71.6% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
-  },
-  "IPWR": {
-    "name": "Ideal Power Inc.",
-    "exchange": null,
-    "price": 4.03,
-    "previous_price": 4.03,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 66231660,
-    "five_day_drop_pct": -18.0,
-    "trend": "STABILIZING",
-    "cps": 2.36,
-    "cash_cushion_pct": 58.5,
-    "sector": "Technology",
-    "gross_cash_per_share": 2.51,
-    "liabilities_per_share": 0.16,
-    "gate": "PASS",
-    "target_zone": "$3.83 - $4.11",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Ideal Power Inc. holds $2.51 of cash per share against a $4.03 price, a 62.3% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
-  },
   "EQ": {
     "name": "Equillium Inc.",
     "exchange": null,
@@ -58,6 +12,8 @@
     "cps": 0.86,
     "cash_cushion_pct": 44.8,
     "sector": "Health Care",
+    "runway_years": 2.4,
+    "dilution_pct": 4.1,
     "gross_cash_per_share": 0.9,
     "liabilities_per_share": 0.04,
     "gate": "PASS",
@@ -66,30 +22,10 @@
     "thesis": "Equillium Inc. holds $0.86 of NET cash per share -- cash after total liabilities -- against a $1.92 price, a 44.8% net cash cushion. Cash, liabilities and share counts are taken from the company's most recent SEC filing.",
     "risks": [
       "Pending fundamental desk review."
-    ]
-  },
-  "ZURA": {
-    "name": "Zura Bio Limited Class A Ordinary Shares",
-    "exchange": null,
-    "price": 4.46,
-    "previous_price": 4.46,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 427397951,
-    "five_day_drop_pct": -15.1,
-    "trend": "STABILIZING",
-    "cps": 1.97,
-    "cash_cushion_pct": 44.2,
-    "sector": "Health Care",
-    "gross_cash_per_share": 2.14,
-    "liabilities_per_share": 0.17,
-    "gate": "PASS",
-    "target_zone": "$4.24 - $4.55",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Zura Bio Limited Class A Ordinary Shares holds $1.97 of NET cash per share -- cash after total liabilities -- against a $4.46 price, a 44.2% net cash cushion. Cash, liabilities and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
+    ],
+    "insider_buys": 0,
+    "insider_shares": 0,
+    "insider_value": 0
   },
   "PALI": {
     "name": "Palisade Bio Inc.",
@@ -104,6 +40,8 @@
     "cps": 0.69,
     "cash_cushion_pct": 43.2,
     "sector": "Health Care",
+    "runway_years": 11.0,
+    "dilution_pct": 17.0,
     "gross_cash_per_share": 0.72,
     "liabilities_per_share": 0.03,
     "gate": "PASS",
@@ -112,55 +50,12 @@
     "thesis": "Palisade Bio Inc. holds $0.69 of NET cash per share -- cash after total liabilities -- against a $1.59 price, a 43.2% net cash cushion. Cash, liabilities and share counts are taken from the company's most recent SEC filing.",
     "risks": [
       "Pending fundamental desk review."
-    ]
-  },
-  "DMRA": {
-    "name": "Damora Therapeutics Inc. Ordinary Shares",
-    "exchange": null,
-    "price": 22.59,
-    "previous_price": 22.59,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 1394605374,
-    "five_day_drop_pct": -15.1,
-    "trend": "STABILIZING",
-    "cps": 8.31,
-    "cash_cushion_pct": 36.8,
-    "sector": "Health Care",
-    "gross_cash_per_share": 8.76,
-    "liabilities_per_share": 0.45,
-    "gate": "PASS",
-    "target_zone": "$21.46 - $23.04",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Damora Therapeutics Inc. Ordinary Shares holds $8.31 of NET cash per share -- cash after total liabilities -- against a $22.59 price, a 36.8% net cash cushion. Cash, liabilities and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
-  },
-  "ACRV": {
-    "name": "Acrivon Therapeutics Inc.",
-    "exchange": null,
-    "price": 1.85,
-    "previous_price": 1.85,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 79278720,
-    "five_day_drop_pct": -16.7,
-    "trend": "STABILIZING",
-    "cps": 0.68,
-    "cash_cushion_pct": 36.6,
-    "sector": "Health Care",
-    "gross_cash_per_share": 0.97,
-    "liabilities_per_share": 0.29,
-    "gate": "PASS",
-    "target_zone": "$1.76 - $1.89",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Acrivon Therapeutics Inc. holds $0.68 of NET cash per share -- cash after total liabilities -- against a $1.85 price, a 36.6% net cash cushion. Cash, liabilities and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
+    ],
+    "insider_buys": 6,
+    "insider_shares": 125000,
+    "insider_value": 250182
   },
   "_meta": {
-    "generated_at": "2026-09-18T23:26:32.509001+00:00"
+    "generated_at": "2026-09-18T23:56:49.761110+00:00"
   }
 }
