@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Leave a Review | The Vance Report</title>
+    <meta name="robots" content="noindex, follow">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #0c1014;
+        --ink-2: #12181e;
+        --ink-3: #181f27;
+        --rule: #26303a;
+        --rule-soft: #1c242c;
+        --paper: #e7e3d8;
+        --paper-dim: #a8a79f;
+        --paper-faint: #6f7680;
+        --amber: #e0a33c;
+        --amber-deep: #b97f1f;
+        --pass: #61a887;
+        --fail: #cc6250;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+        --serif: "Instrument Serif", Georgia, serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--ink);
+        color: var(--paper);
+        font-family: var(--mono);
+        font-weight: 300;
+        font-size: 14px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 720px; margin: 0 auto; padding: 0 28px 90px; }
+      header.top {
+        border-bottom: 1px solid var(--rule);
+        padding: 22px 0;
+        margin-bottom: 50px;
+      }
+      header.top .wrap {
+        padding: 0 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        font-family: var(--serif);
+        font-size: 20px;
+        color: var(--paper);
+        text-decoration: none;
+      }
+      .brand span {
+        border: 1px solid var(--amber);
+        color: var(--amber);
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 2px 7px;
+        margin-right: 10px;
+        vertical-align: middle;
+      }
+      .back {
+        color: var(--paper-faint);
+        text-decoration: none;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .back:hover { color: var(--amber); }
+
+      h1 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: clamp(34px, 5vw, 50px);
+        line-height: 1.05;
+        margin: 0 0 10px;
+      }
+      .subhead {
+        color: var(--paper-dim);
+        font-size: 14px;
+        max-width: 58ch;
+        margin: 0 0 46px;
+      }
+
+      .criterion {
+        border: 1px solid var(--rule);
+        background: var(--ink-2);
+        padding: 22px 24px;
+        margin-bottom: 16px;
+      }
+      .criterion-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .criterion-title {
+        font-family: var(--serif);
+        font-size: 20px;
+        color: var(--paper);
+      }
+      .criterion-hint {
+        font-size: 12.5px;
+        color: var(--paper-faint);
+        margin-top: 4px;
+      }
+      .choice-group {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+      .choice {
+        position: relative;
+      }
+      .choice input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        cursor: pointer;
+      }
+      .choice label {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid var(--rule);
+        padding: 9px 16px;
+        font-size: 12.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--paper-dim);
+        cursor: pointer;
+        transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+      }
+      .choice input:checked + label {
+        border-color: var(--amber);
+        color: var(--paper);
+      }
+      .choice.good input:checked + label {
+        background: rgba(97, 168, 135, 0.12);
+        border-color: var(--pass);
+        color: var(--pass);
+      }
+      .choice.needs input:checked + label {
+        background: rgba(204, 98, 80, 0.12);
+        border-color: var(--fail);
+        color: var(--fail);
+      }
+      .note-preview {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--rule-soft);
+        font-size: 13px;
+        color: var(--paper-dim);
+        display: none;
+      }
+      .note-preview.is-visible { display: block; }
+      .note-preview b { color: var(--fail); }
+      .note-edit-link {
+        color: var(--amber);
+        cursor: pointer;
+        text-decoration: none;
+        border-bottom: 1px dashed var(--amber-deep);
+        font-size: 12px;
+        margin-left: 8px;
+      }
+
+      .comment-block {
+        border: 1px solid var(--rule);
+        background: var(--ink-2);
+        padding: 22px 24px;
+        margin: 30px 0;
+      }
+      .comment-block label {
+        display: block;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+        margin-bottom: 10px;
+      }
+      textarea {
+        width: 100%;
+        background: var(--ink);
+        border: 1px solid var(--rule);
+        color: var(--paper);
+        font-family: var(--mono);
+        font-size: 14px;
+        padding: 12px 14px;
+        resize: vertical;
+        min-height: 110px;
+      }
+      .char-count {
+        text-align: right;
+        font-size: 11px;
+        color: var(--paper-faint);
+        margin-top: 6px;
+      }
+
+      .submit-row { display: flex; align-items: center; gap: 18px; }
+      .btn-submit {
+        border: 0;
+        cursor: pointer;
+        background: var(--amber);
+        color: var(--ink);
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 15px 30px;
+      }
+      .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+      .form-status {
+        font-size: 13px;
+        color: var(--paper-faint);
+      }
+      .form-status.is-error { color: var(--fail); }
+      .form-status.is-ok { color: var(--pass); }
+
+      /* ---- Needs Work popup ---- */
+      .popup-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background: rgba(6, 9, 12, 0.78);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+      .popup-backdrop[hidden] { display: none; }
+      .popup {
+        width: 100%;
+        max-width: 440px;
+        background: var(--ink-2);
+        border: 1px solid var(--rule);
+        padding: 30px 28px 26px;
+        position: relative;
+      }
+      .popup h3 {
+        font-family: var(--serif);
+        font-size: 22px;
+        margin: 0 0 6px;
+      }
+      .popup p.hint {
+        font-size: 12.5px;
+        color: var(--paper-faint);
+        margin: 0 0 16px;
+      }
+      .popup textarea { min-height: 100px; }
+      .popup-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .popup-cancel {
+        background: none;
+        border: 1px solid var(--rule);
+        color: var(--paper-dim);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 10px 18px;
+      }
+      .popup-save {
+        border: 0;
+        cursor: pointer;
+        background: var(--amber);
+        color: var(--ink);
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 12px;
+        padding: 10px 18px;
+      }
+      .popup-save:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="wrap">
+        <a class="brand" href="index.html"><span>VR</span>The Vance Report</a>
+        <a class="back" href="index.html">&larr; Back to screen</a>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <h1>Leave a Review</h1>
+      <p class="subhead">Rate each part of the site, then leave a short written review. Anything marked "Needs work" will ask you what specifically to improve — that goes straight to the team, not just the public review.</p>
+
+      <form id="reviewForm" novalidate>
+        <div id="criteriaContainer"></div>
+
+        <div class="comment-block">
+          <label for="reviewComment">Your written review</label>
+          <textarea id="reviewComment" maxlength="1000" placeholder="What stood out, good or bad?" required></textarea>
+          <div class="char-count"><span id="commentCount">0</span>/1000</div>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="btn-submit" id="submitBtn">Submit Review</button>
+          <span class="form-status" id="formStatus"></span>
+        </div>
+      </form>
+    </div>
+
+    <!-- Needs Work popup, shared by all 5 criteria -->
+    <div class="popup-backdrop" id="notePopup" hidden>
+      <div class="popup">
+        <h3>What needs work?</h3>
+        <p class="hint" id="popupHint">Tell us what to fix here.</p>
+        <textarea id="popupNoteText" maxlength="500" placeholder="Be as specific as you can — this goes to the team."></textarea>
+        <div class="popup-actions">
+          <button type="button" class="popup-cancel" id="popupCancel">Cancel</button>
+          <button type="button" class="popup-save" id="popupSave" disabled>Save note</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var CRITERIA = [
+          { key: "data_freshness", title: "Daily Data Freshness", hint: "Are prices and metrics actually up to date when you check?" },
+          { key: "screen_filters", title: "Custom Screen Engine", hint: "Are the filter options useful for narrowing down candidates?" },
+          { key: "site_layout", title: "Site Layout & Navigation", hint: "Is it easy to find what you're looking for?" },
+          { key: "visual_design", title: "Visual Design", hint: "Does the look and feel work for you?" },
+          { key: "info_quality", title: "Quality of Information", hint: "Are the theses, risks, and catalysts useful and well-written?" },
+        ];
+
+        var noteValues = {}; // key -> note text, only set for "needs_work"
+        var activeKey = null;
+
+        var container = document.getElementById("criteriaContainer");
+        container.innerHTML = CRITERIA.map(function (c) {
+          return (
+            '<div class="criterion" data-key="' + c.key + '">' +
+              '<div class="criterion-head">' +
+                '<div>' +
+                  '<div class="criterion-title">' + c.title + '</div>' +
+                  '<div class="criterion-hint">' + c.hint + '</div>' +
+                '</div>' +
+                '<div class="choice-group">' +
+                  '<span class="choice good">' +
+                    '<input type="radio" name="' + c.key + '" id="' + c.key + '_good" value="good">' +
+                    '<label for="' + c.key + '_good">Good</label>' +
+                  '</span>' +
+                  '<span class="choice needs">' +
+                    '<input type="radio" name="' + c.key + '" id="' + c.key + '_needs" value="needs_work">' +
+                    '<label for="' + c.key + '_needs">Needs work</label>' +
+                  '</span>' +
+                '</div>' +
+              '</div>' +
+              '<div class="note-preview" id="' + c.key + '_preview"></div>' +
+            '</div>'
+          );
+        }).join("");
+
+        var popup = document.getElementById("notePopup");
+        var popupHint = document.getElementById("popupHint");
+        var popupText = document.getElementById("popupNoteText");
+        var popupSave = document.getElementById("popupSave");
+        var popupCancel = document.getElementById("popupCancel");
+
+        function openPopup(key, title) {
+          activeKey = key;
+          popupHint.textContent = "What needs work with \u201c" + title + "\u201d?";
+          popupText.value = noteValues[key] || "";
+          popupSave.disabled = popupText.value.trim().length < 2;
+          popup.hidden = false;
+          popupText.focus();
+        }
+        function closePopup() {
+          popup.hidden = true;
+          activeKey = null;
+        }
+
+        function renderPreview(key) {
+          var preview = document.getElementById(key + "_preview");
+          var note = noteValues[key];
+          if (note) {
+            preview.className = "note-preview is-visible";
+            preview.innerHTML = '<b>Needs work:</b> ' + note.replace(/[<>&]/g, function (c) {
+              return { "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c];
+            }) + ' <a class="note-edit-link" data-edit="' + key + '">edit</a>';
+          } else {
+            preview.className = "note-preview";
+            preview.innerHTML = "";
+          }
+        }
+
+        CRITERIA.forEach(function (c) {
+          var goodInput = document.getElementById(c.key + "_good");
+          var needsInput = document.getElementById(c.key + "_needs");
+
+          goodInput.addEventListener("change", function () {
+            delete noteValues[c.key];
+            renderPreview(c.key);
+          });
+          needsInput.addEventListener("change", function () {
+            openPopup(c.key, c.title);
+          });
+        });
+
+        container.addEventListener("click", function (e) {
+          var editKey = e.target.getAttribute("data-edit");
+          if (editKey) {
+            var c = CRITERIA.find(function (x) { return x.key === editKey; });
+            openPopup(editKey, c.title);
+          }
+        });
+
+        popupText.addEventListener("input", function () {
+          popupSave.disabled = popupText.value.trim().length < 2;
+        });
+
+        popupSave.addEventListener("click", function () {
+          var note = popupText.value.trim();
+          if (note.length < 2) return;
+          noteValues[activeKey] = note;
+          renderPreview(activeKey);
+          closePopup();
+        });
+
+        popupCancel.addEventListener("click", function () {
+          // Cancelling without ever having saved a note reverts the radio
+          // choice back to unselected, so "needs work" can't be submitted silently empty.
+          if (!noteValues[activeKey]) {
+            var needsInput = document.getElementById(activeKey + "_needs");
+            if (needsInput) needsInput.checked = false;
+          }
+          closePopup();
+        });
+        popup.addEventListener("click", function (e) {
+          if (e.target === popup) popupCancel.click();
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && !popup.hidden) popupCancel.click();
+        });
+
+        // Comment character count
+        var commentEl = document.getElementById("reviewComment");
+        var commentCount = document.getElementById("commentCount");
+        commentEl.addEventListener("input", function () {
+          commentCount.textContent = commentEl.value.length;
+        });
+
+        // Submit
+        var form = document.getElementById("reviewForm");
+        var submitBtn = document.getElementById("submitBtn");
+        var statusEl = document.getElementById("formStatus");
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          statusEl.className = "form-status";
+          statusEl.textContent = "";
+
+          var payload = { comment: commentEl.value.trim() };
+          for (var i = 0; i < CRITERIA.length; i++) {
+            var key = CRITERIA[i].key;
+            var checked = document.querySelector('input[name="' + key + '"]:checked');
+            if (!checked) {
+              statusEl.className = "form-status is-error";
+              statusEl.textContent = "Please rate \u201c" + CRITERIA[i].title + "\u201d before submitting.";
+              return;
+            }
+            payload[key] = checked.value;
+            if (checked.value === "needs_work") {
+              payload[key + "_note"] = noteValues[key] || "";
+            }
+          }
+
+          if (payload.comment.length < 2) {
+            statusEl.className = "form-status is-error";
+            statusEl.textContent = "Please leave a short written review.";
+            return;
+          }
+
+          submitBtn.disabled = true;
+          statusEl.textContent = "Submitting\u2026";
+
+          fetch("/api/reviews", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+            .then(function (res) {
+              return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+            })
+            .then(function (result) {
+              if (!result.ok) throw new Error(result.data.error || "Submission failed.");
+              statusEl.className = "form-status is-ok";
+              statusEl.textContent = "Thanks — your review has been submitted.";
+              form.reset();
+              noteValues = {};
+              CRITERIA.forEach(function (c) { renderPreview(c.key); });
+              commentCount.textContent = "0";
+            })
+            .catch(function (err) {
+              statusEl.className = "form-status is-error";
+              statusEl.textContent = err.message || "Something went wrong. Please try again.";
+            })
+            .finally(function () {
+              submitBtn.disabled = false;
+            });
+        });
+      })();
+    </script>
+  </body>
+</html>
