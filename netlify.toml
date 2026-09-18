@@ -1,0 +1,21 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# reviews.mjs is a Netlify Functions v2 handler and declares its own route
+# via `export const config = { path: "/api/reviews" }`. It only gets picked
+# up if it lives inside the functions directory declared above — a copy at
+# the repo root is never deployed, which is why /api/reviews returned 404.
+
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/research.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/screen_snapshot.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
