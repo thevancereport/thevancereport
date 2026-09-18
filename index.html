@@ -371,6 +371,79 @@
         margin: 0 0 14px;
       }
 
+      /* ---------- daily scan table ---------- */
+      .table-scroll { overflow-x: auto; }
+      table.scan-table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .scan-table th {
+        text-align: left;
+        font-weight: 500;
+        font-size: 10.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+        padding: 0 14px 10px;
+        border-bottom: 1px solid var(--rule);
+        white-space: nowrap;
+      }
+      .scan-table td {
+        padding: 15px 14px;
+        border-bottom: 1px solid var(--rule);
+        vertical-align: middle;
+      }
+      .scan-table th.c, .scan-table td.c { text-align: right; }
+      .scan-table tr:hover td { background: rgba(255, 255, 255, 0.015); }
+      .scan-sym { font-weight: 600; letter-spacing: 0.06em; color: var(--paper); }
+      .scan-name {
+        display: block;
+        font-size: 11px;
+        color: var(--paper-faint);
+        margin-top: 3px;
+        max-width: 240px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .scan-met { color: #61a887; }
+      .scan-miss { color: var(--paper-dim); }
+      .scan-sub {
+        display: block;
+        font-size: 10px;
+        color: var(--paper-faint);
+        letter-spacing: 0.04em;
+        margin-top: 3px;
+      }
+      .thumb { width: 19px; height: 19px; display: block; }
+      .thumb-pass { color: #61a887; }
+      .thumb-neutral { color: #e0a33c; transform: rotate(90deg); }
+      .thumb-fail { color: #cc6250; transform: rotate(180deg); }
+      .scan-link {
+        color: var(--amber);
+        text-decoration: none;
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        border-bottom: 1px solid transparent;
+      }
+      .scan-link:hover { border-bottom-color: var(--amber); }
+      .scan-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 22px;
+        align-items: center;
+        margin: 18px 0 0;
+        font-size: 10.5px;
+        letter-spacing: 0.04em;
+        color: var(--paper-faint);
+      }
+      .scan-legend span { display: inline-flex; align-items: center; gap: 7px; }
+      .scan-legend .thumb { width: 14px; height: 14px; }
+
       /* --------- ledger --------- */
       .ledger { border-top: 1px solid var(--rule); }
 
@@ -704,15 +777,37 @@
         </div>
       </section>
 
-      <!-- ============ SOLVENCY BREAKDOWN ============ -->
+      <!-- ============ DAILY SCAN ============ -->
       <section class="block">
         <div class="wrap">
           <div class="sec-head">
-            <h2>Gatekeeper pass breakdown</h2>
+            <h2>Today's scan</h2>
+            <span class="sec-meta">Top ten by net cash cushion<br />including the names that failed</span>
           </div>
-          <div class="ledger" id="dynamicLedgerResults">
-            <div class="state-msg" id="ledgerState">Loading today's screen&hellip;</div>
+          <div class="table-scroll">
+            <table class="scan-table">
+              <thead>
+                <tr>
+                  <th scope="col">Verdict</th>
+                  <th scope="col">Symbol</th>
+                  <th scope="col" class="c">Price</th>
+                  <th scope="col" class="c">Net cash / share</th>
+                  <th scope="col" class="c">Cushion vs 30%</th>
+                  <th scope="col" class="c">5-day vs &minus;15%</th>
+                  <th scope="col" class="c">Momentum</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody id="scanResults">
+                <tr><td colspan="8"><div class="state-msg">Loading today's scan&hellip;</div></td></tr>
+              </tbody>
+            </table>
           </div>
+          <p class="scan-legend">
+            <span><svg class="thumb thumb-pass" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Cleared both gates</span>
+            <span><svg class="thumb thumb-neutral" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Price history unavailable</span>
+            <span><svg class="thumb thumb-fail" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Cash held, 5-day drop did not qualify</span>
+          </p>
         </div>
       </section>
     </div>
@@ -752,7 +847,7 @@
         // reserved "_meta" key holding { generated_at }.
         var DATA_URL = "research.json";
 
-        var state = { rows: [], generatedAt: null, status: "loading" }; // loading | ok | error
+        var state = { rows: [], scan: [], generatedAt: null, status: "loading", scanStatus: "loading" }; // loading | ok | error
 
         function toNum(v) {
           if (typeof v === "number") return isFinite(v) ? v : null;
@@ -847,32 +942,64 @@
           );
         }
 
+        // The per-stock cards moved to report.html. This renders the daily scan
+        // table instead: the ten highest net-cash cushions the screen evaluated,
+        // pass or fail, so the rejections are visible rather than hidden.
+        function thumbSvg(gate) {
+          var cls = gate === "PASS" ? "thumb-pass" : (gate === "FAIL" ? "thumb-fail" : "thumb-neutral");
+          var label = gate === "PASS" ? "Pass" : (gate === "FAIL" ? "Fail" : "Neutral");
+          return '<svg class="thumb ' + cls + '" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="' + label + '">' +
+            '<path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg>';
+        }
+
+        function scanRow(r) {
+          var cushionMet = isNum(r.cushion) && r.cushion >= 30;
+          var dropMet = isNum(r.drop) && r.drop <= -15;
+          return "<tr>" +
+            "<td>" + thumbSvg(r.gate) + "</td>" +
+            '<td><span class="scan-sym">' + escapeHtml(r.sym) + "</span>" +
+              '<span class="scan-name">' + escapeHtml(r.name) + "</span></td>" +
+            '<td class="c">' + (isNum(r.price) ? "$" + r.price.toFixed(2) : "&mdash;") + "</td>" +
+            '<td class="c">' + (isNum(r.cps) ? "$" + r.cps.toFixed(2) : "&mdash;") + "</td>" +
+            '<td class="c"><span class="' + (cushionMet ? "scan-met" : "scan-miss") + '">' +
+              (isNum(r.cushion) ? r.cushion.toFixed(1) + "%" : "&mdash;") + "</span>" +
+              '<span class="scan-sub">' + (cushionMet ? "gate met" : "below gate") + "</span></td>" +
+            '<td class="c"><span class="' + (dropMet ? "scan-met" : "scan-miss") + '">' +
+              (isNum(r.drop) ? r.drop.toFixed(1) + "%" : "&mdash;") + "</span>" +
+              '<span class="scan-sub">' + (isNum(r.drop) ? (dropMet ? "gate met" : "not dislocated enough") : "no history") + "</span></td>" +
+            '<td class="c">' + formatMomentum(r.mom) + "</td>" +
+            '<td class="c"><a class="scan-link" href="stock.html?symbol=' + encodeURIComponent(r.sym) + '">Charts &rarr;</a></td>' +
+            "</tr>";
+        }
+
+        function renderScan() {
+          var body = document.getElementById("scanResults");
+          if (!body) return;
+          if (state.scanStatus === "loading") {
+            body.innerHTML = '<tr><td colspan="8"><div class="state-msg">Loading today&rsquo;s scan&hellip;</div></td></tr>';
+            return;
+          }
+          if (state.scanStatus === "error") {
+            body.innerHTML = '<tr><td colspan="8"><div class="state-msg is-error">Today&rsquo;s scan is temporarily unavailable. We do not show stale prices as if they were current.</div></td></tr>';
+            return;
+          }
+          if (!state.scan.length) {
+            body.innerHTML = '<tr><td colspan="8"><div class="state-msg">Nothing cleared the cash gate in today&rsquo;s run.</div></td></tr>';
+            return;
+          }
+          body.innerHTML = state.scan.map(scanRow).join("");
+        }
+
         function renderLedger() {
-          var container = document.getElementById("dynamicLedgerResults");
-          if (!container) return;
-
-          if (state.status === "loading") {
-            container.innerHTML = '<div class="state-msg">Loading today\u2019s screen&hellip;</div>';
-            return;
-          }
-          if (state.status === "error") {
-            container.innerHTML = '<div class="state-msg is-error">Today\u2019s screen data is temporarily unavailable. We do not show stale prices as if they were current \u2014 please check back shortly.</div>';
-            return;
-          }
-
-          if (!state.rows.length) {
-            container.innerHTML = '<div class="state-msg">No tickers cleared the gate in today\u2019s run.</div>';
-          } else {
-            var sorted = state.rows.slice().sort(function (a, b) { return (b.cash || 0) - (a.cash || 0); });
-            container.innerHTML = sorted.map(function (r) { return rowCard(r, { showThesis: true }); }).join("");
-          }
-
           var total = state.rows.length;
           var withCash = state.rows.filter(function (r) { return r.cash != null; });
           var avgCushion = withCash.length ? (withCash.reduce(function (sum, r) { return sum + r.cash; }, 0) / withCash.length) : 0;
-          document.getElementById("hero-universe-count").textContent = total;
-          document.getElementById("summary-qualified-count").textContent = total + " Qualified";
-          document.getElementById("summary-avg-cushion").textContent = withCash.length ? avgCushion.toFixed(1) + "%" : "—";
+          var uEl = document.getElementById("hero-universe-count");
+          var qEl = document.getElementById("summary-qualified-count");
+          var aEl = document.getElementById("summary-avg-cushion");
+          if (uEl) uEl.textContent = total;
+          if (qEl) qEl.textContent = total + " Qualified";
+          if (aEl) aEl.textContent = withCash.length ? avgCushion.toFixed(1) + "%" : "\u2014";
         }
 
         function updateLiveIndicator() {
@@ -947,6 +1074,41 @@
           renderLedger();
           updateLiveIndicator();
           updateDates();
+          loadScan();
+        }
+
+        // screen_snapshot.json is the full audit trail -- every name evaluated,
+        // not just the winners in research.json. The scan table needs the
+        // failures, otherwise every verdict would be a green thumb.
+        async function loadScan() {
+          try {
+            var res = await fetch("screen_snapshot.json", { cache: "no-store", headers: { accept: "application/json" } });
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            var raw = await res.json();
+            if (!raw || typeof raw !== "object") throw new Error("Malformed screen_snapshot.json");
+            var rows = [];
+            Object.keys(raw).forEach(function (key) {
+              if (key.indexOf("_") === 0) return;
+              var r = raw[key] || {};
+              rows.push({
+                sym: key,
+                name: r.name || key,
+                price: toNum(r.price),
+                cps: toNum(r.cps),
+                cushion: toNum(r.cash_cushion_pct),
+                drop: toNum(r.five_day_drop_pct),
+                mom: r.trend || "STABILIZING",
+                gate: String(r.gate || "UNKNOWN").toUpperCase()
+              });
+            });
+            rows.sort(function (a, b) { return (b.cushion || 0) - (a.cushion || 0); });
+            state.scan = rows.slice(0, 10);
+            state.scanStatus = "ok";
+          } catch (err) {
+            console.error("Failed to load screen_snapshot.json:", err);
+            state.scanStatus = "error";
+          }
+          renderScan();
         }
 
         // Custom screener submission
