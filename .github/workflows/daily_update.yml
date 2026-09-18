@@ -30,4 +30,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto-update research.json metrics [skip ci]"
-          file_pattern: "research.json"
+          file_pattern: "research.json screen_snapshot.json"
