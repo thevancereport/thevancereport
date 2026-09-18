@@ -2454,6 +2454,16 @@
             status.textContent = "Ready";
           });
         });
+        
+       async function loadLiveUniverse() {
+  const response = await fetch("/.netlify/functions/quotes");
+  const quotes = await response.json();
+
+  console.log("Live quotes loaded:", quotes);
+}
+
+loadLiveUniverse();
+        
       })();
     </script>
     <script>
