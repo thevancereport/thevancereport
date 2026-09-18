@@ -800,12 +800,16 @@
           });
         }
 
+        function isNum(v) {
+          return typeof v === "number" && isFinite(v);
+        }
+
         function rowCard(r, opts) {
           opts = opts || {};
-          var price = isFinite(r.price) ? r.price.toFixed(2) : "—";
-          var cps = isFinite(r.cps) ? r.cps.toFixed(2) : "—";
-          var drop = isFinite(r.drop) ? r.drop.toFixed(1) : "—";
-          var cash = isFinite(r.cash) ? r.cash.toFixed(1) : "—";
+          var price = isNum(r.price) ? r.price.toFixed(2) : "—";
+          var cps = isNum(r.cps) ? r.cps.toFixed(2) : "—";
+          var drop = isNum(r.drop) ? r.drop.toFixed(1) : "—";
+          var cash = isNum(r.cash) ? r.cash.toFixed(1) : "—";
           var thesis = opts.showThesis === false ? "" :
             '<p class="thesis">' + escapeHtml(r.thesis) + "</p>";
 
