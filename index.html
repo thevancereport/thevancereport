@@ -553,139 +553,8 @@
           <div class="sec-head">
             <h2>Gatekeeper pass breakdown</h2>
           </div>
-          <div class="ledger">
-            <article class="entry">
-              <div class="ratio">61.3%<span>Cash / price</span></div>
-              <div class="entry-body">
-                <h3>BMEA &mdash; <span>Biomea Fusion, NASDAQ</span></h3>
-                <p class="metrics">
-                  <span>Price <b>$14.20</b></span>
-                  <span>Cash/share <b>$8.71</b></span>
-                  <span>3-day drop <b>-34.8%</b></span>
-                  <span>Momentum <b class="up-t">+2.8% rebounding</b></span>
-                </p>
-                <p class="thesis">
-                  Pristine cash runway covering over 18 months of burn despite
-                  clinical trial headline volatility. Bouncing sharply off
-                  technical intraday support.
-                </p>
-                <a class="chart" href="stock.html?symbol=BMEA">Company profile</a>
-              </div>
-            </article>
-
-            <article class="entry">
-              <div class="ratio">54.8%<span>Cash / price</span></div>
-              <div class="entry-body">
-                <h3>SEDG &mdash; <span>SolarEdge Technologies, NASDAQ</span></h3>
-                <p class="metrics">
-                  <span>Price <b>$11.85</b></span>
-                  <span>Cash/share <b>$6.50</b></span>
-                  <span>3-day drop <b>-22.4%</b></span>
-                  <span>Momentum <b class="flat-t">+0.4% stabilizing</b></span>
-                </p>
-                <p class="thesis">
-                  De-risked valuation trading at close to net cash value.
-                  Inventory channel write-downs are nearing terminal stage while
-                  enterprise value approaches floor.
-                </p>
-                <a class="chart" href="stock.html?symbol=SEDG">Company profile</a>
-              </div>
-            </article>
-
-            <article class="entry">
-              <div class="ratio">48.3%<span>Cash / price</span></div>
-              <div class="entry-body">
-                <h3>PAGS &mdash; <span>PagSeguro Digital, NYSE</span></h3>
-                <p class="metrics">
-                  <span>Price <b>$8.90</b></span>
-                  <span>Cash/share <b>$4.30</b></span>
-                  <span>3-day drop <b>-18.6%</b></span>
-                  <span>Momentum <b class="up-t">+1.7% rebounding</b></span>
-                </p>
-                <p class="thesis">
-                  High cash cushion backed by steady merchant banking operations
-                  and Brazilian central bank float dynamics. Price showing
-                  immediate rebound momentum.
-                </p>
-                <a class="chart" href="stock.html?symbol=PAGS">Company profile</a>
-              </div>
-            </article>
-
-            <article class="entry">
-              <div class="ratio">42.6%<span>Cash / price</span></div>
-              <div class="entry-body">
-                <h3>RUN &mdash; <span>Sunrun Inc, NASDAQ</span></h3>
-                <p class="metrics">
-                  <span>Price <b>$10.10</b></span>
-                  <span>Cash/share <b>$4.30</b></span>
-                  <span>3-day drop <b>-21.2%</b></span>
-                  <span>Momentum <b class="down-t">-1.8% falling</b></span>
-                </p>
-                <p class="thesis">
-                  Significant net cash and tax credit liquidity, though
-                  continued interest-rate headwinds keep short-term momentum
-                  negative.
-                </p>
-                <a class="chart" href="stock.html?symbol=RUN">Company profile</a>
-              </div>
-            </article>
-
-            <article class="entry">
-              <div class="ratio">37.7%<span>Cash / price</span></div>
-              <div class="entry-body">
-                <h3>LUMN &mdash; <span>Lumen Technologies, NYSE</span></h3>
-                <p class="metrics">
-                  <span>Price <b>$3.45</b></span>
-                  <span>Cash/share <b>$1.30</b></span>
-                  <span>3-day drop <b>-16.8%</b></span>
-                  <span>Momentum <b class="flat-t">0.0% stabilizing</b></span>
-                </p>
-                <p class="thesis">
-                  Fiber connectivity deals with hyperscalers provide substantial
-                  milestone cash inflows that create a tangible liquidity
-                  buffer.
-                </p>
-                <a class="chart" href="stock.html?symbol=LUMN">Company profile</a>
-              </div>
-            </article>
-
-            <article class="entry">
-              <div class="ratio">35.2%<span>Cash / price</span></div>
-              <div class="entry-body">
-                <h3>PLUG &mdash; <span>Plug Power, NASDAQ</span></h3>
-                <p class="metrics">
-                  <span>Price <b>$1.82</b></span>
-                  <span>Cash/share <b>$0.64</b></span>
-                  <span>3-day drop <b>-24.5%</b></span>
-                  <span>Momentum <b class="down-t">-3.2% falling</b></span>
-                </p>
-                <p class="thesis">
-                  Meets strict balance sheet test, but negative momentum
-                  reflects burn pace and market sensitivity to secondary
-                  offerings. Strict risk management advised.
-                </p>
-                <a class="chart" href="stock.html?symbol=PLUG">Company profile</a>
-              </div>
-            </article>
-</div>
-            <article class="entry">
-              <div class="ratio">31.6%<span>Cash / price</span></div>
-              <div class="entry-body">
-                <h3>WOLF &mdash; <span>Wolfspeed Inc, NYSE</span></h3>
-                <p class="metrics">
-                  <span>Price <b>$7.60</b></span>
-                  <span>Cash/share <b>$2.40</b></span>
-                  <span>3-day drop <b>-28.9%</b></span>
-                  <span>Momentum <b class="up-t">+2.1% rebounding</b></span>
-                </p>
-                <p class="thesis">
-                  Silicon carbide production fab ramp-up hurdles triggered
-                  selling, but CHIPS Act grants and cash reserves hold a durable
-                  balance sheet backstop.
-                </p>
-                <a class="chart" href="stock.html?symbol=WOLF">Company profile</a>
-              </div>
-            </article>
+          <div class="ledger" id="dynamicLedgerResults"></div>
+            
           </div>
       </section>
 
@@ -694,7 +563,83 @@
         </div>
       </footer>
     </div>
+<script>
+      (function () {
+        // Fixed gatekeeper parameters
+        var FIXED_PARAMS = {
+          cash: 30.0,
+          drop: -3.0,
+          cap: 200,
+          momentum: ""
+        };
 
+        // Editorial investment theses mapped by ticker
+        var THESES = {
+          BMEA: "Pristine cash runway covering over 18 months of burn despite clinical trial headline volatility. Bouncing sharply off technical intraday support.",
+          SEDG: "De-risked valuation trading at close to net cash value. Inventory channel write-downs are nearing terminal stage while enterprise value approaches floor.",
+          PAGS: "High cash cushion backed by steady merchant banking operations and Brazilian central bank float dynamics. Price showing immediate rebound momentum.",
+          RUN: "Significant net cash and tax credit liquidity, though continued interest-rate headwinds keep short-term momentum negative.",
+          LUMN: "Fiber connectivity deals with hyperscalers provide substantial milestone cash inflows that create a tangible liquidity buffer.",
+          PLUG: "Meets strict balance sheet test, but negative momentum reflects burn pace and market sensitivity to secondary offerings. Strict risk management advised.",
+          WOLF: "Silicon carbide production fab ramp-up hurdles triggered selling, but CHIPS Act grants and cash reserves hold a durable balance sheet backstop."
+        };
+
+        function formatMomentum(mom) {
+          if (mom === "REBOUNDING") {
+            return '<b class="up-t">+ Rebounding</b>';
+          } else if (mom === "FALLING") {
+            return '<b class="down-t">- Falling</b>';
+          } else {
+            return '<b class="flat-t">0.0% Stabilizing</b>';
+          }
+        }
+
+        function renderSolvencyBreakdown() {
+          var container = document.getElementById("dynamicLedgerResults");
+          if (!container || typeof window.filterUniverse !== "function") return;
+
+          // Filter the stock universe with the fixed 30% gatekeeper rule
+          var passedRows = window.filterUniverse(FIXED_PARAMS);
+
+          if (!passedRows.length) {
+            container.innerHTML = '<div style="padding: 24px 0; color: var(--paper-faint);">No tickers clear the 30% Cash-to-Price gatekeeper.</div>';
+            return;
+          }
+
+          // Render cards dynamically
+          container.innerHTML = passedRows.map(function (r) {
+            var thesis = THESES[r.sym] || "Asset-backed balance sheet meeting minimum cash cushion threshold.";
+            var price = typeof r.price === "number" ? r.price.toFixed(2) : r.price;
+            var cps = typeof r.cps === "number" ? r.cps.toFixed(2) : r.cps;
+            var drop = typeof r.drop === "number" ? r.drop.toFixed(1) : r.drop;
+            var cash = typeof r.cash === "number" ? r.cash.toFixed(1) : r.cash;
+
+            return `
+              <article class="entry">
+                <div class="ratio">${cash}%<span>Cash / price</span></div>
+                <div class="entry-body">
+                  <h3>${r.sym} &mdash; <span>${r.name}, ${r.exch || 'NASDAQ'}</span></h3>
+                  <p class="metrics">
+                    <span>Price <b>$${price}</b></span>
+                    <span>Cash/share <b>$${cps}</b></span>
+                    <span>3-day drop <b>${drop}%</b></span>
+                    <span>Momentum ${formatMomentum(r.mom)}</span>
+                  </p>
+                  <p class="thesis">${thesis}</p>
+                  <a class="chart" href="stock.html?symbol=${r.sym}">Company profile</a>
+                </div>
+              </article>
+            `;
+          }).join("");
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", renderSolvencyBreakdown);
+        } else {
+          renderSolvencyBreakdown();
+        }
+      })();
+    </script>
     <!-- ============ ALERTS MODAL ============ -->
     <div class="backdrop" id="alertsModal" hidden>
       <div class="modal">
