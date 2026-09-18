@@ -24,6 +24,7 @@ candidate just to begin.
 
 import json
 import os
+import re
 import time
 from datetime import datetime, timezone
 from urllib.parse import quote
@@ -39,6 +40,10 @@ MIN_MARKET_CAP = 50_000_000
 MIN_VOLUME = 50_000
 MIN_DOLLAR_VOLUME = 250_000  # price x volume; a liquidity floor, not a price floor
 MAX_PER_SECTOR = 3           # cap on any one sector in the published list
+MIN_RUNWAY_YEARS = 2.0       # net cash divided by annual burn; cash-generative passes
+MAX_DILUTION_PCT = 25.0      # year-over-year growth in share count
+INSIDER_LOOKBACK_DAYS = 180  # window for open-market insider purchases
+MAX_INSIDER_FILINGS = 12     # Form 4s inspected per company
 MAX_HISTORY_CALLS = 150      # ceiling on per-ticker history requests per run
 MIN_FRAME_ROWS = 2000       # keep merging EDGAR quarters until this many filers
 
@@ -118,6 +123,24 @@ def current_quarter_frames():
     return periods
 
 
+def annual_frames():
+    """
+    Calendar-year periods for cash-flow concepts, newest first.
+
+    Duration concepts must be requested annually. The quarterly frame for
+    operating cash flow carried 322 filers against 5,752 for the year, because
+    most companies report cumulative year-to-date figures rather than discrete
+    quarters.
+    """
+    year = datetime.now(timezone.utc).year
+    return [f"CY{year - 1}", f"CY{year - 2}"]
+
+
+def year_ago_quarter_frames():
+    """The same quarters as current_quarter_frames(), one year earlier."""
+    return [f"CY{int(p[2:6]) - 1}{p[6:]}" for p in current_quarter_frames()]
+
+
 # --------------------------------------------------------------------------
 # Source fetchers
 # --------------------------------------------------------------------------
@@ -149,8 +172,13 @@ def fetch_frame(taxonomy, tag, unit):
     before. Stops once enough filers are covered, so this is normally two
     requests.
     """
+    return fetch_frame_periods(taxonomy, tag, unit, current_quarter_frames())
+
+
+def fetch_frame_periods(taxonomy, tag, unit, periods):
+    """Merge one XBRL concept across an explicit list of frame periods."""
     merged = {}
-    for period in current_quarter_frames():
+    for period in periods:
         url = SEC_FRAME.format(taxonomy=taxonomy, tag=tag, unit=unit, period=period)
         data = fetch_json(url, SEC_UA)
         rows = data.get("data") if isinstance(data, dict) else None
@@ -208,6 +236,71 @@ def fetch_five_day_drop(symbol):
     return round((latest - prior) / prior * 100, 1)
 
 
+def fetch_insider_buys(cik):
+    """
+    Count open-market insider purchases in the last INSIDER_LOOKBACK_DAYS.
+
+    Only transaction code "P" counts. Code "A" is a grant and "M" an option
+    exercise -- both are compensation arriving on a schedule, not somebody
+    choosing to buy their own beaten-down stock. Screens that count every
+    acquisition report insider buying that never happened.
+
+    Deliberately not a gate: insiders not buying says very little, so this is
+    reported rather than filtered on.
+    """
+    padded = str(int(cik)).zfill(10)
+    data = fetch_json(f"https://data.sec.gov/submissions/CIK{padded}.json", SEC_UA, timeout=30, attempts=2)
+    recent = ((data or {}).get("filings") or {}).get("recent") or {}
+    forms = recent.get("form") or []
+    if not forms:
+        return {"buys": 0, "shares": 0, "value": 0.0}
+
+    cutoff = datetime.now(timezone.utc).date().toordinal() - INSIDER_LOOKBACK_DAYS
+    buys = shares_total = 0
+    value_total = 0.0
+    inspected = 0
+
+    for i, form in enumerate(forms):
+        if form != "4" or inspected >= MAX_INSIDER_FILINGS:
+            continue
+        try:
+            filed = recent["filingDate"][i]
+            if datetime.strptime(filed, "%Y-%m-%d").date().toordinal() < cutoff:
+                continue
+            accession = recent["accessionNumber"][i].replace("-", "")
+            document = recent["primaryDocument"][i]
+        except Exception:
+            continue
+
+        # primaryDocument points at the XSL-rendered HTML; the machine-readable
+        # XML sits beside it, without that directory prefix.
+        document = document.split("/")[-1]
+        url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{accession}/{document}"
+        inspected += 1
+        try:
+            with urlopen(Request(url, headers={"User-Agent": SEC_UA}), timeout=30) as resp:
+                xml = resp.read().decode("utf-8", "replace")
+        except Exception:
+            continue
+
+        codes = re.findall(r"<transactionCode>([^<]+)</transactionCode>", xml)
+        counts = re.findall(r"<transactionShares>\s*<value>([^<]+)</value>", xml)
+        prices = re.findall(r"<transactionPricePerShare>\s*<value>([^<]+)</value>", xml)
+        for j, code in enumerate(codes):
+            if code.strip().upper() != "P":
+                continue
+            buys += 1
+            try:
+                n = float(counts[j])
+                shares_total += int(n)
+                value_total += n * float(prices[j]) if j < len(prices) else 0.0
+            except Exception:
+                pass
+        time.sleep(0.12)
+
+    return {"buys": buys, "shares": shares_total, "value": round(value_total)}
+
+
 # --------------------------------------------------------------------------
 # Screen
 # --------------------------------------------------------------------------
@@ -244,7 +337,8 @@ def is_common_stock(name):
     return not any(kind in lowered for kind in NOT_COMMON)
 
 
-def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_cik):
+def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_cik,
+                          burn_by_cik, shares_prior_by_cik):
     """Names clearing the net-cash gate. Costs no extra requests."""
     candidates = []
     for row in rows:
@@ -296,6 +390,33 @@ def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_
         if cushion < CASH_GATE:
             continue
 
+        # Runway, not just cash. Two companies with the same cash per share are
+        # not comparable if one burns four times as fast: cash is a stock, burn
+        # is a flow, and only the flow decides whether a company reaches its
+        # catalyst or has to raise money first. Positive operating cash flow
+        # means no runway constraint at all.
+        operating_cf = burn_by_cik.get(cik)
+        runway_years = None
+        if operating_cf is not None:
+            if operating_cf >= 0:
+                runway_years = float("inf")
+            else:
+                annual_burn = abs(operating_cf)
+                runway_years = (net_cash / annual_burn) if annual_burn else None
+        if runway_years is not None and runway_years < MIN_RUNWAY_YEARS:
+            continue
+
+        # Dilution is how this thesis usually dies: a company trading below its
+        # cash issues equity, and the cash per share just screened on is cut.
+        # A share count up sharply year over year is the company telling you
+        # what it intends to do next.
+        prior_shares = shares_prior_by_cik.get(cik)
+        dilution_pct = None
+        if prior_shares and prior_shares > 0:
+            dilution_pct = (shares - prior_shares) / prior_shares * 100
+            if dilution_pct > MAX_DILUTION_PCT:
+                continue
+
         candidates.append({
             "symbol": symbol,
             "name": (row.get("name") or symbol).replace(" Common Stock", "").strip(),
@@ -305,6 +426,11 @@ def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_
             "cash_cushion_pct": round(cushion, 1),
             "gross_cash_per_share": round(cash / shares, 2),
             "liabilities_per_share": round(liabilities / shares, 2),
+            "runway_years": (None if runway_years is None
+                             else ("cash generative" if runway_years == float("inf")
+                                   else round(runway_years, 1))),
+            "dilution_pct": None if dilution_pct is None else round(dilution_pct, 1),
+            "cik": cik,
             "sector": row.get("sector") or None,
         })
 
@@ -338,6 +464,8 @@ def build_record(candidate, drop_pct, previous):
         "cps": candidate["cps"],
         "cash_cushion_pct": candidate["cash_cushion_pct"],
         "sector": candidate.get("sector"),
+        "runway_years": candidate.get("runway_years"),
+        "dilution_pct": candidate.get("dilution_pct"),
         "gross_cash_per_share": candidate.get("gross_cash_per_share"),
         "liabilities_per_share": candidate.get("liabilities_per_share"),
         "gate": gate,
@@ -420,13 +548,20 @@ def update_database():
     cash_by_cik = fetch_frame("us-gaap", "CashAndCashEquivalentsAtCarryingValue", "USD")
     shares_by_cik = fetch_frame("dei", "EntityCommonStockSharesOutstanding", "shares")
     liab_by_cik = fetch_frame("us-gaap", "Liabilities", "USD")
+    burn_by_cik = fetch_frame_periods(
+        "us-gaap", "NetCashProvidedByUsedInOperatingActivities", "USD", annual_frames()
+    )
+    shares_prior_by_cik = fetch_frame_periods(
+        "dei", "EntityCommonStockSharesOutstanding", "shares", year_ago_quarter_frames()
+    )
 
     if not ticker_cik or not cash_by_cik or not shares_by_cik or not liab_by_cik:
         print("SEC fundamentals unavailable; leaving files unchanged.")
         return
 
     candidates = build_cash_candidates(
-        rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_cik
+        rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_cik,
+        burn_by_cik, shares_prior_by_cik
     )
     print(f"{len(candidates)} names clear the {CASH_GATE:.0f}% NET cash gate.")
     if not candidates:
@@ -438,6 +573,7 @@ def update_database():
         print(f"Checking price history for the top {MAX_HISTORY_CALLS} by cushion.")
 
     previous_snapshot = strip_meta(load_json(SNAPSHOT_FILE))
+    evaluated_ciks = {c["symbol"]: c.get("cik") for c in checked}
     evaluated = {}
     for i, candidate in enumerate(checked, 1):
         drop_pct = fetch_five_day_drop(candidate["symbol"])
@@ -471,6 +607,21 @@ def update_database():
         print("Sector mix published: " + ", ".join(
             f"{name} {count}" for name, count in sorted(sector_counts.items())
         ))
+    # Insider purchases are looked up only for the names being published --
+    # roughly ten companies rather than the whole candidate set, which keeps
+    # this to a few dozen requests.
+    for symbol, record in published:
+        cik = evaluated_ciks.get(symbol)
+        if not cik:
+            continue
+        insider = fetch_insider_buys(cik)
+        record["insider_buys"] = insider["buys"]
+        record["insider_shares"] = insider["shares"]
+        record["insider_value"] = insider["value"]
+        if insider["buys"]:
+            print(f"  {symbol}: {insider['buys']} open-market insider purchase(s), "
+                  f"${insider['value']:,} total")
+
     research_out = dict(published)            # the site shows a top ten
     research_out["_meta"] = {"generated_at": generated_at}
     with open(RESEARCH_FILE, "w") as fh:
