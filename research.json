@@ -1,117 +1,165 @@
 {
-  "BMEA": {
-    "name": "Biomea Fusion, Inc.",
+  "OPENZ": {
+    "name": "Opendoor Technologies Inc  Series Z Warrants each whole warrant exercisable to purchase one share of at an exercise price of $17.00 per warrant",
     "exchange": null,
-    "price": 1.78,
+    "price": 0.07,
     "previous_price": null,
     "dollar_change": null,
     "return_pct": null,
-    "market_cap": null,
-    "five_day_drop_pct": -34.8,
-    "trend": "REBOUND",
-    "cps": 8.71,
-    "cash_cushion_pct": 61.3,
-    "gate": "PASS",
-    "target_zone": "$1.60 - $1.80",
-    "intrinsic_value": 7.0,
-    "catalyst": "Phase 1/2 diabetes safety update and clinical data readout.",
-    "thesis": "Biomea experienced a steep 3-day technical sell-off triggered by temporary phase trial delays. The balance sheet remains heavily capitalized with $8.71 in cash per share, giving a 61.3% cash cushion that severely limits insolvency risk during clinical development.",
-    "risks": [
-      "FDA clinical hold or regulatory review extensions.",
-      "High R&D cash burn rate reducing CPS over next 4 quarters.",
-      "Biotech sector macro headwinds."
-    ]
-  },
-  "SEDG": {
-    "name": "SolarEdge Technologies, Inc.",
-    "exchange": null,
-    "price": 11.85,
-    "previous_price": null,
-    "dollar_change": null,
-    "return_pct": null,
-    "market_cap": null,
-    "five_day_drop_pct": -22.4,
+    "market_cap": 67976374,
+    "five_day_drop_pct": -24.6,
     "trend": "STABILIZING",
-    "cps": 6.5,
-    "cash_cushion_pct": 54.8,
+    "cps": 0.92,
+    "cash_cushion_pct": 1318.1,
     "gate": "PASS",
-    "target_zone": "$11.20 - $11.85",
-    "intrinsic_value": 24.5,
-    "catalyst": "European inverter channel inventory clearance recalibration.",
-    "thesis": "Severe supply chain over-inventory in European distribution channels caused revenue compression. However, SolarEdge's balance sheet maintains a robust $6.50 CPS (54.8% cushion), providing ample time to clear distributor inventory without debt dilution.",
+    "target_zone": "$0.07 - $0.07",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Opendoor Technologies Inc  Series Z Warrants each whole warrant exercisable to purchase one share of at an exercise price of $17.00 per warrant holds $0.92 of cash per share against a $0.07 price, a 1318.1% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
     "risks": [
-      "Extended high-interest-rate environment slowing residential solar adoption.",
-      "Margin pressure from tier-1 competitors.",
-      "Slower-than-expected channel inventory drawdown."
+      "Pending fundamental desk review."
     ]
   },
-  "PAGS": {
-    "name": "PagSeguro Digital Ltd.",
+  "OPENL": {
+    "name": "Opendoor Technologies Inc  Series A Warrants each whole warrant exercisable to purchase one share of at an exercise price of $13.00 per warrant",
     "exchange": null,
-    "price": 8.4,
+    "price": 0.08,
     "previous_price": null,
     "dollar_change": null,
     "return_pct": null,
-    "market_cap": null,
-    "five_day_drop_pct": -18.6,
-    "trend": "REBOUND",
-    "cps": 4.05,
-    "cash_cushion_pct": 48.3,
-    "gate": "PASS",
-    "target_zone": "$8.00 - $8.50",
-    "intrinsic_value": 14.2,
-    "catalyst": "LatAm FX translation repricing & quarterly volume update.",
-    "thesis": "Short-term currency translation volatility hit foreign investor sentiment. Fundamentals remain intact with strong payment volume growth and net margin expansion.",
-    "risks": [
-      "Brazilian real currency fluctuations against USD.",
-      "Central bank interest rate decisions in key South American markets."
-    ]
-  },
-  "RUN": {
-    "name": "Sunrun Inc.",
-    "exchange": null,
-    "price": 12.4,
-    "previous_price": null,
-    "dollar_change": null,
-    "return_pct": null,
-    "market_cap": null,
-    "five_day_drop_pct": -16.8,
+    "market_cap": 74482684,
+    "five_day_drop_pct": -19.5,
     "trend": "STABILIZING",
-    "cps": 4.67,
-    "cash_cushion_pct": 37.7,
+    "cps": 0.92,
+    "cash_cushion_pct": 1203.0,
     "gate": "PASS",
-    "target_zone": "$12.00 - $12.80",
-    "intrinsic_value": 21.0,
-    "catalyst": "Utility rate case regulatory overhang & storage attachment growth.",
-    "thesis": "Regulatory changes around net metering created near-term friction, but shifting sales strategy toward battery storage integration is expanding margins per subscriber.",
+    "target_zone": "$0.08 - $0.08",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Opendoor Technologies Inc  Series A Warrants each whole warrant exercisable to purchase one share of at an exercise price of $13.00 per warrant holds $0.92 of cash per share against a $0.08 price, a 1203.0% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
     "risks": [
-      "State-level regulatory changes to solar incentives.",
-      "Higher capital costs for installation financing."
+      "Pending fundamental desk review."
     ]
   },
-  "LUMN": {
-    "name": "Lumen Technologies, Inc.",
+  "CABO": {
+    "name": "Cable One Inc.",
     "exchange": null,
-    "price": 3.4,
+    "price": 17.37,
     "previous_price": null,
     "dollar_change": null,
     "return_pct": null,
-    "market_cap": null,
-    "five_day_drop_pct": -16.8,
+    "market_cap": 98556077,
+    "five_day_drop_pct": -15.6,
     "trend": "STABILIZING",
-    "cps": 1.3,
-    "cash_cushion_pct": 37.7,
+    "cps": 29.29,
+    "cash_cushion_pct": 168.6,
     "gate": "PASS",
-    "target_zone": "$3.20 - $3.45",
-    "intrinsic_value": 6.8,
-    "catalyst": "Fiber buildout CAPEX timing recalibration & enterprise AI connectivity expansion.",
-    "thesis": "Turnaround play focused on expanding fiber connectivity for hyperscale data centers. Cash cushion exceeds the 30% gate floor, supporting ongoing debt restructuring.",
+    "target_zone": "$16.5 - $17.72",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Cable One Inc. holds $29.29 of cash per share against a $17.37 price, a 168.6% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
     "risks": [
-      "Legacy copper revenue decline outpacing fiber growth.",
-      "Substantial total debt load requiring refinancing."
+      "Pending fundamental desk review."
+    ]
+  },
+  "MRLN": {
+    "name": "Merlin Inc.",
+    "exchange": null,
+    "price": 1.95,
+    "previous_price": null,
+    "dollar_change": null,
+    "return_pct": null,
+    "market_cap": 197082179,
+    "five_day_drop_pct": -31.8,
+    "trend": "STABILIZING",
+    "cps": 1.82,
+    "cash_cushion_pct": 93.1,
+    "gate": "PASS",
+    "target_zone": "$1.85 - $1.99",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Merlin Inc. holds $1.82 of cash per share against a $1.95 price, a 93.1% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
+    "risks": [
+      "Pending fundamental desk review."
+    ]
+  },
+  "NMRA": {
+    "name": "Neumora Therapeutics Inc.",
+    "exchange": null,
+    "price": 0.73,
+    "previous_price": null,
+    "dollar_change": null,
+    "return_pct": null,
+    "market_cap": 137164016,
+    "five_day_drop_pct": -34.2,
+    "trend": "STABILIZING",
+    "cps": 0.62,
+    "cash_cushion_pct": 85.2,
+    "gate": "PASS",
+    "target_zone": "$0.69 - $0.74",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Neumora Therapeutics Inc. holds $0.62 of cash per share against a $0.73 price, a 85.2% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
+    "risks": [
+      "Pending fundamental desk review."
+    ]
+  },
+  "INV": {
+    "name": "Innventure Inc.",
+    "exchange": null,
+    "price": 0.6,
+    "previous_price": null,
+    "dollar_change": null,
+    "return_pct": null,
+    "market_cap": 50564524,
+    "five_day_drop_pct": -33.7,
+    "trend": "STABILIZING",
+    "cps": 0.49,
+    "cash_cushion_pct": 82.2,
+    "gate": "PASS",
+    "target_zone": "$0.57 - $0.61",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Innventure Inc. holds $0.49 of cash per share against a $0.60 price, a 82.2% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
+    "risks": [
+      "Pending fundamental desk review."
+    ]
+  },
+  "ARTV": {
+    "name": "Artiva Biotherapeutics Inc.",
+    "exchange": null,
+    "price": 8.61,
+    "previous_price": null,
+    "dollar_change": null,
+    "return_pct": null,
+    "market_cap": 420943942,
+    "five_day_drop_pct": -19.0,
+    "trend": "STABILIZING",
+    "cps": 6.17,
+    "cash_cushion_pct": 71.6,
+    "gate": "PASS",
+    "target_zone": "$8.18 - $8.78",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Artiva Biotherapeutics Inc. holds $6.17 of cash per share against a $8.61 price, a 71.6% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
+    "risks": [
+      "Pending fundamental desk review."
+    ]
+  },
+  "IPWR": {
+    "name": "Ideal Power Inc.",
+    "exchange": null,
+    "price": 4.03,
+    "previous_price": null,
+    "dollar_change": null,
+    "return_pct": null,
+    "market_cap": 66231660,
+    "five_day_drop_pct": -18.0,
+    "trend": "STABILIZING",
+    "cps": 2.51,
+    "cash_cushion_pct": 62.3,
+    "gate": "PASS",
+    "target_zone": "$3.83 - $4.11",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Ideal Power Inc. holds $2.51 of cash per share against a $4.03 price, a 62.3% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
+    "risks": [
+      "Pending fundamental desk review."
     ]
   },
   "_meta": {
-    "generated_at": "2026-09-18T21:00:00+00:00"
+    "generated_at": "2026-09-18T20:41:47.265722+00:00"
   }
 }
