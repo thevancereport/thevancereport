@@ -736,17 +736,17 @@
     <script>
       (function () {
         // research.json is produced daily by .github/workflows/daily_update.yml
-        // running scripts/update_research.py. It's an object keyed by ticker,
-        // plus a reserved "_meta" key holding { generated_at }.
+        // running scripts/update_research.py. It's an object keyed by ticker
+        // (winners only — tickers currently clearing the gate), plus a
+        // reserved "_meta" key holding { generated_at }.
         var DATA_URL = "research.json";
 
         var state = { rows: [], generatedAt: null, status: "loading" }; // loading | ok | error
 
-        function parsePercent(v) {
-          // Handles "-34.8%" -> -34.8, or a plain number already.
+        function toNum(v) {
           if (typeof v === "number") return v;
           if (typeof v === "string") return parseFloat(v.replace("%", ""));
-          return 0;
+          return null;
         }
 
         function normalizeRecord(sym, r) {
@@ -754,12 +754,14 @@
             sym: sym,
             name: r.name || sym,
             exch: r.exchange || "NASDAQ",
-            price: typeof r.price === "number" ? r.price : parseFloat(r.price),
-            cps: parsePercent(r.cps),
-            cash: parsePercent(r.cps_cushion),      // "61.3%" -> 61.3
-            drop: parsePercent(r.drop),              // "-34.8%" -> -34.8
+            price: toNum(r.price),
+            cps: toNum(r.cps),
+            cash: toNum(r.cash_cushion_pct),
+            drop: toNum(r.five_day_drop_pct),
             mom: r.trend || "STABILIZING",            // REBOUND | STABILIZING | FALLING
-            marketCap: typeof r.market_cap === "number" ? r.market_cap : null, // raw dollars, or null if not yet refreshed
+            marketCap: typeof r.market_cap === "number" ? r.market_cap : null,
+            dollarChange: toNum(r.dollar_change),      // real day-over-day change, or null if no baseline yet
+            returnPct: toNum(r.return_pct),
             thesis: r.thesis || "Asset-backed balance sheet meeting minimum cash cushion threshold.",
           };
         }
@@ -768,14 +770,12 @@
           var universe = source || state.rows;
           return universe.filter(function (r) {
             return (
-              r.cash >= p.cash &&
-              r.drop <= p.drop &&
-              // marketCap can be null for tickers not yet refreshed by the new
-              // pipeline logic — don't silently exclude those, just don't cap-filter them.
+              r.cash != null && r.cash >= p.cash &&
+              r.drop != null && r.drop <= p.drop &&
               (r.marketCap == null || r.marketCap >= p.cap * 1000000) &&
               (!p.momentum || r.mom === p.momentum)
             );
-          }).sort(function (a, b) { return b.cash - a.cash; });
+          }).sort(function (a, b) { return (b.cash || 0) - (a.cash || 0); });
         }
         window.filterUniverse = filterUniverse; // exposed for console debugging
 
@@ -783,6 +783,15 @@
           if (mom === "REBOUND") return '<b class="up-t">&#9650; Rebounding</b>';
           if (mom === "FALLING") return '<b class="down-t">&#9660; Falling</b>';
           return '<b class="flat-t">&#9679; Stabilizing</b>';
+        }
+
+        function formatChange(r) {
+          if (r.dollarChange == null || r.returnPct == null) {
+            return '<span>1-day change <b style="color: var(--paper-faint);">pending baseline</b></span>';
+          }
+          var cls = r.dollarChange > 0 ? "up-t" : r.dollarChange < 0 ? "down-t" : "flat-t";
+          var sign = r.dollarChange > 0 ? "+" : "";
+          return '<span>1-day change <b class="' + cls + '">' + sign + r.dollarChange.toFixed(2) + " (" + sign + r.returnPct.toFixed(1) + "%)</b></span>";
         }
 
         function escapeHtml(s) {
@@ -807,6 +816,7 @@
                 "<h3>" + escapeHtml(r.sym) + " &mdash; <span>" + escapeHtml(r.name) + ", " + escapeHtml(r.exch) + "</span></h3>" +
                 '<p class="metrics">' +
                   "<span>Price <b>$" + price + "</b></span>" +
+                  formatChange(r) +
                   "<span>Cash/share <b>$" + cps + "</b></span>" +
                   "<span>5-day drop <b>" + drop + "%</b></span>" +
                   "<span>Momentum " + formatMomentum(r.mom) + "</span>" +
@@ -834,15 +844,16 @@
           if (!state.rows.length) {
             container.innerHTML = '<div class="state-msg">No tickers cleared the gate in today\u2019s run.</div>';
           } else {
-            var sorted = state.rows.slice().sort(function (a, b) { return b.cash - a.cash; });
+            var sorted = state.rows.slice().sort(function (a, b) { return (b.cash || 0) - (a.cash || 0); });
             container.innerHTML = sorted.map(function (r) { return rowCard(r, { showThesis: true }); }).join("");
           }
 
           var total = state.rows.length;
-          var avgCushion = total ? (state.rows.reduce(function (sum, r) { return sum + r.cash; }, 0) / total) : 0;
+          var withCash = state.rows.filter(function (r) { return r.cash != null; });
+          var avgCushion = withCash.length ? (withCash.reduce(function (sum, r) { return sum + r.cash; }, 0) / withCash.length) : 0;
           document.getElementById("hero-universe-count").textContent = total;
           document.getElementById("summary-qualified-count").textContent = total + " Qualified";
-          document.getElementById("summary-avg-cushion").textContent = total ? avgCushion.toFixed(1) + "%" : "—";
+          document.getElementById("summary-avg-cushion").textContent = withCash.length ? avgCushion.toFixed(1) + "%" : "—";
         }
 
         function updateLiveIndicator() {
@@ -1038,4 +1049,157 @@
           modal.hidden = true;
         }
 
-        openBtns.forEach(function (b) { b.addEventListener("click", openModal);
+        openBtns.forEach(function (b) { b.addEventListener("click", openModal); });
+        closeBtns.forEach(function (b) { b.addEventListener("click", closeModal); });
+        modal.addEventListener("click", function (e) {
+          if (e.target === modal) closeModal();
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && !modal.hidden) closeModal();
+        });
+
+        if (form) {
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            note.textContent = "Signup isn't wired to a backend yet — see the code comment above this script.";
+            note.className = "form-note is-error";
+            note.hidden = false;
+          });
+        }
+      })();
+    </script>
+
+    <!-- ============ BOTTOM FLOATING DISCLAIMER ============ -->
+    <div id="financialDisclaimerBar" class="disc-bar" role="region" aria-label="Financial Disclaimer">
+      <div class="wrap disc-wrap">
+        <div class="disc-text">
+          <span class="disc-badge">Notice</span>
+          Educational research only — not investment advice. The Vance Report is not a registered investment adviser or broker-dealer.<br>
+          Screened securities are high-risk, volatile, and may involve total loss of principal. Data may be delayed or inaccurate — verify before relying on it.
+        </div>
+        <div class="disc-actions">
+          <a class="disc-link" href="disclaimer.html">Read full disclaimer &rarr;</a>
+          <button type="button" class="disc-close" id="discClose" aria-label="Dismiss disclaimer">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .disc-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 90;
+        background: rgba(12, 16, 20, 0.97);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--rule, #26303a);
+        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
+        font-family: var(--mono, "IBM Plex Mono", monospace);
+      }
+
+      .disc-bar[hidden] {
+        display: none !important;
+      }
+
+      .disc-wrap {
+        padding: 16px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .disc-text {
+        flex: 1;
+        color: var(--amber, #e0a33c);
+        font-weight: 400;
+        font-size: 13.5px;
+        line-height: 1.55;
+      }
+
+      .disc-badge {
+        display: inline-block;
+        border: 1px solid var(--amber, #e0a33c);
+        color: var(--amber, #e0a33c);
+        font-weight: 500;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+
+      .disc-actions {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-shrink: 0;
+      }
+
+      .disc-link {
+        color: var(--paper, #e7e3d8);
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--amber, #e0a33c);
+        padding-bottom: 2px;
+        transition: color 0.16s ease, border-color 0.16s ease;
+      }
+
+      .disc-link:hover {
+        color: var(--amber, #e0a33c);
+      }
+
+      .disc-close {
+        background: none;
+        border: 0;
+        color: var(--paper-faint, #6f7680);
+        cursor: pointer;
+        font-size: 16px;
+        padding: 4px 8px;
+        transition: color 0.16s ease;
+        flex-shrink: 0;
+      }
+
+      .disc-close:hover {
+        color: var(--paper, #e7e3d8);
+      }
+
+      @media (max-width: 720px) {
+        .disc-wrap {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .disc-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+    </style>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var bar = document.getElementById("financialDisclaimerBar");
+        var closeBtn = document.getElementById("discClose");
+        if (!bar || !closeBtn) return;
+
+        var DISMISS_KEY = "vance_disclaimer_dismissed_until";
+        var dismissedUntil = localStorage.getItem(DISMISS_KEY);
+        if (dismissedUntil && Date.now() < Number(dismissedUntil)) {
+          bar.hidden = true;
+        }
+
+        closeBtn.addEventListener("click", function () {
+          bar.hidden = true;
+          var oneDayFromNow = Date.now() + 24 * 60 * 60 * 1000;
+          localStorage.setItem(DISMISS_KEY, String(oneDayFromNow));
+        });
+      });
+    </script>
+  </body>
+</html>
