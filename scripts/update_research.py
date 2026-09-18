@@ -10,7 +10,10 @@ SNAPSHOT_FILE = "screen_snapshot.json"
 DROP_THRESHOLD = -15.0   # 5-day drop must be at least this bad to enter the screen
 CASH_GATE = 30.0         # cash-per-share as % of price must clear this to pass
 MOMENTUM_MOVE = 1.0      # day-over-day % move needed to call REBOUND/FALLING vs STABILIZING
-SCREENER_LIMIT = 100     # candidates pulled per run; each one costs API calls below
+SCREENER_LIMIT = 25      # candidates pulled per run; each one costs API calls below.
+                         # Held low because the FMP free plan allows 250 calls/day:
+                         # one run costs 1 + SCREENER_LIMIT + one balance sheet per
+                         # name clearing the drop gate.
 
 
 def fetch_screener_candidates():
@@ -77,7 +80,15 @@ def fetch_cash_and_shares(ticker, price, market_cap):
         print(f"Error fetching balance sheet for {ticker}: {e}")
         return None, None
 
+    # Plan restrictions and quota errors arrive as a JSON object, not a list.
+    # Say so per ticker, otherwise a paywalled figure is indistinguishable from
+    # a company that simply reports no cash.
+    if isinstance(bs_data, dict):
+        print(f"{ticker}: balance sheet unavailable -> {str(bs_data)[:220]}")
+        return None, None
+
     if not bs_data or not isinstance(bs_data, list):
+        print(f"{ticker}: unexpected balance sheet payload type {type(bs_data).__name__}")
         return None, None
 
     row = bs_data[0] if isinstance(bs_data[0], dict) else {}
