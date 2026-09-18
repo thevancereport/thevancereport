@@ -1445,7 +1445,7 @@
         <th scope="col">Catalyst &amp; chart</th>
       </tr>
     </thead>
-    <tbody></tbody>
+   <tbody id="pipelineResults"></tbody>
                 </table>
                  </div>
         </div>
@@ -2268,8 +2268,10 @@
         }
 
         /* ---- Step 2: filter the universe ---- */
-        function filterUniverse(p) {
-          return UNIVERSE.filter(function (r) {
+       function filterUniverse(p, source) {
+    const universe = source || UNIVERSE;
+
+    return universe.filter(function (r) {
             return (
               r.cash >= p.cash && // cash-to-price floor
               r.drop <= p.drop && // drop at least this severe
@@ -2307,7 +2309,7 @@
           return m >= 1000 ? "$" + (m / 1000).toFixed(1) + "B" : "$" + m + "M";
         }
 
-        function render(rows, p) {
+        function render(rows, p, target) {
           // dynamic header
           title.textContent =
             "The Vance Report: Custom Screen (" +
@@ -2337,7 +2339,7 @@
           if (!rows.length) {
             count.textContent = "0 candidates";
             status.textContent = "No matches";
-            out.innerHTML =
+          (target || out).innerHTML = ...
               '<div class="eng-empty"><p>No candidates clear these thresholds.</p>' +
               "<small>Loosen the cash-to-price floor or the drop requirement, then run the screen again.</small></div>";
             return;
@@ -2459,10 +2461,35 @@
     <script>
       (async function () {
         async function loadLiveUniverse() {
-          const response = await fetch("/.netlify/functions/quotes");
-          const quotes = await response.json();
-          console.log("Live quotes loaded:", quotes);
-        }
+    const response = await fetch("/.netlify/functions/quotes");
+    const quotes = await response.json();
+
+    console.log("Live quotes loaded:", quotes);
+
+    const p = {
+        cash: 30.0,
+        drop: -3.0,
+        cap: 200,
+        momentum: ""
+    };
+
+    const rows = filterUniverse(p, quotes);
+
+    const pipelineTarget = document.getElementById("pipelineResults");
+
+    if (pipelineTarget) {
+        pipelineTarget.innerHTML = rows.map(function(row) {
+            return `
+            <tr>
+                <td>${row.sym} ${row.price}</td>
+                <td>${row.drop}%</td>
+                <td>${row.cash}%</td>
+                <td>${row.mom || "—"}</td>
+                <td>${row.name || "—"}</td>
+            </tr>`;
+        }).join("");
+    }
+}
 
         loadLiveUniverse();
       })();
