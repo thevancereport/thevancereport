@@ -220,12 +220,36 @@ def resolve_momentum(return_pct):
     return "STABILIZING"
 
 
-def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik):
-    """Names clearing the cash gate. Costs no extra requests."""
+COMMON_STOCK = ("common stock", "ordinary share", "ordinary shares")
+NOT_COMMON = ("warrant", "unit", "right", "preferred", "note", "notes",
+              "depositary", "debenture", "trust")
+
+
+def is_common_stock(name):
+    """
+    True only for ordinary equity.
+
+    Nasdaq's feed mixes 304 warrants, 293 units, 263 preferreds, 149 notes and
+    456 depositary receipts in with the common stock. Those derivatives share
+    their issuer's CIK, so they inherit the issuer's cash -- Opendoor's Series A
+    and Series Z warrants screened at 1,318% and 1,203% "cash cushion" on
+    7-cent prices, because Opendoor's balance sheet was being divided by a
+    warrant price. That cash belongs to shareholders, not warrant holders.
+    """
+    lowered = (name or "").lower()
+    if not any(kind in lowered for kind in COMMON_STOCK):
+        return False
+    return not any(kind in lowered for kind in NOT_COMMON)
+
+
+def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_cik):
+    """Names clearing the net-cash gate. Costs no extra requests."""
     candidates = []
     for row in rows:
         symbol = (row.get("symbol") or "").strip().upper()
         if not symbol or "." in symbol or "^" in symbol:
+            continue
+        if not is_common_stock(row.get("name")):
             continue
 
         price = money(row.get("lastsale"))
@@ -242,10 +266,23 @@ def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik):
         if cik is None:
             continue
         cash, shares = cash_by_cik.get(cik), shares_by_cik.get(cik)
+        liabilities = liab_by_cik.get(cik)
         if not cash or not shares or shares <= 0:
             continue
 
-        cps = cash / shares
+        # Gross cash flatters leveraged companies badly. Cable One screened at a
+        # 168% "cash cushion" while carrying billions in debt. Total liabilities
+        # is used rather than the debt-specific tags because those are filed by
+        # only about a third of companies, and treating the rest as debt-free
+        # would reproduce the very error this removes.
+        if liabilities is None:
+            continue
+
+        net_cash = cash - liabilities
+        if net_cash <= 0:
+            continue
+
+        cps = net_cash / shares
         cushion = cps / price * 100
         if cushion < CASH_GATE:
             continue
@@ -257,6 +294,8 @@ def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik):
             "market_cap": round(market_cap),
             "cps": round(cps, 2),
             "cash_cushion_pct": round(cushion, 1),
+            "gross_cash_per_share": round(cash / shares, 2),
+            "liabilities_per_share": round(liabilities / shares, 2),
             "sector": row.get("sector") or None,
         })
 
@@ -289,6 +328,8 @@ def build_record(candidate, drop_pct, previous):
         "trend": resolve_momentum(return_pct),
         "cps": candidate["cps"],
         "cash_cushion_pct": candidate["cash_cushion_pct"],
+        "gross_cash_per_share": candidate.get("gross_cash_per_share"),
+        "liabilities_per_share": candidate.get("liabilities_per_share"),
         "gate": gate,
         "target_zone": f"${round(price * 0.95, 2)} - ${round(price * 1.02, 2)}",
     }
@@ -302,9 +343,10 @@ def build_record(candidate, drop_pct, previous):
     else:
         record["catalyst"] = "Automated candidate discovery via the Vance Report cash-to-price screen."
         record["thesis"] = (
-            f"{record['name']} holds ${candidate['cps']:.2f} of cash per share against a "
-            f"${price:.2f} price, a {candidate['cash_cushion_pct']:.1f}% cash cushion. "
-            "Cash and share counts are taken from the company's most recent SEC filing."
+            f"{record['name']} holds ${candidate['cps']:.2f} of NET cash per share -- "
+            f"cash after total liabilities -- against a ${price:.2f} price, a "
+            f"{candidate['cash_cushion_pct']:.1f}% net cash cushion. Cash, liabilities and "
+            "share counts are taken from the company's most recent SEC filing."
         )
         record["risks"] = ["Pending fundamental desk review."]
 
@@ -336,13 +378,16 @@ def update_database():
     ticker_cik = fetch_ticker_to_cik()
     cash_by_cik = fetch_frame("us-gaap", "CashAndCashEquivalentsAtCarryingValue", "USD")
     shares_by_cik = fetch_frame("dei", "EntityCommonStockSharesOutstanding", "shares")
+    liab_by_cik = fetch_frame("us-gaap", "Liabilities", "USD")
 
-    if not ticker_cik or not cash_by_cik or not shares_by_cik:
+    if not ticker_cik or not cash_by_cik or not shares_by_cik or not liab_by_cik:
         print("SEC fundamentals unavailable; leaving files unchanged.")
         return
 
-    candidates = build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik)
-    print(f"{len(candidates)} names clear the {CASH_GATE:.0f}% cash gate.")
+    candidates = build_cash_candidates(
+        rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_cik
+    )
+    print(f"{len(candidates)} names clear the {CASH_GATE:.0f}% NET cash gate.")
     if not candidates:
         print("Nothing cleared the cash gate; leaving files unchanged.")
         return
