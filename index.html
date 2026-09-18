@@ -1,19 +1,22 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>The Vance Report | Daily Cash Cushion Stock Screener & Market Metrics</title>
-    <meta name="description" content="Daily institutional value research, cash cushion stock screening metrics, and fundamental risk-reward analysis to find high-conviction market signals inside selloffs.">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Vance Report | Daily Cash Cushion Stock Screener</title>
+    <meta name="description" content="Daily cash-cushion stock screener and value research — find high-conviction signals inside market selloffs, backed by balance-sheet data.">
     <meta name="keywords" content="Daily Cash Cushion Stock Screener, Fundamental Value Metrics Report, stock screening, market metrics, value investing, financial report">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://thevancereport.com/">
 
     <meta property="og:title" content="The Vance Report | Daily Cash Cushion Stock Screener">
     <meta property="og:description" content="Find high-conviction financial signals and fundamental value metrics inside market selloffs.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://thevancereport.com/">
+    <meta property="og:site_name" content="The Vance Report">
     <meta name="google-site-verification" content="JH0CxvwbRv7hBx1LE-Ctkx3YgaKefbEw0rieD4_JcLY" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="The Vance Report | Daily Cash Cushion Screener">
     <meta name="twitter:description" content="Find high-conviction financial signals and fundamental value metrics inside market selloffs.">
@@ -24,6 +27,19 @@
       href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "The Vance Report",
+      "url": "https://thevancereport.com/",
+      "description": "Daily cash-cushion stock screener and value research, surfacing balance-sheet-backed signals inside market selloffs.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dharma Vani LLC"
+      }
+    }
+    </script>
     <style>
       :root {
         --ink: #0c1014;
@@ -166,7 +182,12 @@
         display: grid;
         grid-template-columns: 1.42fr 0.9fr;
         gap: 64px;
-        align-items: end;
+        align-items: start;
+      }
+      .hero-side {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
       }
       .eyebrow {
         font-size: 13px;
@@ -500,6 +521,56 @@
       }
       .form-note.is-error { color: var(--fail); }
       .form-note.is-ok { color: var(--pass); }
+
+      /* ---------- hero-side testimonial card ---------- */
+      .testimonial-card {
+        border: 1px solid var(--rule);
+        background: var(--ink-2);
+        padding: 22px 24px;
+      }
+      .testimonial-card .th-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+        border-bottom: 1px solid var(--rule-soft);
+        padding-bottom: 10px;
+      }
+      .testimonial-card .th-head h2 {
+        font-size: 16px;
+        letter-spacing: 0.02em;
+      }
+      .testimonial-card .th-head a {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--amber);
+        text-decoration: none;
+        border-bottom: 1px solid var(--amber-deep);
+        white-space: nowrap;
+      }
+      .testimonial-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .testimonial-item {
+        border: 1px solid var(--rule-soft);
+        padding: 12px 14px;
+      }
+      .testimonial-item p {
+        color: var(--paper-dim);
+        font-size: 12.5px;
+        margin: 0 0 8px;
+        line-height: 1.5;
+      }
+      .testimonial-item .th-meta {
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+      }
     </style>
   </head>
   <body>
@@ -538,18 +609,31 @@
             </div>
           </div>
 
-          <div style="border: 1px solid var(--rule); background: var(--ink-2); padding: 24px;">
-            <div style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); margin-bottom: 16px; border-bottom: 1px solid var(--rule-soft); padding-bottom: 8px;">
-              Daily Screen Summary &ndash; <span id="summary-card-date">&mdash;</span>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-              <div>
-                <div style="font-size: 11px; color: var(--paper-faint); text-transform: uppercase;">Names Clearing Gate</div>
-                <div style="font-size: 22px; font-weight: 600; color: var(--pass);" id="summary-qualified-count">&mdash;</div>
+          <div class="hero-side">
+            <div style="border: 1px solid var(--rule); background: var(--ink-2); padding: 24px;">
+              <div style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); margin-bottom: 16px; border-bottom: 1px solid var(--rule-soft); padding-bottom: 8px;">
+                Daily Screen Summary &ndash; <span id="summary-card-date">&mdash;</span>
               </div>
-              <div>
-                <div style="font-size: 11px; color: var(--paper-faint); text-transform: uppercase;">Avg. Cash Cushion</div>
-                <div style="font-size: 22px; font-weight: 600; color: var(--paper);" id="summary-avg-cushion">&mdash;</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <div style="font-size: 11px; color: var(--paper-faint); text-transform: uppercase;">Names Clearing Gate</div>
+                  <div style="font-size: 22px; font-weight: 600; color: var(--pass);" id="summary-qualified-count">&mdash;</div>
+                </div>
+                <div>
+                  <div style="font-size: 11px; color: var(--paper-faint); text-transform: uppercase;">Avg. Cash Cushion</div>
+                  <div style="font-size: 22px; font-weight: 600; color: var(--paper);" id="summary-avg-cushion">&mdash;</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ============ TESTIMONIALS (hero side card) ============ -->
+            <div class="testimonial-card" id="testimonials">
+              <div class="th-head">
+                <h2>Help Us Improve</h2>
+                <a href="reviews.html">Leave a review &rarr;</a>
+              </div>
+              <div class="testimonial-list" id="testimonialResults">
+                <div class="state-msg" style="padding: 6px 0;">Loading reviews&hellip;</div>
               </div>
             </div>
           </div>
@@ -876,6 +960,61 @@
       })();
     </script>
 
+    <!-- ============ TESTIMONIALS RENDER SCRIPT ============ -->
+    <script>
+      (function () {
+        function escapeHtml(s) {
+          return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+          });
+        }
+
+        function timeAgo(iso) {
+          var d = new Date(iso);
+          var days = Math.floor((Date.now() - d.getTime()) / 86400000);
+          if (days <= 0) return "today";
+          if (days === 1) return "yesterday";
+          if (days < 30) return days + "d ago";
+          return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+        }
+
+        async function loadTestimonials() {
+          var container = document.getElementById("testimonialResults");
+          if (!container) return;
+          try {
+            var res = await fetch("/api/reviews", { headers: { accept: "application/json" } });
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            var data = await res.json();
+            var reviews = Array.isArray(data.reviews) ? data.reviews : [];
+
+            if (!reviews.length) {
+              container.innerHTML =
+                '<div class="state-msg" style="padding: 6px 0;">No reviews yet — <a href="reviews.html" style="color: var(--amber);">be the first</a>.</div>';
+              return;
+            }
+
+            container.innerHTML = reviews.map(function (r) {
+              return (
+                '<div class="testimonial-item">' +
+                  '<p>\u201c' + escapeHtml(r.comment) + '\u201d</p>' +
+                  '<div class="th-meta">' + timeAgo(r.created_at) + '</div>' +
+                '</div>'
+              );
+            }).join("");
+          } catch (err) {
+            console.error("Failed to load reviews:", err);
+            container.innerHTML = '<div class="state-msg" style="padding: 6px 0;">Reviews are temporarily unavailable.</div>';
+          }
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", loadTestimonials);
+        } else {
+          loadTestimonials();
+        }
+      })();
+    </script>
+
     <!-- ============ ALERTS MODAL BEHAVIOR ============ -->
     <script>
       // NOTE: this only opens/closes the modal and prevents the default page
@@ -899,160 +1038,4 @@
           modal.hidden = true;
         }
 
-        openBtns.forEach(function (b) { b.addEventListener("click", openModal); });
-        closeBtns.forEach(function (b) { b.addEventListener("click", closeModal); });
-        modal.addEventListener("click", function (e) {
-          if (e.target === modal) closeModal();
-        });
-        document.addEventListener("keydown", function (e) {
-          if (e.key === "Escape" && !modal.hidden) closeModal();
-        });
-
-        if (form) {
-          form.addEventListener("submit", function (e) {
-            e.preventDefault();
-            note.textContent = "Signup isn't wired to a backend yet — see the code comment above this script.";
-            note.className = "form-note is-error";
-            note.hidden = false;
-          });
-        }
-      })();
-    </script>
-
-    <!-- ============ BOTTOM FLOATING DISCLAIMER ============ -->
-    <div id="financialDisclaimerBar" class="disc-bar" role="region" aria-label="Financial Disclaimer">
-      <div class="wrap disc-wrap">
-        <div class="disc-text">
-          <span class="disc-badge">Notice</span>
-          Educational research only — not investment advice. The Vance Report is not a registered investment adviser or broker-dealer.<br>
-          Screened securities are high-risk, volatile, and may involve total loss of principal. Data may be delayed or inaccurate — verify before relying on it.
-        </div>
-        <div class="disc-actions">
-          <a class="disc-link" href="disclaimer.html">Read full disclaimer &rarr;</a>
-          <button type="button" class="disc-close" id="discClose" aria-label="Dismiss disclaimer">✕</button>
-        </div>
-      </div>
-    </div>
-
-    <style>
-      .disc-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 90;
-        background: rgba(12, 16, 20, 0.97);
-        backdrop-filter: blur(10px);
-        border-top: 1px solid var(--rule, #26303a);
-        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
-        font-family: var(--mono, "IBM Plex Mono", monospace);
-      }
-
-      .disc-bar[hidden] {
-        display: none !important;
-      }
-
-      .disc-wrap {
-        padding: 16px 28px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 24px;
-      }
-
-      .disc-text {
-        flex: 1;
-        color: var(--amber, #e0a33c);
-        font-weight: 600;
-        font-size: 13.5px;
-        line-height: 1.55;
-      }
-
-      .disc-badge {
-        display: inline-block;
-        border: 1px solid var(--amber, #e0a33c);
-        color: var(--amber, #e0a33c);
-        font-weight: 500;
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        padding: 2px 7px;
-        margin-right: 8px;
-        vertical-align: middle;
-      }
-
-      .disc-actions {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        flex-shrink: 0;
-      }
-
-      .disc-link {
-        color: var(--paper, #e7e3d8);
-        text-decoration: none;
-        font-size: 12px;
-        font-weight: 500;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        white-space: nowrap;
-        border-bottom: 1px solid var(--amber, #e0a33c);
-        padding-bottom: 2px;
-        transition: color 0.16s ease, border-color 0.16s ease;
-      }
-
-      .disc-link:hover {
-        color: var(--amber, #e0a33c);
-      }
-
-      .disc-close {
-        background: none;
-        border: 0;
-        color: var(--paper-faint, #6f7680);
-        cursor: pointer;
-        font-size: 16px;
-        padding: 4px 8px;
-        transition: color 0.16s ease;
-        flex-shrink: 0;
-      }
-
-      .disc-close:hover {
-        color: var(--paper, #e7e3d8);
-      }
-
-      @media (max-width: 720px) {
-        .disc-wrap {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-        .disc-actions {
-          width: 100%;
-          justify-content: space-between;
-        }
-      }
-    </style>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        var bar = document.getElementById("financialDisclaimerBar");
-        var closeBtn = document.getElementById("discClose");
-        if (!bar || !closeBtn) return;
-
-        // Re-shows once a day rather than being dismissed forever — a financial
-        // site's risk notice is worth re-surfacing on a fresh visit, not just
-        // permanently hidden after one click.
-        var DISMISS_KEY = "vance_disclaimer_dismissed_until";
-        var dismissedUntil = localStorage.getItem(DISMISS_KEY);
-        if (dismissedUntil && Date.now() < Number(dismissedUntil)) {
-          bar.hidden = true;
-        }
-
-        closeBtn.addEventListener("click", function () {
-          bar.hidden = true;
-          var oneDayFromNow = Date.now() + 24 * 60 * 60 * 1000;
-          localStorage.setItem(DISMISS_KEY, String(oneDayFromNow));
-        });
-      });
-    </script>
-  </body>
-</html>
+        openBtns.forEach(function (b) { b.addEventListener("click", openModal);
