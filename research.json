@@ -1,124 +1,4 @@
 {
-  "OPENZ": {
-    "name": "Opendoor Technologies Inc  Series Z Warrants each whole warrant exercisable to purchase one share of at an exercise price of $17.00 per warrant",
-    "exchange": null,
-    "price": 0.07,
-    "previous_price": 0.07,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 67976374,
-    "five_day_drop_pct": -24.6,
-    "trend": "STABILIZING",
-    "cps": 0.92,
-    "cash_cushion_pct": 1318.1,
-    "gate": "PASS",
-    "target_zone": "$0.07 - $0.07",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Opendoor Technologies Inc  Series Z Warrants each whole warrant exercisable to purchase one share of at an exercise price of $17.00 per warrant holds $0.92 of cash per share against a $0.07 price, a 1318.1% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
-  },
-  "OPENL": {
-    "name": "Opendoor Technologies Inc  Series A Warrants each whole warrant exercisable to purchase one share of at an exercise price of $13.00 per warrant",
-    "exchange": null,
-    "price": 0.08,
-    "previous_price": 0.08,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 74482684,
-    "five_day_drop_pct": -19.5,
-    "trend": "STABILIZING",
-    "cps": 0.92,
-    "cash_cushion_pct": 1203.0,
-    "gate": "PASS",
-    "target_zone": "$0.08 - $0.08",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Opendoor Technologies Inc  Series A Warrants each whole warrant exercisable to purchase one share of at an exercise price of $13.00 per warrant holds $0.92 of cash per share against a $0.08 price, a 1203.0% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
-  },
-  "CABO": {
-    "name": "Cable One Inc.",
-    "exchange": null,
-    "price": 17.37,
-    "previous_price": 17.37,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 98556077,
-    "five_day_drop_pct": -15.6,
-    "trend": "STABILIZING",
-    "cps": 29.29,
-    "cash_cushion_pct": 168.6,
-    "gate": "PASS",
-    "target_zone": "$16.5 - $17.72",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Cable One Inc. holds $29.29 of cash per share against a $17.37 price, a 168.6% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
-  },
-  "MRLN": {
-    "name": "Merlin Inc.",
-    "exchange": null,
-    "price": 1.95,
-    "previous_price": 1.95,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 197082179,
-    "five_day_drop_pct": -31.8,
-    "trend": "STABILIZING",
-    "cps": 1.82,
-    "cash_cushion_pct": 93.1,
-    "gate": "PASS",
-    "target_zone": "$1.85 - $1.99",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Merlin Inc. holds $1.82 of cash per share against a $1.95 price, a 93.1% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
-  },
-  "NMRA": {
-    "name": "Neumora Therapeutics Inc.",
-    "exchange": null,
-    "price": 0.73,
-    "previous_price": 0.73,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 137164016,
-    "five_day_drop_pct": -34.2,
-    "trend": "STABILIZING",
-    "cps": 0.62,
-    "cash_cushion_pct": 85.2,
-    "gate": "PASS",
-    "target_zone": "$0.69 - $0.74",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Neumora Therapeutics Inc. holds $0.62 of cash per share against a $0.73 price, a 85.2% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
-  },
-  "INV": {
-    "name": "Innventure Inc.",
-    "exchange": null,
-    "price": 0.6,
-    "previous_price": 0.6,
-    "dollar_change": 0.0,
-    "return_pct": 0.0,
-    "market_cap": 50564524,
-    "five_day_drop_pct": -33.7,
-    "trend": "STABILIZING",
-    "cps": 0.49,
-    "cash_cushion_pct": 82.2,
-    "gate": "PASS",
-    "target_zone": "$0.57 - $0.61",
-    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
-    "thesis": "Innventure Inc. holds $0.49 of cash per share against a $0.60 price, a 82.2% cash cushion. Cash and share counts are taken from the company's most recent SEC filing.",
-    "risks": [
-      "Pending fundamental desk review."
-    ]
-  },
   "ARTV": {
     "name": "Artiva Biotherapeutics Inc.",
     "exchange": null,
@@ -129,8 +9,10 @@
     "market_cap": 420943942,
     "five_day_drop_pct": -19.0,
     "trend": "STABILIZING",
-    "cps": 6.17,
-    "cash_cushion_pct": 71.6,
+    "cps": 5.73,
+    "cash_cushion_pct": 66.6,
+    "gross_cash_per_share": 6.17,
+    "liabilities_per_share": 0.43,
     "gate": "PASS",
     "target_zone": "$8.18 - $8.78",
     "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
@@ -149,8 +31,10 @@
     "market_cap": 66231660,
     "five_day_drop_pct": -18.0,
     "trend": "STABILIZING",
-    "cps": 2.51,
-    "cash_cushion_pct": 62.3,
+    "cps": 2.36,
+    "cash_cushion_pct": 58.5,
+    "gross_cash_per_share": 2.51,
+    "liabilities_per_share": 0.16,
     "gate": "PASS",
     "target_zone": "$3.83 - $4.11",
     "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
@@ -159,7 +43,117 @@
       "Pending fundamental desk review."
     ]
   },
+  "EQ": {
+    "name": "Equillium Inc.",
+    "exchange": null,
+    "price": 1.92,
+    "previous_price": null,
+    "dollar_change": null,
+    "return_pct": null,
+    "market_cap": 121743517,
+    "five_day_drop_pct": -21.9,
+    "trend": "STABILIZING",
+    "cps": 0.86,
+    "cash_cushion_pct": 44.8,
+    "gross_cash_per_share": 0.9,
+    "liabilities_per_share": 0.04,
+    "gate": "PASS",
+    "target_zone": "$1.82 - $1.96",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Equillium Inc. holds $0.86 of NET cash per share -- cash after total liabilities -- against a $1.92 price, a 44.8% net cash cushion. Cash, liabilities and share counts are taken from the company's most recent SEC filing.",
+    "risks": [
+      "Pending fundamental desk review."
+    ]
+  },
+  "ZURA": {
+    "name": "Zura Bio Limited Class A Ordinary Shares",
+    "exchange": null,
+    "price": 4.46,
+    "previous_price": null,
+    "dollar_change": null,
+    "return_pct": null,
+    "market_cap": 427397951,
+    "five_day_drop_pct": -15.1,
+    "trend": "STABILIZING",
+    "cps": 1.97,
+    "cash_cushion_pct": 44.2,
+    "gross_cash_per_share": 2.14,
+    "liabilities_per_share": 0.17,
+    "gate": "PASS",
+    "target_zone": "$4.24 - $4.55",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Zura Bio Limited Class A Ordinary Shares holds $1.97 of NET cash per share -- cash after total liabilities -- against a $4.46 price, a 44.2% net cash cushion. Cash, liabilities and share counts are taken from the company's most recent SEC filing.",
+    "risks": [
+      "Pending fundamental desk review."
+    ]
+  },
+  "PALI": {
+    "name": "Palisade Bio Inc.",
+    "exchange": null,
+    "price": 1.59,
+    "previous_price": null,
+    "dollar_change": null,
+    "return_pct": null,
+    "market_cap": 277090187,
+    "five_day_drop_pct": -15.4,
+    "trend": "STABILIZING",
+    "cps": 0.69,
+    "cash_cushion_pct": 43.2,
+    "gross_cash_per_share": 0.72,
+    "liabilities_per_share": 0.03,
+    "gate": "PASS",
+    "target_zone": "$1.51 - $1.62",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Palisade Bio Inc. holds $0.69 of NET cash per share -- cash after total liabilities -- against a $1.59 price, a 43.2% net cash cushion. Cash, liabilities and share counts are taken from the company's most recent SEC filing.",
+    "risks": [
+      "Pending fundamental desk review."
+    ]
+  },
+  "DMRA": {
+    "name": "Damora Therapeutics Inc. Ordinary Shares",
+    "exchange": null,
+    "price": 22.59,
+    "previous_price": null,
+    "dollar_change": null,
+    "return_pct": null,
+    "market_cap": 1394605374,
+    "five_day_drop_pct": -15.1,
+    "trend": "STABILIZING",
+    "cps": 8.31,
+    "cash_cushion_pct": 36.8,
+    "gross_cash_per_share": 8.76,
+    "liabilities_per_share": 0.45,
+    "gate": "PASS",
+    "target_zone": "$21.46 - $23.04",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Damora Therapeutics Inc. Ordinary Shares holds $8.31 of NET cash per share -- cash after total liabilities -- against a $22.59 price, a 36.8% net cash cushion. Cash, liabilities and share counts are taken from the company's most recent SEC filing.",
+    "risks": [
+      "Pending fundamental desk review."
+    ]
+  },
+  "ACRV": {
+    "name": "Acrivon Therapeutics Inc.",
+    "exchange": null,
+    "price": 1.85,
+    "previous_price": null,
+    "dollar_change": null,
+    "return_pct": null,
+    "market_cap": 79278720,
+    "five_day_drop_pct": -16.7,
+    "trend": "STABILIZING",
+    "cps": 0.68,
+    "cash_cushion_pct": 36.6,
+    "gross_cash_per_share": 0.97,
+    "liabilities_per_share": 0.29,
+    "gate": "PASS",
+    "target_zone": "$1.76 - $1.89",
+    "catalyst": "Automated candidate discovery via the Vance Report cash-to-price screen.",
+    "thesis": "Acrivon Therapeutics Inc. holds $0.68 of NET cash per share -- cash after total liabilities -- against a $1.85 price, a 36.6% net cash cushion. Cash, liabilities and share counts are taken from the company's most recent SEC filing.",
+    "risks": [
+      "Pending fundamental desk review."
+    ]
+  },
   "_meta": {
-    "generated_at": "2026-09-18T20:57:58.679247+00:00"
+    "generated_at": "2026-09-18T21:05:24.291750+00:00"
   }
 }
