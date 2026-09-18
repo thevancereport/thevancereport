@@ -16,16 +16,6 @@ function response(body, status = 200) {
   });
 }
 
-function positiveScoreExpr() {
-  // Kept as a raw fragment used inside tagged-template SQL calls below.
-  return `(
-    (data_freshness = 'good')::int +
-    (screen_filters = 'good')::int +
-    (site_layout    = 'good')::int +
-    (visual_design  = 'good')::int +
-    (info_quality   = 'good')::int
-  )`;
-}
 
 export default async function handler(request) {
   const db = getDatabase();
@@ -51,7 +41,13 @@ export default async function handler(request) {
           id, data_freshness, screen_filters, site_layout, visual_design, info_quality,
           data_freshness_note, screen_filters_note, site_layout_note, visual_design_note, info_quality_note,
           comment, created_at,
-          ${positiveScoreExpr()} AS positive_score
+          (
+    (data_freshness = 'good')::int +
+    (screen_filters = 'good')::int +
+    (site_layout    = 'good')::int +
+    (visual_design  = 'good')::int +
+    (info_quality   = 'good')::int
+  ) AS positive_score
         FROM reviews ORDER BY created_at DESC LIMIT 200
       `;
       return response({ reviews: rows });
@@ -61,9 +57,21 @@ export default async function handler(request) {
     // ratings breakdown, no notes, nothing that could read as internal
     // feedback. Used to populate the homepage testimonial spot.
     const rows = await db.sql`
-      SELECT comment, created_at, ${positiveScoreExpr()} AS positive_score
+      SELECT comment, created_at, (
+    (data_freshness = 'good')::int +
+    (screen_filters = 'good')::int +
+    (site_layout    = 'good')::int +
+    (visual_design  = 'good')::int +
+    (info_quality   = 'good')::int
+  ) AS positive_score
       FROM reviews
-      WHERE ${positiveScoreExpr()} >= 4
+      WHERE (
+    (data_freshness = 'good')::int +
+    (screen_filters = 'good')::int +
+    (site_layout    = 'good')::int +
+    (visual_design  = 'good')::int +
+    (info_quality   = 'good')::int
+  ) >= 4
       ORDER BY positive_score DESC, created_at DESC LIMIT 3
     `;
     return response({ reviews: rows });
