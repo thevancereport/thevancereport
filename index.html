@@ -2454,17 +2454,19 @@
             status.textContent = "Ready";
           });
         });
-        
-       async function loadLiveUniverse() {
-  const response = await fetch("/.netlify/functions/quotes");
-  const quotes = await response.json();
+      })();
+    </script>
+    <script>
+      (async function () {
+        async function loadLiveUniverse() {
+          const response = await fetch("/.netlify/functions/quotes");
+          const quotes = await response.json();
+          console.log("Live quotes loaded:", quotes);
+        }
 
-  console.log("Live quotes loaded:", quotes);
-}
-
-loadLiveUniverse();
-
-</script>
+        loadLiveUniverse();
+      })();
+    </script>
     <script>
       (function () {
         var form = document.getElementById("reviewForm"),
