@@ -357,15 +357,36 @@
         padding: 14px 26px;
       }
 
-      /* ---------- ledger ---------- */
-      .ledger { border-top: 1px solid var(--rule); }
-      .entry {
-        display: grid;
-        grid-template-columns: 150px 1fr;
-        gap: 38px;
-        padding: 30px 0;
-        border-bottom: 1px solid var(--rule-soft);
-      }
+     /* --------- ledger --------- */
+.ledger { border-top: 1px solid var(--rule); }
+
+.entry {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 38px;
+  padding: 30px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+a.chart {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--amber, #e0a33c); /* Theme orange */
+  font-size: 26px;              /* Doubled size from 13px */
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.16s ease, color 0.16s ease;
+}
+
+a.chart:hover {
+  color: #eeb84f;
+  border-bottom-color: var(--amber, #e0a33c);
+}
       .ratio {
         font-family: var(--serif);
         font-size: 46px;
@@ -536,110 +557,96 @@
                 <button type="submit" class="btn-run">Run Screener</button>
               </div>
             </form>
-
             <div class="eng-out" id="engOutput" hidden style="padding: 20px;">
-              <h3 id="engTitle">The Vance Report: Custom Screen</h3>
-              <span id="engCount"></span>
-              <p id="engApplied"></p>
-              <div id="engResults"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============ SOLVENCY BREAKDOWN ============ -->
-      <section class="block">
-        <div class="wrap">
-          <div class="sec-head">
-            <h2>Gatekeeper pass breakdown</h2>
-          </div>
-          <div class="ledger" id="dynamicLedgerResults"></div>
-            
-          </div>
-      </section>
-
-      <footer>
-        <div class="wrap">
-        </div>
-      </footer>
+      <h3 id="engTitle">The Vance Report: Custom Screen</h3>
+      <span id="engCount"></span>
+      <p id="engApplied"></p>
+      <div id="engResults"></div>
     </div>
+  </div>
+</div>
+</section>
+
+<!-- PASTE SCRIPT HERE - OUTSIDE THE ENG-OUT CONTAINER -->
 <script>
-      (function () {
-        // Fixed gatekeeper parameters
-        var FIXED_PARAMS = {
-          cash: 30.0,
-          drop: -3.0,
-          cap: 200,
-          momentum: ""
-        };
+  (function () {
+    // Fixed gatekeeper parameters
+    var FIXED_PARAMS = {
+      cash: 30.0,
+      drop: -3.0,
+      cap: 200,
+      momentum: ""
+    };
 
-        // Editorial investment theses mapped by ticker
-        var THESES = {
-          BMEA: "Pristine cash runway covering over 18 months of burn despite clinical trial headline volatility. Bouncing sharply off technical intraday support.",
-          SEDG: "De-risked valuation trading at close to net cash value. Inventory channel write-downs are nearing terminal stage while enterprise value approaches floor.",
-          PAGS: "High cash cushion backed by steady merchant banking operations and Brazilian central bank float dynamics. Price showing immediate rebound momentum.",
-          RUN: "Significant net cash and tax credit liquidity, though continued interest-rate headwinds keep short-term momentum negative.",
-          LUMN: "Fiber connectivity deals with hyperscalers provide substantial milestone cash inflows that create a tangible liquidity buffer.",
-          PLUG: "Meets strict balance sheet test, but negative momentum reflects burn pace and market sensitivity to secondary offerings. Strict risk management advised.",
-          WOLF: "Silicon carbide production fab ramp-up hurdles triggered selling, but CHIPS Act grants and cash reserves hold a durable balance sheet backstop."
-        };
+    // Editorial investment theses mapped by ticker
+    var THESES = {
+      BMEA: "Pristine cash runway covering over 18 months of burn despite clinical trial headline volatility. Bouncing sharply off technical intraday support.",
+      SEDG: "De-risked valuation trading at close to net cash value. Inventory channel write-downs are nearing terminal stage while enterprise value approaches floor.",
+      PAGS: "High cash cushion backed by steady merchant banking operations and Brazilian central bank float dynamics. Price showing immediate rebound momentum.",
+      RUN: "Significant net cash and tax credit liquidity, though continued interest-rate headwinds keep short-term momentum negative.",
+LUMN: "Fiber connectivity deals with hyperscalers provide substantial milestone cash inflows that create a tangible liquidity buffer.",
+      PLUG: "Meets strict balance sheet test, but negative momentum reflects burn pace and market sensitivity to secondary offerings. Strict risk management advised.",
+      WOLF: "Silicon carbide production fab ramp-up hurdles triggered selling, but CHIPS Act grants and cash reserves hold a durable balance sheet backstop."
+    };
 
-        function formatMomentum(mom) {
-          if (mom === "REBOUNDING") {
-            return '<b class="up-t">+ Rebounding</b>';
-          } else if (mom === "FALLING") {
-            return '<b class="down-t">- Falling</b>';
-          } else {
-            return '<b class="flat-t">0.0% Stabilizing</b>';
-          }
-        }
+    function formatMomentum(mom) {
+      if (mom === "REBOUNDING") {
+        return '<b class="up-t">+ Rebounding</b>';
+      } else if (mom === "FALLING") {
+        return '<b class="down-t">- Falling</b>';
+      } else {
+        return '<b class="flat-t">0.0% Stabilizing</b>';
+      }
+    }
 
-        function renderSolvencyBreakdown() {
-          var container = document.getElementById("dynamicLedgerResults");
-          if (!container || typeof window.filterUniverse !== "function") return;
+    function renderSolvencyBreakdown() {
+      var container = document.getElementById("dynamicLedgerResults");
+      if (!container || typeof window.filterUniverse !== "function") return;
 
-          // Filter the stock universe with the fixed 30% gatekeeper rule
-          var passedRows = window.filterUniverse(FIXED_PARAMS);
+      // Filter the stock universe with the fixed 30% gatekeeper rule
+      var passedRows = window.filterUniverse(FIXED_PARAMS);
 
-          if (!passedRows.length) {
-            container.innerHTML = '<div style="padding: 24px 0; color: var(--paper-faint);">No tickers clear the 30% Cash-to-Price gatekeeper.</div>';
-            return;
-          }
+      if (!passedRows.length) {
+        container.innerHTML = '<div style="padding: 24px 0; color: var(--paper-faint);">No tickers clear the 30% Cash-to-Price gatekeeper.</div>';
+        return;
+      }
 
-          // Render cards dynamically
-          container.innerHTML = passedRows.map(function (r) {
-            var thesis = THESES[r.sym] || "Asset-backed balance sheet meeting minimum cash cushion threshold.";
-            var price = typeof r.price === "number" ? r.price.toFixed(2) : r.price;
-            var cps = typeof r.cps === "number" ? r.cps.toFixed(2) : r.cps;
-            var drop = typeof r.drop === "number" ? r.drop.toFixed(1) : r.drop;
-            var cash = typeof r.cash === "number" ? r.cash.toFixed(1) : r.cash;
+      // Render cards dynamically
+      container.innerHTML = passedRows.map(function (r) {
+        var thesis = THESES[r.sym] || "Asset-backed balance sheet meeting minimum cash cushion threshold.";
+        var price = typeof r.price === "number" ? r.price.toFixed(2) : r.price;
+        var cps = typeof r.cps === "number" ? r.cps.toFixed(2) : r.cps;
+        var drop = typeof r.drop === "number" ? r.drop.toFixed(1) : r.drop;
+        var cash = typeof r.cash === "number" ? r.cash.toFixed(1) : r.cash;
 
-            return `
-              <article class="entry">
-                <div class="ratio">${cash}%<span>Cash / price</span></div>
-                <div class="entry-body">
-                  <h3>${r.sym} &mdash; <span>${r.name}, ${r.exch || 'NASDAQ'}</span></h3>
-                  <p class="metrics">
-                    <span>Price <b>$${price}</b></span>
-                    <span>Cash/share <b>$${cps}</b></span>
-                    <span>3-day drop <b>${drop}%</b></span>
-                    <span>Momentum ${formatMomentum(r.mom)}</span>
-                  </p>
-                  <p class="thesis">${thesis}</p>
-                  <a class="chart" href="stock.html?symbol=${r.sym}">Company profile</a>
-                </div>
-              </article>
-            `;
-          }).join("");
-        }
+        return `
+          <article class="entry">
+            <div class="ratio">${cash}%<span>Cash / price</span></div>
+            <div class="entry-body">
+              <h3>${r.sym} &mdash; <span>${r.name}, ${r.exch || 'NASDAQ'}</span></h3>
+              <p class="metrics">
+                <span>Price <b>$${price}</b></span>
+               <span>Cash/share <b>$${cps}</b></span>
+                <span>3-day drop <b>${drop}%</b></span>
+                <span>Momentum ${formatMomentum(r.mom)}</span>
+              </p>
+              <p class="thesis">${thesis}</p>
+              <a class="chart" href="stock.html?symbol=${r.sym}" style="color: var(--amber, #e0a33c); font-size: 26px; font-weight: 500;">
+                Company profile &rarr;
+              </a>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
 
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", renderSolvencyBreakdown);
-        } else {
-          renderSolvencyBreakdown();
-        }
-      })();
-    </script>
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", renderSolvencyBreakdown);
+    } else {
+      renderSolvencyBreakdown();
+    }
+  })();
+</script>   
     <!-- ============ ALERTS MODAL ============ -->
     <div class="backdrop" id="alertsModal" hidden>
       <div class="modal">
