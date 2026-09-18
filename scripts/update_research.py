@@ -2,16 +2,16 @@ import json
 import os
 from datetime import datetime, timezone
 import requests
- 
+
 API_KEY = os.environ.get("FMP_API_KEY")
 RESEARCH_FILE = "research.json"
 SNAPSHOT_FILE = "screen_snapshot.json"
- 
+
 DROP_THRESHOLD = -15.0   # 5-day drop must be at least this bad to enter the screen
 CASH_GATE = 30.0         # cash-per-share as % of price must clear this to pass
 MOMENTUM_MOVE = 1.0      # day-over-day % move needed to call REBOUND/FALLING vs STABILIZING
- 
- 
+
+
 def fetch_screener_candidates():
     url = (
         "https://financialmodelingprep.com/api/v3/stock-screener"
@@ -23,8 +23,8 @@ def fetch_screener_candidates():
     except Exception as e:
         print(f"Error reaching FMP Screener: {e}")
         return []
- 
- 
+
+
 def fetch_drop_pct(ticker):
     url = f"https://financialmodelingprep.com/api/v3/stock-price-change/{ticker}?apikey={API_KEY}"
     try:
@@ -34,8 +34,8 @@ def fetch_drop_pct(ticker):
     except Exception as e:
         print(f"Error fetching price change for {ticker}: {e}")
     return 0.0
- 
- 
+
+
 def fetch_cash_and_shares(ticker, price, market_cap):
     url = (
         f"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{ticker}"
@@ -46,15 +46,15 @@ def fetch_cash_and_shares(ticker, price, market_cap):
     except Exception as e:
         print(f"Error fetching balance sheet for {ticker}: {e}")
         return None, None
- 
+
     if not bs_data or not isinstance(bs_data, list):
         return None, None
- 
+
     cash = bs_data[0].get("cashAndCashEquivalents", 0.0)
     shares = market_cap / price if price > 0 else 1
     return cash, shares
- 
- 
+
+
 def resolve_momentum(return_pct):
     if return_pct is None:
         return "STABILIZING"  # no baseline yet — neutral rather than a guess
@@ -63,14 +63,14 @@ def resolve_momentum(return_pct):
     if return_pct <= -MOMENTUM_MOVE:
         return "FALLING"
     return "STABILIZING"
- 
- 
+
+
 def build_record(item, previous):
     """
     Evaluates one ticker fully (drop gate + cash gate) and returns a record
     for screen_snapshot.json (pass or fail), or None if it doesn't even clear
     the 5-day-drop gate to be considered a candidate at all.
- 
+
     `previous` is that ticker's record from the LAST screen_snapshot.json, if
     it was evaluated then — used purely for day-over-day price comparison and
     to carry editorial fields (thesis/catalyst/risks) forward. Never used to
@@ -79,21 +79,21 @@ def build_record(item, previous):
     ticker = item.get("symbol")
     price = item.get("price", 0.0)
     market_cap = item.get("marketCap", 0.0)
- 
+
     if not ticker or price <= 0:
         return None
- 
+
     drop_pct = fetch_drop_pct(ticker)
     if drop_pct > DROP_THRESHOLD:
         return None  # doesn't even clear the initial dislocation screen
- 
+
     cash, shares = fetch_cash_and_shares(ticker, price, market_cap)
     cps = None
     cash_cushion_pct = None
     if cash is not None and shares:
         cps = cash / shares if shares > 0 else 0.0
         cash_cushion_pct = (cps / price) * 100 if price > 0 else None
- 
+
     # Explicit unknown state, never a silent passing default. A missing
     # balance-sheet figure is "gate unknown," not "gate pass."
     if cash_cushion_pct is None:
@@ -102,7 +102,7 @@ def build_record(item, previous):
         gate = "PASS"
     else:
         gate = "FAIL"
- 
+
     # Real day-over-day tracking: compare today's price to the price stored
     # in yesterday's snapshot for this same ticker, not a fabricated number.
     previous_price = previous.get("price") if previous else None
@@ -112,7 +112,7 @@ def build_record(item, previous):
     else:
         dollar_change = None
         return_pct = None
- 
+
     record = {
         "name": item.get("companyName", ticker),
         "exchange": item.get("exchangeShortName", "NASDAQ"),
@@ -128,7 +128,7 @@ def build_record(item, previous):
         "gate": gate,
         "target_zone": f"${round(price * 0.95, 2)} - ${round(price * 1.02, 2)}",
     }
- 
+
     if previous:
         record["catalyst"] = previous.get("catalyst", "Automated candidate discovery via Vance Report Cash-to-Price screener.")
         record["thesis"] = previous.get("thesis") or (
@@ -144,17 +144,17 @@ def build_record(item, previous):
             f"{'%.1f' % cash_cushion_pct + '%' if cash_cushion_pct is not None else 'pending'} cash cushion."
         )
         record["risks"] = ["Pending fundamental desk review."]
- 
+
     return record
- 
- 
+
+
 def run_screen(previous_snapshot):
     print("Running Vance Report Screener Pipeline...")
     candidates = fetch_screener_candidates()
     if not candidates:
         print("No candidates returned from screener.")
         return {}
- 
+
     evaluated = {}
     for item in candidates:
         ticker = item.get("symbol")
@@ -164,10 +164,10 @@ def run_screen(previous_snapshot):
         record = build_record(item, previous)
         if record is not None:
             evaluated[ticker] = record
- 
+
     return evaluated
- 
- 
+
+
 def load_json(path):
     if not os.path.exists(path):
         return {}
@@ -176,24 +176,24 @@ def load_json(path):
             return json.load(f)
         except Exception:
             return {}
- 
- 
+
+
 def strip_meta(data):
     return {k: v for k, v in data.items() if not k.startswith("_")}
- 
- 
+
+
 def update_database():
     previous_snapshot = strip_meta(load_json(SNAPSHOT_FILE))
- 
+
     evaluated = run_screen(previous_snapshot)
     if not evaluated:
         print("Screener returned nothing usable this run; leaving files unchanged.")
         return
- 
+
     generated_at = datetime.now(timezone.utc).isoformat()
     previous_meta = load_json(SNAPSHOT_FILE).get("_meta", {})
     previous_generated_at = previous_meta.get("generated_at")
- 
+
     # screen_snapshot.json: everything evaluated this run, pass or fail —
     # the full audit trail report.html needs.
     snapshot_out = dict(evaluated)
@@ -203,7 +203,7 @@ def update_database():
     }
     with open(SNAPSHOT_FILE, "w") as f:
         json.dump(snapshot_out, f, indent=2)
- 
+
     # research.json: only the current winners — the clean list index.html
     # and stock.html show. A ticker that no longer passes is dropped here
     # even though it stays visible in screen_snapshot.json.
@@ -212,13 +212,12 @@ def update_database():
     research_out["_meta"] = {"generated_at": generated_at}
     with open(RESEARCH_FILE, "w") as f:
         json.dump(research_out, f, indent=2)
- 
+
     print(
         f"Database update complete. {len(evaluated)} evaluated, "
         f"{len(passing)} currently passing."
     )
- 
- 
+
+
 if __name__ == "__main__":
     update_database()
- 
