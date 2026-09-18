@@ -19,10 +19,30 @@ def fetch_screener_candidates():
         f"&isActivelyTrading=true&country=US&limit=100&apikey={API_KEY}"
     )
     try:
-        return requests.get(url, timeout=20).json()
+        resp = requests.get(url, timeout=20)
     except Exception as e:
         print(f"Error reaching FMP Screener: {e}")
         return []
+
+    try:
+        data = resp.json()
+    except Exception:
+        print(f"FMP Screener returned non-JSON (HTTP {resp.status_code}): {resp.text[:400]}")
+        return []
+
+    # FMP reports quota, plan and auth problems as a JSON OBJECT, not a list.
+    # Iterating that object yields its KEYS -- plain strings -- which is what
+    # produced "AttributeError: 'str' object has no attribute 'get'" and killed
+    # the run instead of reporting why. Surface the payload and bail cleanly.
+    if not isinstance(data, list):
+        print(
+            f"FMP Screener returned {type(data).__name__}, not a list "
+            f"(HTTP {resp.status_code}): {str(data)[:400]}"
+        )
+        return []
+
+    print(f"FMP Screener returned {len(data)} candidates.")
+    return data
 
 
 def fetch_drop_pct(ticker):
@@ -157,6 +177,9 @@ def run_screen(previous_snapshot):
 
     evaluated = {}
     for item in candidates:
+        if not isinstance(item, dict):
+            print(f"Skipping unexpected screener entry: {str(item)[:120]}")
+            continue
         ticker = item.get("symbol")
         if not ticker:
             continue
