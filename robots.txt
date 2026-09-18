@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /admin-reviews.html
 
 Sitemap: https://thevancereport.com/sitemap.xml
