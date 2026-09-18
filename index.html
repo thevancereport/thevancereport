@@ -746,9 +746,53 @@
 
 <style>
   /* ---------- Bottom Disclaimer Component ---------- */
+  <!-- ============ BOTTOM FLOATING DISCLAIMER ============ -->
+<div id="financialDisclaimerBar" class="disc-bar" role="region" aria-label="Financial Disclaimer">
+  <div class="wrap disc-wrap">
+    <div class="disc-main">
+      <div class="disc-text">
+        <span class="disc-badge">Notice</span>
+        <strong>Educational Research Only:</strong> The Vance Report is an independent research publisher, not a registered investment advisor or broker-dealer. Cash-to-price metrics rely on lagging balance sheet data and do not constitute investment advice.
+      </div>
+      <div class="disc-actions">
+        <button type="button" class="disc-toggle" id="discToggle" aria-expanded="false" aria-controls="discContent">
+          <span>Full Disclaimer</span>
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" class="disc-chevron" aria-hidden="true">
+            <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3"/>
+          </svg>
+        </button>
+        <button type="button" class="disc-close" id="discClose" aria-label="Dismiss disclaimer">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Dropdown expandable content -->
+    <div class="disc-content" id="discContent" hidden>
+      <div class="disc-divider"></div>
+      <div class="disc-grid">
+        <div>
+          <b class="disc-heading">1. No Fiduciary Duty</b>
+          <p>Content, daily screening outputs, and engine results are generated strictly for informational and educational purposes. No user relationship creates an advisory or fiduciary obligations under SEC regulations.</p>
+        </div>
+        <div>
+          <b class="disc-heading">2. Balance Sheet &amp; Data Lag</b>
+          <p>Cash-per-share figures utilize reported quarterly disclosures. They do not account for ongoing burn rate, debt dilution, or material events occurring after filing dates.</p>
+        </div>
+        <div>
+          <b class="disc-heading">3. High Risk &amp; Due Diligence</b>
+          <p>Securities clearing the 30% Cash-to-Price gatekeeper often experience acute distress. Solvency metrics do not guarantee price recovery. Perform independent research before trading.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* ---------- Bottom Disclaimer Component ---------- */
   .disc-bar {
     position: fixed;
-    bottom: 1;
+    bottom: 0;
     left: 0;
     right: 0;
     z-index: 90;
@@ -758,7 +802,7 @@
     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6);
     color: var(--paper-dim, #a8a79f);
     font-family: var(--mono, "IBM Plex Mono", monospace);
-    font-size: 16px;
+    font-size: 12px;
     line-height: 1.5;
     transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.3, 1);
   }
