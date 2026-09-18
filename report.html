@@ -441,97 +441,62 @@
           transition: none !important;
         }
       }
-      .review-dashboard {
+      /* ---------- readers say (public testimonials, replaces the old
+         unauthenticated admin-style reviews dashboard) ---------- */
+      .testimonials {
         padding: 55px 0 75px;
         border-top: 1px solid var(--rule);
       }
-      .dash-head {
+      .testi-head {
         display: flex;
         justify-content: space-between;
         align-items: end;
         gap: 25px;
         margin-bottom: 24px;
       }
-      .dash-head h2 {
+      .testi-head h2 {
         font-family: var(--serif);
         font-size: 38px;
         font-weight: 400;
         line-height: 1;
         margin: 9px 0 0;
       }
-      .dash-status {
-        color: var(--faint);
+      .testi-head a {
+        color: var(--amber);
+        text-decoration: none;
         font-size: 11px;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.13em;
         text-transform: uppercase;
+        border-bottom: 1px solid var(--deep);
+        white-space: nowrap;
       }
-      .review-list {
+      .testi-grid {
         display: grid;
-        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
       }
-      .dash-review {
+      .testi-item {
         border: 1px solid var(--rule);
         background: var(--ink2);
-        padding: 20px;
-        display: grid;
-        grid-template-columns: 150px 1fr;
-        gap: 24px;
+        padding: 18px 20px;
       }
-      .dash-meta {
+      .testi-item p {
+        color: var(--dim);
+        font-size: 13px;
+        margin: 0 0 10px;
+        line-height: 1.5;
+      }
+      .testi-meta {
         color: var(--faint);
         font-size: 10px;
         letter-spacing: 0.11em;
         text-transform: uppercase;
       }
-      .dash-score {
-        display: block;
-        color: var(--pass);
-        font-family: var(--serif);
-        font-size: 28px;
-        letter-spacing: 0;
-        text-transform: none;
-      }
-      .dash-comment {
-        margin: 0 0 15px;
-        font-family: var(--serif);
-        font-size: 20px;
-        line-height: 1.4;
-      }
-      .dash-marks {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 7px;
-      }
-      .dash-mark {
-        border: 1px solid var(--rule);
-        padding: 4px 7px;
-        color: var(--dim);
-        font-size: 9px;
-        letter-spacing: 0.09em;
-        text-transform: uppercase;
-      }
-      .dash-mark.like {
-        border-color: var(--pass);
-        color: var(--pass);
-      }
-      .dash-mark.needs_work {
-        border-color: var(--fail);
-        color: var(--fail);
-      }
-      .dash-empty {
+      .testi-empty {
         border: 1px dashed var(--rule);
         padding: 24px;
         color: var(--faint);
-      }
-      @media (max-width: 650px) {
-        .dash-head {
-          align-items: start;
-          flex-direction: column;
-        }
-        .dash-review {
-          grid-template-columns: 1fr;
-          gap: 14px;
-        }
+        grid-column: 1 / -1;
       }
     </style>
   </head>
@@ -544,7 +509,7 @@
           <a class="mark" href="index.html" aria-label="The Vance Report home"
             ><span class="glyph">VR</span
             ><span class="name">The Vance Report</span></a
-          ><span class="edition">Daily distribution · 04</span
+          ><span class="edition">Daily distribution</span
           ><a class="back" href="index.html">&#8592; Main page</a>
         </div>
       </header>
@@ -560,9 +525,9 @@
               </p>
             </div>
             <div class="issue">
-              <span>Run date</span><b>September 16, 2026</b><span>Universe</span
-              ><b>US equities above $200M</b><span>Screen status</span
-              ><b class="pass">Complete</b>
+              <span>Run date</span><b id="issue-date">&mdash;</b><span>Universe</span
+              ><b>US equities &gt; $50M</b><span>Screen status</span
+              ><b class="pass" id="issue-status">&mdash;</b>
             </div>
           </div>
         </section>
@@ -570,13 +535,13 @@
           <div class="wrap">
             <div class="stats">
               <div class="stat">
-                <small>Targets screened</small><strong>10</strong>
+                <small>Targets screened</small><strong id="stat-screened">&mdash;</strong>
               </div>
               <div class="stat">
-                <small>Gatekeeper pass</small><strong class="pass">7</strong>
+                <small>Gatekeeper pass</small><strong class="pass" id="stat-pass">&mdash;</strong>
               </div>
               <div class="stat">
-                <small>Gatekeeper fail</small><strong class="fail">3</strong>
+                <small>Gatekeeper fail</small><strong class="fail" id="stat-fail">&mdash;</strong>
               </div>
               <div class="stat">
                 <small>Cash threshold</small><strong>30.0%</strong>
@@ -589,18 +554,8 @@
             <span class="label">Morning brief / 01</span>
             <h2>The signal inside the selloff.</h2>
           </div>
-          <div class="brief-copy">
-            <p>
-              Ten US names registered severe three-day drawdowns. Seven retain
-              cash equal to at least 30% of their quoted share price, placing
-              them through today’s balance-sheet gatekeeper.
-            </p>
-            <p>
-              BMEA leads the passing group with a 61.3% cash cushion and a +2.8%
-              rebound. SEDG and PAGS follow at 54.8% and 48.3%. RUN and PLUG
-              still meet the cash test, but negative short-term momentum calls
-              for tighter risk control.
-            </p>
+          <div class="brief-copy" id="briefCopy">
+            <p>Loading today&rsquo;s summary&hellip;</p>
           </div>
         </section>
         <section class="results">
@@ -611,7 +566,7 @@
                 <h2>Gatekeeper results</h2>
               </div>
               <div class="criteria">
-                3-day dislocation<br />Cash / price &ge; 30.0%
+                5-day dislocation<br />Cash / price &ge; 30.0%
               </div>
             </div>
             <div class="table-scroll">
@@ -619,8 +574,8 @@
                 <thead>
                   <tr>
                     <th>Stock &amp; price</th>
-                    <th class="c">Yesterday price</th>
-                    <th class="c">24-hour change</th>
+                    <th class="c">Prior session</th>
+                    <th class="c">1-day change</th>
                     <th class="c">Cash cushion</th>
                     <th class="c">Gatekeeper status</th>
                   </tr>
@@ -638,25 +593,23 @@
               Cash-per-share figures reflect the most recently reported balance
               sheet.
               <span id="screenMeta"
-                >24-hour change is measured against the previously stored
+                >1-day change is measured against the previously stored
                 snapshot.</span
               >
             </p>
           </div>
         </section>
-        <section class="review-dashboard">
+        <section class="testimonials">
           <div class="wrap">
-            <div class="dash-head">
+            <div class="testi-head">
               <div>
                 <span class="label">Reader feedback / 03</span>
-                <h2>Reviews dashboard</h2>
+                <h2>What readers say</h2>
               </div>
-              <span class="dash-status" id="dashStatus" role="status"
-                >Loading reviews…</span
-              >
+              <a href="reviews.html">Leave a review &rarr;</a>
             </div>
-            <div class="review-list" id="reviewList">
-              <p class="dash-empty">Loading submitted reviews…</p>
+            <div class="testi-grid" id="testiGrid">
+              <p class="testi-empty">Loading reviews&hellip;</p>
             </div>
           </div>
         </section>
@@ -701,12 +654,11 @@
         function tone(v) {
           return v > 0 ? "pass" : v < 0 ? "fail" : "";
         }
-        function session(day) {
-          if (!day) return null;
-          var d = new Date(day + "T00:00:00Z");
+        function fullDate(iso) {
+          if (!iso) return null;
+          var d = new Date(iso);
           if (isNaN(d.getTime())) return null;
           return d.toLocaleDateString(undefined, {
-            timeZone: "UTC",
             month: "long",
             day: "numeric",
             year: "numeric",
@@ -717,92 +669,80 @@
             '<tr><td class="catalyst" colspan="5">' + safe(text) + "</td></tr>";
         }
 
-        function stockCell(r) {
+        function stockCell(ticker, r) {
           var url =
             "https://www.tradingview.com/chart/?symbol=" +
-            encodeURIComponent(r.exchange) +
+            encodeURIComponent(r.exchange || "NASDAQ") +
             ":" +
-            encodeURIComponent(r.ticker);
+            encodeURIComponent(ticker);
           return (
             "<td>" +
             '<div class="sym">' +
-            safe(r.ticker) +
+            safe(ticker) +
             "</div>" +
             '<div class="sub">' +
-            safe(r.name) +
+            safe(r.name || ticker) +
             " \u00b7 " +
-            money(r.currentPrice) +
+            (num(r.price) ? money(r.price) : "\u2014") +
             "</div>" +
             '<a class="chart" href="' +
             safe(url) +
             '" target="_blank" rel="noopener">View chart</a>' +
+            '<a class="chart" href="stock.html?symbol=' + encodeURIComponent(ticker) + '" style="margin-left:10px;">Full profile</a>' +
             "</td>"
           );
         }
 
-        function yesterdayCell(r, label) {
-          if (!num(r.yesterdayPrice)) {
+        function priorCell(r) {
+          if (!num(r.previous_price)) {
             return '<td class="c">&mdash;<div class="sub">No prior snapshot</div></td>';
           }
-          return (
-            '<td class="c">' +
-            money(r.yesterdayPrice) +
-            '<div class="sub">' +
-            safe(label) +
-            "</div></td>"
-          );
+          return '<td class="c">' + money(r.previous_price) + "</td>";
         }
 
         function changeCell(r) {
-          if (!num(r.dollarChange) || !num(r.returnPct)) {
+          if (!num(r.dollar_change) || !num(r.return_pct)) {
             return '<td class="c">&mdash;<div class="sub">Baseline pending</div></td>';
           }
           return (
             '<td class="c ' +
-            tone(r.dollarChange) +
+            tone(r.dollar_change) +
             '">' +
-            signedMoney(r.dollarChange) +
+            signedMoney(r.dollar_change) +
             '<div class="sub">' +
-            signedPct(r.returnPct) +
+            signedPct(r.return_pct) +
             "</div></td>"
           );
         }
 
         function cushionCell(r) {
-          if (!num(r.cashToPrice)) {
+          if (!num(r.cash_cushion_pct)) {
             return '<td class="c">&mdash;<div class="sub">Balance sheet pending</div></td>';
           }
-          var state = r.gatekeeper === "PASS" ? "pass" : "fail";
+          var state = r.gate === "PASS" ? "pass" : "fail";
           return (
             '<td class="c">' +
             '<span class="ratio ' +
             state +
             '">' +
-            r.cashToPrice.toFixed(1) +
+            r.cash_cushion_pct.toFixed(1) +
             "%</span>" +
-            '<span class="gate ' +
-            state +
-            '">' +
-            (state === "pass" ? "Pass" : "Fail") +
-            "</span>" +
             '<div class="sub">' +
-            (num(r.cashPerShare)
-              ? "CPS " + money(r.cashPerShare)
-              : "CPS &mdash;") +
+            (num(r.cps) ? "CPS " + money(r.cps) : "CPS &mdash;") +
             "</div></td>"
           );
         }
 
         function gateCell(r) {
           var floor = THRESHOLD.toFixed(1) + "%";
-          if (r.gatekeeper === "PASS") {
+          if (r.gate === "PASS") {
             return (
               '<td class="c pass">Pass<div class="sub">Clears the ' +
               floor +
               " cash floor</div></td>"
             );
           }
-          if (r.gatekeeper === "FAIL") {
+          if (r.gate === "FAIL") {
             return (
               '<td class="c fail">Fail<div class="sub">Below the ' +
               floor +
@@ -813,21 +753,55 @@
         }
 
         function draw(snapshot) {
-          var list = snapshot.candidates || [],
-            today = session(snapshot.tradingDay),
-            prior = session(snapshot.previousTradingDay);
+          var entries = Object.keys(snapshot)
+            .filter(function (k) { return k.indexOf("_") !== 0; })
+            .map(function (ticker) { return [ticker, snapshot[ticker]]; });
 
-          if (!list.length) {
-            message("No candidates were returned by the latest screen.");
+          var meta_ = snapshot._meta || {};
+          var today = fullDate(meta_.generated_at);
+          var prior = fullDate(meta_.previous_generated_at);
+
+          document.getElementById("issue-date").textContent = today || "unknown";
+          document.getElementById("issue-status").textContent = entries.length ? "Complete" : "No data";
+
+          var passCount = entries.filter(function (e) { return e[1].gate === "PASS"; }).length;
+          var failCount = entries.filter(function (e) { return e[1].gate === "FAIL"; }).length;
+          document.getElementById("stat-screened").textContent = entries.length;
+          document.getElementById("stat-pass").textContent = passCount;
+          document.getElementById("stat-fail").textContent = failCount;
+
+          var briefCopy = document.getElementById("briefCopy");
+          if (!entries.length) {
+            briefCopy.innerHTML = "<p>No candidates were evaluated in the latest run.</p>";
+          } else {
+            var passing = entries.filter(function (e) { return e[1].gate === "PASS"; })
+              .sort(function (a, b) { return (b[1].cash_cushion_pct || 0) - (a[1].cash_cushion_pct || 0); });
+            var lead = passing[0];
+            var p1 = entries.length + " US name" + (entries.length === 1 ? "" : "s") +
+              " registered a severe five-day drawdown. " + passCount + " retain" +
+              (passCount === 1 ? "s" : "") + " cash equal to at least 30% of " +
+              (passCount === 1 ? "its" : "their") + " quoted share price, placing " +
+              (passCount === 1 ? "it" : "them") + " through today\u2019s balance-sheet gatekeeper.";
+            var p2 = lead
+              ? lead[0] + " leads the passing group with a " + lead[1].cash_cushion_pct.toFixed(1) +
+                "% cash cushion" + (num(lead[1].return_pct) ? " and a " + signedPct(lead[1].return_pct) + " move" : "") + "."
+              : "";
+            briefCopy.innerHTML = "<p>" + safe(p1) + "</p>" + (p2 ? "<p>" + safe(p2) + "</p>" : "");
+          }
+
+          if (!entries.length) {
+            message("No candidates were evaluated in the latest screen.");
             return;
           }
 
-          rows.innerHTML = list
-            .map(function (r) {
+          rows.innerHTML = entries
+            .sort(function (a, b) { return (b[1].cash_cushion_pct || -1) - (a[1].cash_cushion_pct || -1); })
+            .map(function (pair) {
+              var ticker = pair[0], r = pair[1];
               return (
                 "<tr>" +
-                stockCell(r) +
-                yesterdayCell(r, prior ? prior : "Previous close") +
+                stockCell(ticker, r) +
+                priorCell(r) +
                 changeCell(r) +
                 cushionCell(r) +
                 gateCell(r) +
@@ -838,17 +812,12 @@
 
           if (!meta) return;
           meta.textContent = prior
-            ? "24-hour change compares the " +
-              today +
-              " session against the stored " +
-              prior +
-              " snapshot."
-            : "24-hour change is seeded from the previous exchange close; the " +
-              today +
-              " snapshot becomes tomorrow\u2019s baseline.";
+            ? "1-day change compares the " + (today || "latest") +
+              " session against the stored " + prior + " snapshot."
+            : "1-day change will be available once a second snapshot has been recorded.";
         }
 
-        fetch("/api/snapshot")
+        fetch("screen_snapshot.json", { cache: "no-store" })
           .then(function (r) {
             if (!r.ok) throw Error();
             return r.json();
@@ -856,78 +825,49 @@
           .then(draw)
           .catch(function () {
             message("Today\u2019s snapshot is temporarily unavailable.");
+            document.getElementById("briefCopy").innerHTML = "<p>Today\u2019s summary is temporarily unavailable.</p>";
           });
       })();
     </script>
     <script>
+      // Public testimonials only — no raw ratings, no internal "needs work"
+      // notes. That data is admin-only via admin-reviews.html with
+      // ADMIN_REVIEW_KEY, never rendered on a page visitors can load.
       (function () {
-        var list = document.getElementById("reviewList"),
-          status = document.getElementById("dashStatus");
+        var grid = document.getElementById("testiGrid");
         function safe(v) {
           var e = document.createElement("span");
           e.textContent = v;
           return e.innerHTML;
         }
-        function label(key) {
-          return {
-            useful_signal: "Useful signal",
-            clear_analysis: "Clear analysis",
-            actionable_format: "Actionable format",
-          }[key];
+        function timeAgo(iso) {
+          var d = new Date(iso);
+          var days = Math.floor((Date.now() - d.getTime()) / 86400000);
+          if (days <= 0) return "today";
+          if (days === 1) return "yesterday";
+          if (days < 30) return days + "d ago";
+          return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
         }
-        fetch("/api/reviews?view=dashboard")
+        fetch("/api/reviews")
           .then(function (r) {
             if (!r.ok) throw Error();
             return r.json();
           })
           .then(function (data) {
-            var rows = data.reviews || [];
-            status.textContent =
-              rows.length + " review" + (rows.length === 1 ? "" : "s");
-            if (!rows.length) {
-              list.innerHTML =
-                '<p class="dash-empty">No reviews have been submitted yet.</p>';
+            var reviews = data.reviews || [];
+            if (!reviews.length) {
+              grid.innerHTML = '<p class="testi-empty">No reviews yet — <a href="reviews.html" style="color: var(--amber);">be the first</a>.</p>';
               return;
             }
-            list.innerHTML = rows
-              .map(function (r) {
-                var marks = [
-                  "useful_signal",
-                  "clear_analysis",
-                  "actionable_format",
-                ]
-                  .map(function (k) {
-                    return (
-                      '<span class="dash-mark ' +
-                      r[k] +
-                      '">' +
-                      label(k) +
-                      ": " +
-                      (r[k] === "like" ? "Like" : "Needs work") +
-                      "</span>"
-                    );
-                  })
-                  .join("");
-                return (
-                  '<article class="dash-review"><div class="dash-meta"><span class="dash-score">' +
-                  r.positive_score +
-                  " / 3</span>" +
-                  safe(new Date(r.created_at).toLocaleString()) +
-                  "<br>Review #" +
-                  r.id +
-                  '</div><div><p class="dash-comment">' +
-                  safe(r.comment) +
-                  '</p><div class="dash-marks">' +
-                  marks +
-                  "</div></div></article>"
-                );
-              })
-              .join("");
+            grid.innerHTML = reviews.map(function (r) {
+              return (
+                '<div class="testi-item"><p>\u201c' + safe(r.comment) + '\u201d</p>' +
+                '<div class="testi-meta">' + timeAgo(r.created_at) + '</div></div>'
+              );
+            }).join("");
           })
           .catch(function () {
-            status.textContent = "Unavailable";
-            list.innerHTML =
-              '<p class="dash-empty">The reviews dashboard is temporarily unavailable.</p>';
+            grid.innerHTML = '<p class="testi-empty">Reviews are temporarily unavailable.</p>';
           });
       })();
     </script>
