@@ -46,7 +46,7 @@
     .header-sub { color: var(--text-muted); font-size: 13px; font-family: var(--mono); }
 
     .container { max-width: 1200px; margin: 0 auto; }
-    
+
     /* Key Metrics Grid */
     .metrics-grid {
       display: grid;
@@ -84,56 +84,8 @@
     }
     .badge-pass { background: rgba(38, 166, 154, 0.15); color: var(--green); border: 1px solid var(--green); }
     .badge-fail { background: rgba(239, 83, 80, 0.15); color: var(--red); border: 1px solid var(--red); }
+    .badge-pending { background: rgba(139, 155, 176, 0.15); color: var(--text-muted); border: 1px solid var(--text-muted); }
     .badge-discount { background: rgba(224, 163, 60, 0.15); color: var(--amber); border: 1px solid var(--amber); }
-
-    /* Valuation Comparison Bar */
-    .valuation-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 20px;
-      margin-bottom: 24px;
-    }
-    .val-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .val-title {
-      font-family: var(--mono);
-      font-size: 13px;
-      color: var(--amber);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .val-spread {
-      font-family: var(--mono);
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .val-bar-wrapper {
-      background: #090c0f;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      height: 18px;
-      width: 100%;
-      position: relative;
-      overflow: hidden;
-    }
-    .val-bar-fill {
-      background: linear-gradient(90deg, var(--amber), var(--green));
-      height: 100%;
-      transition: width 0.5s ease;
-    }
-    .val-labels {
-      display: flex;
-      justify-content: space-between;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 8px;
-    }
 
     /* Main Content Layout */
     .card {
@@ -154,7 +106,7 @@
     @media (max-width: 900px) {
       .research-grid { grid-template-columns: 1fr; }
     }
-    
+
     .section-title {
       font-size: 14px;
       font-family: var(--mono);
@@ -181,6 +133,12 @@
       line-height: 1.6;
     }
     .notes-list li { margin-bottom: 8px; }
+    .data-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: -12px;
+      margin-bottom: 24px;
+    }
   </style>
 </head>
 <body>
@@ -194,18 +152,18 @@
   </div>
 
   <div class="container">
-    
+
     <!-- Top Stat Cards -->
     <div class="metrics-grid">
       <div class="metric-card">
         <div class="metric-label">Current Market Price</div>
         <div id="m-price" class="metric-value">--</div>
-        <span id="m-drop" class="metric-badge badge-pass">--</span>
+        <span id="m-drop" class="metric-badge badge-discount">--</span>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Estimated Intrinsic Value</div>
-        <div id="m-value" class="metric-value" style="color: var(--green);">--</div>
-        <span id="m-upside" class="metric-badge badge-discount">--</span>
+        <div class="metric-label">1-Day Change</div>
+        <div id="m-change" class="metric-value">--</div>
+        <span id="m-change-badge" class="metric-badge badge-pending">--</span>
       </div>
       <div class="metric-card">
         <div class="metric-label">Cash Cushion Floor (CPS)</div>
@@ -219,30 +177,14 @@
       </div>
     </div>
 
-    <!-- Market Price vs Intrinsic Value Visual Bar -->
-    <div class="valuation-card">
-      <div class="val-header">
-        <span class="val-title">Valuation Disconnect (Market Price vs Intrinsic Fair Value)</span>
-        <span id="val-spread-text" class="val-spread" style="color: var(--green);">--</span>
-      </div>
-      <div class="val-bar-wrapper">
-        <div id="val-bar" class="val-bar-fill" style="width: 0%;"></div>
-      </div>
-      <div class="val-labels">
-        <span>CPS Liquidation Floor (<span id="val-cps-label">$0.00</span>)</span>
-        <span>Current Price (<span id="val-price-label">$0.00</span>)</span>
-        <span>Intrinsic Value (<span id="val-fair-label">$0.00</span>)</span>
-      </div>
-    </div>
-
     <!-- Interactive TradingView Chart -->
     <div class="card">
       <div id="tradingview_chart"></div>
     </div>
-    
+
     <!-- Deep Dive Research Grid -->
     <div class="research-grid">
-      
+
       <div class="card">
         <h3 class="section-title">Core Investment Thesis & Catalyst</h3>
         <p id="thesis-body" class="notes-p">Loading detailed thesis...</p>
@@ -285,67 +227,89 @@
       "container_id": "tradingview_chart"
     });
 
-    // Fetch and populate expanded research data
+    function money(v) {
+      return '$' + Math.abs(v).toFixed(2);
+    }
+    function signed(v, decimals) {
+      return (v < 0 ? '-' : '+') + Math.abs(v).toFixed(decimals);
+    }
+
+    // Fetch and populate research data. research.json only contains
+    // currently-passing tickers; a symbol that no longer clears the gate
+    // (or never did) won't be here, which is shown honestly below rather
+    // than silently defaulting to a passing state.
     fetch('research.json')
       .then(res => res.json())
       .then(data => {
         const item = data[symbol];
-        if (item) {
-          document.getElementById('company-name').innerText = item.name || symbol;
-          
-          // Metrics Parsing
-          const price = parseFloat(item.price) || 0;
-          const intrinsic = parseFloat(item.intrinsic_value) || 0;
-          const cps = parseFloat(item.cps) || 0;
+        if (!item) {
+          document.getElementById('company-name').innerText =
+            'Not currently on the daily screen';
+          document.getElementById('thesis-body').innerText =
+            'This ticker isn\u2019t in today\u2019s passing list \u2014 either it hasn\u2019t cleared the gate, or it hasn\u2019t been evaluated. Check the homepage for today\u2019s full list.';
+          document.getElementById('catalyst-body').innerText = '';
+          document.getElementById('risks-list').innerHTML = '';
+          return;
+        }
 
-          document.getElementById('m-price').innerText = price ? '$' + price.toFixed(2) : '--';
-          document.getElementById('m-value').innerText = intrinsic ? '$' + intrinsic.toFixed(2) : '--';
-          document.getElementById('m-cps').innerText = item.cps_cushion || (cps ? '$' + cps.toFixed(2) : '--');
-          
-          document.getElementById('m-drop').innerText = (item.drop || '') + ' ' + (item.trend || '');
-          
-          // Upside calculation
-          if (price && intrinsic) {
-            const upside = (((intrinsic - price) / price) * 100).toFixed(1);
-            document.getElementById('m-upside').innerText = `+${upside}% Fair Value Upside`;
-            document.getElementById('val-spread-text').innerText = `${upside}% Discount to Fair Value`;
-            
-            // Bar calculation (price relative to intrinsic value)
-            const ratio = Math.min((price / intrinsic) * 100, 100);
-            document.getElementById('val-bar').style.width = ratio + '%';
-          }
+        document.getElementById('company-name').innerText = item.name || symbol;
 
-          document.getElementById('val-cps-label').innerText = cps ? '$' + cps.toFixed(2) : '$0.00';
-          document.getElementById('val-price-label').innerText = price ? '$' + price.toFixed(2) : '$0.00';
-          document.getElementById('val-fair-label').innerText = intrinsic ? '$' + intrinsic.toFixed(2) : '$0.00';
+        const price = typeof item.price === 'number' ? item.price : null;
+        const cps = typeof item.cps === 'number' ? item.cps : null;
+        const cushion = typeof item.cash_cushion_pct === 'number' ? item.cash_cushion_pct : null;
+        const drop = typeof item.five_day_drop_pct === 'number' ? item.five_day_drop_pct : null;
+        const dollarChange = typeof item.dollar_change === 'number' ? item.dollar_change : null;
+        const returnPct = typeof item.return_pct === 'number' ? item.return_pct : null;
 
-          // Gatekeeper badge
-          const rawCushion = parseFloat(item.cps_cushion) || 40;
-          const passed = item.gate === 'Pass' || rawCushion >= 30.0;
-          const gateBadge = document.getElementById('m-gate-badge');
-          
-          if (passed) {
-            gateBadge.className = 'metric-badge badge-pass';
-            gateBadge.innerText = 'CPS >= 30.0% Floor';
-          } else {
-            gateBadge.className = 'metric-badge badge-fail';
-            gateBadge.innerText = 'Below 30.0% Floor';
-          }
+        document.getElementById('m-price').innerText = price != null ? money(price) : '--';
+        document.getElementById('m-drop').innerText = drop != null
+          ? signed(drop, 1) + '% (5-day)'
+          : '5-day drop unavailable';
 
-          document.getElementById('m-target').innerText = item.target_zone || 'Accumulation Zone';
-          document.getElementById('thesis-body').innerText = item.thesis || item.notes || 'No detailed thesis available.';
-          document.getElementById('catalyst-body').innerText = item.catalyst || 'No primary catalyst specified.';
+        // 1-Day Change: only shown if we actually have a stored baseline
+        // from yesterday's run. No fabricated number when we don't.
+        const changeEl = document.getElementById('m-change');
+        const changeBadge = document.getElementById('m-change-badge');
+        if (dollarChange != null && returnPct != null) {
+          changeEl.innerText = signed(dollarChange, 2);
+          changeEl.style.color = dollarChange > 0 ? 'var(--green)' : dollarChange < 0 ? 'var(--red)' : 'var(--text)';
+          changeBadge.className = 'metric-badge ' + (dollarChange > 0 ? 'badge-pass' : dollarChange < 0 ? 'badge-fail' : 'badge-pending');
+          changeBadge.innerText = signed(returnPct, 1) + '% vs. prior session';
+        } else {
+          changeEl.innerText = '--';
+          changeBadge.className = 'metric-badge badge-pending';
+          changeBadge.innerText = 'Pending baseline';
+        }
 
-          // Populate Risk Points
-          const risksList = document.getElementById('risks-list');
-          if (item.risks && item.risks.length > 0) {
-            risksList.innerHTML = item.risks.map(r => `<li>${r}</li>`).join('');
-          }
+        document.getElementById('m-cps').innerText = cps != null ? money(cps) : '--';
+
+        // Gatekeeper badge: PASS / FAIL / UNKNOWN, never a fabricated default.
+        const gateBadge = document.getElementById('m-gate-badge');
+        if (item.gate === 'PASS') {
+          gateBadge.className = 'metric-badge badge-pass';
+          gateBadge.innerText = (cushion != null ? cushion.toFixed(1) + '% ' : '') + 'Clears 30.0% Floor';
+        } else if (item.gate === 'FAIL') {
+          gateBadge.className = 'metric-badge badge-fail';
+          gateBadge.innerText = (cushion != null ? cushion.toFixed(1) + '% ' : '') + 'Below 30.0% Floor';
+        } else {
+          gateBadge.className = 'metric-badge badge-pending';
+          gateBadge.innerText = 'Balance sheet data pending';
+        }
+
+        document.getElementById('m-target').innerText = item.target_zone || '\u2014';
+        document.getElementById('thesis-body').innerText = item.thesis || 'No detailed thesis available.';
+        document.getElementById('catalyst-body').innerText = item.catalyst || 'No primary catalyst specified.';
+
+        const risksList = document.getElementById('risks-list');
+        if (item.risks && item.risks.length > 0) {
+          risksList.innerHTML = item.risks.map(r => `<li>${r.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</li>`).join('');
+        } else {
+          risksList.innerHTML = '<li>No specific risks noted.</li>';
         }
       })
       .catch(err => {
         console.error(err);
-        document.getElementById('thesis-body').innerText = 'Unable to load research.json configuration.';
+        document.getElementById('thesis-body').innerText = 'Unable to load research.json.';
       });
   </script>
 </body>
