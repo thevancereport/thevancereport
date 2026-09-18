@@ -312,5 +312,141 @@
         document.getElementById('thesis-body').innerText = 'Unable to load research.json.';
       });
   </script>
+
+<!-- ============ BOTTOM FLOATING DISCLAIMER ============ -->
+    <div id="financialDisclaimerBar" class="disc-bar" role="region" aria-label="Financial Disclaimer">
+      <div class="wrap disc-wrap">
+        <div class="disc-text">
+          <span class="disc-badge">Notice</span>
+          Educational research only — not investment advice. The Vance Report is not a registered investment adviser or broker-dealer.<br>
+          Screened securities are high-risk, volatile, and may involve total loss of principal. Data may be delayed or inaccurate — verify before relying on it.
+        </div>
+        <div class="disc-actions">
+          <a class="disc-link" href="disclaimer.html">Read full disclaimer &rarr;</a>
+          <button type="button" class="disc-close" id="discClose" aria-label="Dismiss disclaimer">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .disc-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 90;
+        background: rgba(12, 16, 20, 0.97);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--rule, #26303a);
+        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
+        font-family: var(--mono, "IBM Plex Mono", monospace);
+      }
+
+      .disc-bar[hidden] {
+        display: none !important;
+      }
+
+      .disc-wrap {
+        padding: 16px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .disc-text {
+        flex: 1;
+        color: var(--amber, #e0a33c);
+        font-weight: 400;
+        font-size: 13.5px;
+        line-height: 1.55;
+      }
+
+      .disc-badge {
+        display: inline-block;
+        border: 1px solid var(--amber, #e0a33c);
+        color: var(--amber, #e0a33c);
+        font-weight: 500;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+
+      .disc-actions {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-shrink: 0;
+      }
+
+      .disc-link {
+        color: var(--paper, #e7e3d8);
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--amber, #e0a33c);
+        padding-bottom: 2px;
+        transition: color 0.16s ease, border-color 0.16s ease;
+      }
+
+      .disc-link:hover {
+        color: var(--amber, #e0a33c);
+      }
+
+      .disc-close {
+        background: none;
+        border: 0;
+        color: var(--paper-faint, #6f7680);
+        cursor: pointer;
+        font-size: 16px;
+        padding: 4px 8px;
+        transition: color 0.16s ease;
+        flex-shrink: 0;
+      }
+
+      .disc-close:hover {
+        color: var(--paper, #e7e3d8);
+      }
+
+      @media (max-width: 720px) {
+        .disc-wrap {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .disc-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+    </style>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var bar = document.getElementById("financialDisclaimerBar");
+        var closeBtn = document.getElementById("discClose");
+        if (!bar || !closeBtn) return;
+
+        var DISMISS_KEY = "vance_disclaimer_dismissed_until";
+        var dismissedUntil = localStorage.getItem(DISMISS_KEY);
+        if (dismissedUntil && Date.now() < Number(dismissedUntil)) {
+          bar.hidden = true;
+        }
+
+        closeBtn.addEventListener("click", function () {
+          bar.hidden = true;
+          var oneDayFromNow = Date.now() + 24 * 60 * 60 * 1000;
+          localStorage.setItem(DISMISS_KEY, String(oneDayFromNow));
+        });
+      });
+    </script>
+<style>
+  .disc-bar .wrap { max-width: 1180px; margin: 0 auto; }
+</style>
 </body>
 </html>
