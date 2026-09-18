@@ -10,13 +10,14 @@ SNAPSHOT_FILE = "screen_snapshot.json"
 DROP_THRESHOLD = -15.0   # 5-day drop must be at least this bad to enter the screen
 CASH_GATE = 30.0         # cash-per-share as % of price must clear this to pass
 MOMENTUM_MOVE = 1.0      # day-over-day % move needed to call REBOUND/FALLING vs STABILIZING
+SCREENER_LIMIT = 100     # candidates pulled per run; each one costs API calls below
 
 
 def fetch_screener_candidates():
     url = (
-        "https://financialmodelingprep.com/api/v3/stock-screener"
+        "https://financialmodelingprep.com/stable/company-screener"
         "?marketCapMoreThan=50000000&volumeMoreThan=50000"
-        f"&isActivelyTrading=true&country=US&limit=100&apikey={API_KEY}"
+        f"&isActivelyTrading=true&country=US&limit={SCREENER_LIMIT}&apikey={API_KEY}"
     )
     try:
         resp = requests.get(url, timeout=20)
@@ -46,11 +47,20 @@ def fetch_screener_candidates():
 
 
 def fetch_drop_pct(ticker):
-    url = f"https://financialmodelingprep.com/api/v3/stock-price-change/{ticker}?apikey={API_KEY}"
+    url = (
+        "https://financialmodelingprep.com/stable/stock-price-change"
+        f"?symbol={ticker}&apikey={API_KEY}"
+    )
     try:
         data = requests.get(url, timeout=20).json()
-        if data and isinstance(data, list) and len(data) > 0:
-            return data[0].get("5D", 0.0)
+        if isinstance(data, dict):
+            data = [data]
+        if data and isinstance(data, list) and isinstance(data[0], dict):
+            row = data[0]
+            for key in ("5D", "5d", "fiveDay"):
+                if key in row:
+                    return row[key]
+            print(f"{ticker}: no 5-day field in price-change payload; keys={list(row.keys())[:14]}")
     except Exception as e:
         print(f"Error fetching price change for {ticker}: {e}")
     return 0.0
@@ -58,8 +68,8 @@ def fetch_drop_pct(ticker):
 
 def fetch_cash_and_shares(ticker, price, market_cap):
     url = (
-        f"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{ticker}"
-        f"?period=quarter&limit=1&apikey={API_KEY}"
+        "https://financialmodelingprep.com/stable/balance-sheet-statement"
+        f"?symbol={ticker}&period=quarter&limit=1&apikey={API_KEY}"
     )
     try:
         bs_data = requests.get(url, timeout=20).json()
@@ -70,7 +80,15 @@ def fetch_cash_and_shares(ticker, price, market_cap):
     if not bs_data or not isinstance(bs_data, list):
         return None, None
 
-    cash = bs_data[0].get("cashAndCashEquivalents", 0.0)
+    row = bs_data[0] if isinstance(bs_data[0], dict) else {}
+    cash = None
+    for key in ("cashAndCashEquivalents", "cashAndShortTermInvestments", "cashAndCashEquivalentsAtCarryingValue"):
+        if key in row:
+            cash = row[key]
+            break
+    if cash is None:
+        print(f"{ticker}: no cash field in balance sheet; keys={list(row.keys())[:14]}")
+        return None, None
     shares = market_cap / price if price > 0 else 1
     return cash, shares
 
