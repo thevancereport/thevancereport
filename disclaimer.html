@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Full Disclaimer | The Vance Report</title>
+    <meta name="robots" content="noindex, follow">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #0c1014;
+        --ink-2: #12181e;
+        --ink-3: #181f27;
+        --rule: #26303a;
+        --rule-soft: #1c242c;
+        --paper: #e7e3d8;
+        --paper-dim: #a8a79f;
+        --paper-faint: #6f7680;
+        --amber: #e0a33c;
+        --amber-deep: #b97f1f;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+        --serif: "Instrument Serif", Georgia, serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--ink);
+        color: var(--paper);
+        font-family: var(--mono);
+        font-weight: 300;
+        font-size: 15px;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 820px; margin: 0 auto; padding: 0 28px 100px; }
+      header.top {
+        border-bottom: 1px solid var(--rule);
+        padding: 22px 0;
+        margin-bottom: 50px;
+      }
+      header.top .wrap {
+        padding: 0 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        font-family: var(--serif);
+        font-size: 20px;
+        color: var(--paper);
+        text-decoration: none;
+      }
+      .brand span {
+        border: 1px solid var(--amber);
+        color: var(--amber);
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 2px 7px;
+        margin-right: 10px;
+        vertical-align: middle;
+      }
+      .back {
+        color: var(--paper-faint);
+        text-decoration: none;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .back:hover { color: var(--amber); }
+
+      h1 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: clamp(34px, 5vw, 50px);
+        line-height: 1.05;
+        margin: 0 0 10px;
+      }
+      .updated {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+        margin: 0 0 46px;
+      }
+
+      .toc {
+        border: 1px solid var(--rule);
+        background: var(--ink-2);
+        padding: 20px 24px;
+        margin-bottom: 50px;
+      }
+      .toc div {
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin-bottom: 12px;
+      }
+      .toc ol {
+        margin: 0;
+        padding-left: 20px;
+        columns: 2;
+        column-gap: 30px;
+      }
+      .toc a {
+        color: var(--paper-dim);
+        text-decoration: none;
+        font-size: 13px;
+        line-height: 2.1;
+        display: inline-block;
+      }
+      .toc a:hover { color: var(--amber); }
+
+      section.clause {
+        padding: 34px 0;
+        border-bottom: 1px solid var(--rule-soft);
+        scroll-margin-top: 24px;
+      }
+      section.clause:last-of-type { border-bottom: none; }
+      section.clause h2 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 24px;
+        color: var(--paper);
+        margin: 0 0 14px;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      section.clause h2 .num {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--amber);
+        border: 1px solid var(--amber-deep);
+        padding: 2px 8px;
+      }
+      section.clause p {
+        color: var(--paper-dim);
+        font-size: 14px;
+        margin: 0 0 14px;
+      }
+      section.clause p:last-child { margin-bottom: 0; }
+      section.clause ul {
+        color: var(--paper-dim);
+        font-size: 14px;
+        margin: 0 0 14px;
+        padding-left: 20px;
+      }
+      section.clause li { margin-bottom: 8px; }
+      section.clause .fill {
+        color: var(--amber);
+        border-bottom: 1px dashed var(--amber-deep);
+      }
+
+      .contact-box {
+        border: 1px solid var(--rule);
+        background: var(--ink-2);
+        padding: 22px 24px;
+        margin-top: 10px;
+        font-size: 13.5px;
+        color: var(--paper-dim);
+      }
+      .contact-box b { color: var(--paper); }
+
+      footer.bottom {
+        text-align: center;
+        padding-top: 50px;
+        color: var(--paper-faint);
+        font-size: 12px;
+      }
+      footer.bottom a { color: var(--amber); text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="wrap">
+        <a class="brand" href="index.html"><span>VR</span>The Vance Report</a>
+        <a class="back" href="index.html">&larr; Back to screen</a>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <h1>Full Disclaimer</h1>
+      <p class="updated">Effective date: September 16, 2026</p>
+
+      <div class="toc">
+        <div>On this page</div>
+        <ol>
+          <li><a href="#no-advice">No Investment Advice</a></li>
+          <li><a href="#no-adviser">Not a Registered Adviser or Broker-Dealer</a></li>
+          <li><a href="#compensation">Compensation &amp; Conflicts of Interest</a></li>
+          <li><a href="#data">Third-Party &amp; Automated Data</a></li>
+          <li><a href="#forward-looking">Forward-Looking Statements</a></li>
+          <li><a href="#risk">High-Risk Securities Warning</a></li>
+          <li><a href="#performance">No Guarantee of Results</a></li>
+          <li><a href="#diligence">Your Responsibility to Verify</a></li>
+          <li><a href="#liability">Limitation of Liability</a></li>
+          <li><a href="#indemnification">Indemnification</a></li>
+          <li><a href="#availability">Site Availability &amp; Errors</a></li>
+          <li><a href="#eligibility">Eligibility &amp; Jurisdiction</a></li>
+          <li><a href="#ip">Intellectual Property</a></li>
+          <li><a href="#changes">Changes to This Disclaimer</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ol>
+      </div>
+
+      <section class="clause" id="no-advice">
+        <h2><span class="num">01</span>No Investment Advice</h2>
+        <p>The Vance Report (the "Site," "we," "us," "our") publishes automated and editorial commentary on publicly traded securities for general informational and educational purposes only. Nothing on this Site &mdash; including screener output, cash-cushion metrics, price targets, "theses," catalysts, risk notes, or any other content &mdash; is or should be construed as personalized investment advice, a recommendation, or a solicitation to buy, sell, or hold any security. We do not know your individual financial situation, objectives, or risk tolerance, and content on this Site is not tailored to you.</p>
+        <p>No content on this Site creates an advisory, fiduciary, or any other special relationship between you and the Site, its operators, contributors, or affiliates.</p>
+      </section>
+
+      <section class="clause" id="no-adviser">
+        <h2><span class="num">02</span>Not a Registered Adviser or Broker-Dealer</h2>
+        <p>The Vance Report is <b style="color: var(--paper);">not</b> registered as an investment adviser with the U.S. Securities and Exchange Commission or any state securities regulator, and is not a registered broker-dealer or a member of FINRA or SIPC. We do not manage assets, execute trades, hold custody of client funds or securities, or provide individualized investment recommendations of any kind.</p>
+        <p>Any securities-related terminology used on this Site ("screener," "gatekeeper," "target zone," "analysis," and similar) refers to general, automated, or editorial commentary and should not be mistaken for services requiring registration under the Investment Advisers Act of 1940 or applicable state law.</p>
+      </section>
+
+      <section class="clause" id="compensation">
+        <h2><span class="num">03</span>Compensation &amp; Conflicts of Interest</h2>
+        <p><span class="fill">[As of the effective date above, The Vance Report does not accept compensation, in cash or securities, from any issuer, promoter, or third party in exchange for coverage of a specific security.]</span> If this ever changes for a specific security discussed on the Site, we will disclose the nature, source, and amount of compensation received, in accordance with Section 17(b) of the Securities Act of 1933, in reasonable proximity to that coverage.</p>
+        <p>Operators, contributors, or affiliates of the Site may hold positions in securities discussed here before, during, or after publication, and may buy or sell those positions at any time without notice. This creates a potential conflict of interest between our financial interests and yours. You should assume such positions may exist.</p>
+      </section>
+
+      <section class="clause" id="data">
+        <h2><span class="num">04</span>Third-Party &amp; Automated Data</h2>
+        <p>Pricing, market capitalization, balance sheet, and related figures displayed on this Site are sourced from third-party data providers and processed by automated scripts running on a scheduled basis. Automated processes can and do fail, lag, or return incomplete or incorrect data due to provider outages, rate limits, API changes, or software defects.</p>
+        <ul>
+          <li>Data may be delayed, cached, or reflect a prior trading session rather than real-time pricing.</li>
+          <li>Balance-sheet-derived figures (such as cash per share) reflect the most recently reported quarterly filing and do not account for burn rate, debt issuance, dilution, buybacks, or other events since that filing date.</li>
+          <li>We make no representation or warranty, express or implied, as to the accuracy, completeness, timeliness, or reliability of any data on this Site.</li>
+        </ul>
+        <p>You should independently verify any figure before relying on it, using a licensed broker, official issuer filings (e.g., SEC EDGAR), or another primary source.</p>
+      </section>
+
+      <section class="clause" id="forward-looking">
+        <h2><span class="num">05</span>Forward-Looking Statements &amp; Speculative Opinions</h2>
+        <p>Statements on this Site regarding "target zones," intrinsic value estimates, catalysts, theses, or expected outcomes are opinions and forward-looking statements, not statements of fact. They are based on assumptions that may prove incorrect, involve known and unknown risks, and may differ materially from actual results. We undertake no obligation to update any forward-looking statement.</p>
+      </section>
+
+      <section class="clause" id="risk">
+        <h2><span class="num">06</span>High-Risk Securities Warning</h2>
+        <p>This Site's screening methodology specifically surfaces securities that have recently experienced sharp price declines. Securities in this category frequently exhibit elevated volatility, wide bid-ask spreads, thin trading volume, going-concern uncertainty, elevated risk of dilution or delisting, and materially higher risk of total loss of principal than the broader market. Clearing a balance-sheet screen (such as a cash-to-price threshold) does not indicate the security is safe, undervalued, or likely to recover, and does not offset these risks.</p>
+        <p>You should be prepared to lose your entire investment in any security discussed on this Site.</p>
+      </section>
+
+      <section class="clause" id="performance">
+        <h2><span class="num">07</span>No Guarantee of Results; Past Performance</h2>
+        <p>Any past performance, backtested result, hypothetical illustration, or historical statistic referenced on this Site is not indicative of, and does not guarantee, future results. Hypothetical or backtested performance has inherent limitations, including the benefit of hindsight, and does not reflect actual trading, slippage, fees, taxes, or liquidity constraints an investor would encounter in practice.</p>
+      </section>
+
+      <section class="clause" id="diligence">
+        <h2><span class="num">08</span>Your Responsibility to Verify</h2>
+        <p>You are solely responsible for your own investment research and decisions. Before making any financial decision, we encourage you to consult a licensed, independent financial advisor, tax professional, and/or attorney who is familiar with your particular circumstances, and to review primary sources such as a company's official SEC filings.</p>
+      </section>
+
+      <section class="clause" id="liability">
+        <h2><span class="num">09</span>Limitation of Liability</h2>
+        <p>To the fullest extent permitted by applicable law, the Site and its operators, employees, contributors, and affiliates shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, loss of capital, or trading losses, arising out of or in any way connected with your access to, use of, or reliance on this Site or its content, even if advised of the possibility of such damages.</p>
+        <p>This Site and all content are provided on an "as is" and "as available" basis, without warranties of any kind, whether express or implied, including implied warranties of merchantability, fitness for a particular purpose, and non-infringement.</p>
+      </section>
+
+      <section class="clause" id="indemnification">
+        <h2><span class="num">10</span>Indemnification</h2>
+        <p>You agree to indemnify, defend, and hold harmless the Site and its operators, employees, contributors, and affiliates from and against any claims, liabilities, damages, losses, and expenses, including reasonable attorneys' fees, arising out of or in any way connected with your use of the Site, your violation of this Disclaimer, or your investment decisions.</p>
+      </section>
+
+      <section class="clause" id="availability">
+        <h2><span class="num">11</span>Site Availability &amp; Errors</h2>
+        <p>We do not guarantee that this Site, or any automated screening, data feed, or scheduled update process behind it, will be uninterrupted, timely, secure, or error-free. We reserve the right to modify, suspend, or discontinue any part of the Site, including its data pipeline or screening methodology, at any time without notice.</p>
+      </section>
+
+      <section class="clause" id="eligibility">
+        <h2><span class="num">12</span>Eligibility &amp; Jurisdiction</h2>
+        <p>This Site is intended for adults aged 18 and older. It is not directed at, and should not be relied upon by, residents of any jurisdiction where its content would be contrary to local law or regulation, or where the Site or its operators are not authorized to provide such content. It is your responsibility to determine whether accessing this Site is permitted in your jurisdiction.</p>
+        <p>This Disclaimer and any dispute arising from your use of the Site shall be governed by the laws of the State of Texas, without regard to conflict-of-law principles, and any dispute shall be resolved exclusively in the courts located in Brazoria County, Texas.</p>
+      </section>
+
+      <section class="clause" id="ip">
+        <h2><span class="num">13</span>Intellectual Property</h2>
+        <p>All content on this Site, including text, graphics, logos, and the screening methodology, is the property of Dharma Vani LLC or its licensors and is protected by applicable intellectual property laws. You may not reproduce, distribute, or create derivative works from this content without prior written permission, except for personal, non-commercial use.</p>
+      </section>
+
+      <section class="clause" id="changes">
+        <h2><span class="num">14</span>Changes to This Disclaimer</h2>
+        <p>We may revise this Disclaimer at any time by posting an updated version on this page with a new effective date. Your continued use of the Site after a revision is posted constitutes acceptance of the revised Disclaimer. We encourage you to review this page periodically.</p>
+      </section>
+
+      <section class="clause" id="contact">
+        <h2><span class="num">15</span>Contact</h2>
+        <p>Questions about this Disclaimer can be directed to:</p>
+        <div class="contact-box">
+          <b>Dharma Vani LLC</b><br>
+          7513 Cobblestone Dr, Pearland, TX 77581<br>
+          ArdenKVance@gmail.com
+        </div>
+      </section>
+
+      <footer class="bottom">
+        This page is a general template and has not been reviewed by an attorney. It does not constitute legal advice.
+        Before publishing, have it reviewed by counsel licensed in your jurisdiction. &middot; <a href="index.html">Back to The Vance Report</a>
+      </footer>
+    </div>
+  </body>
+</html>
