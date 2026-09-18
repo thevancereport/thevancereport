@@ -1,316 +1,224 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Stock Analysis - The Vance Report</title>
-  <style>
-    :root {
-      --bg: #0c1014;
-      --card-bg: #12181e;
-      --border: #1e2630;
-      --text: #e7e3d8;
-      --text-muted: #8b9bb0;
-      --amber: #e0a33c;
-      --green: #26a69a;
-      --red: #ef5350;
-      --mono: monospace;
+import json
+import os
+from datetime import datetime, timezone
+import requests
+ 
+API_KEY = os.environ.get("FMP_API_KEY")
+RESEARCH_FILE = "research.json"
+SNAPSHOT_FILE = "screen_snapshot.json"
+ 
+DROP_THRESHOLD = -15.0   # 5-day drop must be at least this bad to enter the screen
+CASH_GATE = 30.0         # cash-per-share as % of price must clear this to pass
+MOMENTUM_MOVE = 1.0      # day-over-day % move needed to call REBOUND/FALLING vs STABILIZING
+ 
+ 
+def fetch_screener_candidates():
+    url = (
+        "https://financialmodelingprep.com/api/v3/stock-screener"
+        "?marketCapMoreThan=50000000&volumeMoreThan=50000"
+        f"&isActivelyTrading=true&country=US&limit=100&apikey={API_KEY}"
+    )
+    try:
+        return requests.get(url, timeout=20).json()
+    except Exception as e:
+        print(f"Error reaching FMP Screener: {e}")
+        return []
+ 
+ 
+def fetch_drop_pct(ticker):
+    url = f"https://financialmodelingprep.com/api/v3/stock-price-change/{ticker}?apikey={API_KEY}"
+    try:
+        data = requests.get(url, timeout=20).json()
+        if data and isinstance(data, list) and len(data) > 0:
+            return data[0].get("5D", 0.0)
+    except Exception as e:
+        print(f"Error fetching price change for {ticker}: {e}")
+    return 0.0
+ 
+ 
+def fetch_cash_and_shares(ticker, price, market_cap):
+    url = (
+        f"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{ticker}"
+        f"?period=quarter&limit=1&apikey={API_KEY}"
+    )
+    try:
+        bs_data = requests.get(url, timeout=20).json()
+    except Exception as e:
+        print(f"Error fetching balance sheet for {ticker}: {e}")
+        return None, None
+ 
+    if not bs_data or not isinstance(bs_data, list):
+        return None, None
+ 
+    cash = bs_data[0].get("cashAndCashEquivalents", 0.0)
+    shares = market_cap / price if price > 0 else 1
+    return cash, shares
+ 
+ 
+def resolve_momentum(return_pct):
+    if return_pct is None:
+        return "STABILIZING"  # no baseline yet — neutral rather than a guess
+    if return_pct >= MOMENTUM_MOVE:
+        return "REBOUND"
+    if return_pct <= -MOMENTUM_MOVE:
+        return "FALLING"
+    return "STABILIZING"
+ 
+ 
+def build_record(item, previous):
+    """
+    Evaluates one ticker fully (drop gate + cash gate) and returns a record
+    for screen_snapshot.json (pass or fail), or None if it doesn't even clear
+    the 5-day-drop gate to be considered a candidate at all.
+ 
+    `previous` is that ticker's record from the LAST screen_snapshot.json, if
+    it was evaluated then — used purely for day-over-day price comparison and
+    to carry editorial fields (thesis/catalyst/risks) forward. Never used to
+    invent a gate result.
+    """
+    ticker = item.get("symbol")
+    price = item.get("price", 0.0)
+    market_cap = item.get("marketCap", 0.0)
+ 
+    if not ticker or price <= 0:
+        return None
+ 
+    drop_pct = fetch_drop_pct(ticker)
+    if drop_pct > DROP_THRESHOLD:
+        return None  # doesn't even clear the initial dislocation screen
+ 
+    cash, shares = fetch_cash_and_shares(ticker, price, market_cap)
+    cps = None
+    cash_cushion_pct = None
+    if cash is not None and shares:
+        cps = cash / shares if shares > 0 else 0.0
+        cash_cushion_pct = (cps / price) * 100 if price > 0 else None
+ 
+    # Explicit unknown state, never a silent passing default. A missing
+    # balance-sheet figure is "gate unknown," not "gate pass."
+    if cash_cushion_pct is None:
+        gate = "UNKNOWN"
+    elif cash_cushion_pct >= CASH_GATE:
+        gate = "PASS"
+    else:
+        gate = "FAIL"
+ 
+    # Real day-over-day tracking: compare today's price to the price stored
+    # in yesterday's snapshot for this same ticker, not a fabricated number.
+    previous_price = previous.get("price") if previous else None
+    if previous_price and previous_price > 0:
+        dollar_change = price - previous_price
+        return_pct = (dollar_change / previous_price) * 100
+    else:
+        dollar_change = None
+        return_pct = None
+ 
+    record = {
+        "name": item.get("companyName", ticker),
+        "exchange": item.get("exchangeShortName", "NASDAQ"),
+        "price": round(price, 2),
+        "previous_price": round(previous_price, 2) if previous_price else None,
+        "dollar_change": round(dollar_change, 2) if dollar_change is not None else None,
+        "return_pct": round(return_pct, 2) if return_pct is not None else None,
+        "market_cap": round(market_cap) if market_cap else None,
+        "five_day_drop_pct": round(drop_pct, 1),
+        "trend": resolve_momentum(return_pct),
+        "cps": round(cps, 2) if cps is not None else None,
+        "cash_cushion_pct": round(cash_cushion_pct, 1) if cash_cushion_pct is not None else None,
+        "gate": gate,
+        "target_zone": f"${round(price * 0.95, 2)} - ${round(price * 1.02, 2)}",
     }
-    * { box-sizing: border-box; }
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      padding: 24px;
+ 
+    if previous:
+        record["catalyst"] = previous.get("catalyst", "Automated candidate discovery via Vance Report Cash-to-Price screener.")
+        record["thesis"] = previous.get("thesis") or (
+            f"{record['name']} cleared the automated dislocation screen with a "
+            f"{'%.1f' % cash_cushion_pct + '%' if cash_cushion_pct is not None else 'pending'} cash cushion."
+        )
+        record["risks"] = previous.get("risks", ["Pending fundamental desk review."])
+    else:
+        print(f"New candidate evaluated: {ticker} ({gate})")
+        record["catalyst"] = "Automated candidate discovery via Vance Report Cash-to-Price screener."
+        record["thesis"] = (
+            f"{record['name']} cleared the automated dislocation screen with a "
+            f"{'%.1f' % cash_cushion_pct + '%' if cash_cushion_pct is not None else 'pending'} cash cushion."
+        )
+        record["risks"] = ["Pending fundamental desk review."]
+ 
+    return record
+ 
+ 
+def run_screen(previous_snapshot):
+    print("Running Vance Report Screener Pipeline...")
+    candidates = fetch_screener_candidates()
+    if not candidates:
+        print("No candidates returned from screener.")
+        return {}
+ 
+    evaluated = {}
+    for item in candidates:
+        ticker = item.get("symbol")
+        if not ticker:
+            continue
+        previous = previous_snapshot.get(ticker)
+        record = build_record(item, previous)
+        if record is not None:
+            evaluated[ticker] = record
+ 
+    return evaluated
+ 
+ 
+def load_json(path):
+    if not os.path.exists(path):
+        return {}
+    with open(path, "r") as f:
+        try:
+            return json.load(f)
+        except Exception:
+            return {}
+ 
+ 
+def strip_meta(data):
+    return {k: v for k, v in data.items() if not k.startswith("_")}
+ 
+ 
+def update_database():
+    previous_snapshot = strip_meta(load_json(SNAPSHOT_FILE))
+ 
+    evaluated = run_screen(previous_snapshot)
+    if not evaluated:
+        print("Screener returned nothing usable this run; leaving files unchanged.")
+        return
+ 
+    generated_at = datetime.now(timezone.utc).isoformat()
+    previous_meta = load_json(SNAPSHOT_FILE).get("_meta", {})
+    previous_generated_at = previous_meta.get("generated_at")
+ 
+    # screen_snapshot.json: everything evaluated this run, pass or fail —
+    # the full audit trail report.html needs.
+    snapshot_out = dict(evaluated)
+    snapshot_out["_meta"] = {
+        "generated_at": generated_at,
+        "previous_generated_at": previous_generated_at,
     }
-    .header {
-      max-width: 1200px;
-      margin: 0 auto 24px auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 16px;
-    }
-    .back-btn {
-      color: var(--amber);
-      text-decoration: none;
-      font-family: var(--mono);
-      font-size: 14px;
-      letter-spacing: 0.5px;
-    }
-    .back-btn:hover { text-decoration: underline; }
-    .header-title-group { text-align: right; }
-    .header-title { color: var(--amber); margin: 0; font-size: 26px; letter-spacing: 1px; }
-    .header-sub { color: var(--text-muted); font-size: 13px; font-family: var(--mono); }
-
-    .container { max-width: 1200px; margin: 0 auto; }
-
-    /* Key Metrics Grid */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .metric-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 16px;
-    }
-    .metric-label {
-      color: var(--text-muted);
-      font-size: 11px;
-      font-family: var(--mono);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-    }
-    .metric-value {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .metric-badge {
-      display: inline-block;
-      margin-top: 6px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-family: var(--mono);
-      font-weight: 600;
-    }
-    .badge-pass { background: rgba(38, 166, 154, 0.15); color: var(--green); border: 1px solid var(--green); }
-    .badge-fail { background: rgba(239, 83, 80, 0.15); color: var(--red); border: 1px solid var(--red); }
-    .badge-pending { background: rgba(139, 155, 176, 0.15); color: var(--text-muted); border: 1px solid var(--text-muted); }
-    .badge-discount { background: rgba(224, 163, 60, 0.15); color: var(--amber); border: 1px solid var(--amber); }
-
-    /* Main Content Layout */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 20px;
-      margin-bottom: 24px;
-    }
-    #tradingview_chart { height: 500px; width: 100%; }
-
-    /* Two-Column Research Layout */
-    .research-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 24px;
-    }
-    @media (max-width: 900px) {
-      .research-grid { grid-template-columns: 1fr; }
-    }
-
-    .section-title {
-      font-size: 14px;
-      font-family: var(--mono);
-      color: var(--amber);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 0;
-      margin-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
-    }
-
-    .notes-p {
-      line-height: 1.6;
-      color: var(--text);
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-    .notes-list {
-      margin: 0;
-      padding-left: 20px;
-      color: var(--text-muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    .notes-list li { margin-bottom: 8px; }
-    .data-note {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: -12px;
-      margin-bottom: 24px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="header">
-    <a href="index.html" class="back-btn">&larr; BACK TO SCREENER</a>
-    <div class="header-title-group">
-      <h1 id="ticker-title" class="header-title">-- PROFILE</h1>
-      <div id="company-name" class="header-sub">Loading profile...</div>
-    </div>
-  </div>
-
-  <div class="container">
-
-    <!-- Top Stat Cards -->
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">Current Market Price</div>
-        <div id="m-price" class="metric-value">--</div>
-        <span id="m-drop" class="metric-badge badge-discount">--</span>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">1-Day Change</div>
-        <div id="m-change" class="metric-value">--</div>
-        <span id="m-change-badge" class="metric-badge badge-pending">--</span>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Cash Cushion Floor (CPS)</div>
-        <div id="m-cps" class="metric-value">--</div>
-        <span id="m-gate-badge" class="metric-badge">--</span>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Target Execution Zone</div>
-        <div id="m-target" class="metric-value">--</div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Risk/Reward Baseline</div>
-      </div>
-    </div>
-
-    <!-- Interactive TradingView Chart -->
-    <div class="card">
-      <div id="tradingview_chart"></div>
-    </div>
-
-    <!-- Deep Dive Research Grid -->
-    <div class="research-grid">
-
-      <div class="card">
-        <h3 class="section-title">Core Investment Thesis & Catalyst</h3>
-        <p id="thesis-body" class="notes-p">Loading detailed thesis...</p>
-
-        <h3 class="section-title" style="margin-top: 24px;">Key Catalyst Timeline</h3>
-        <p id="catalyst-body" class="notes-p">Loading catalyst info...</p>
-      </div>
-
-      <div class="card">
-        <h3 class="section-title">Risk & Liquidity Profile</h3>
-        <ul id="risks-list" class="notes-list">
-          <li>Loading risk analysis...</li>
-        </ul>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- TradingView Widget Script -->
-  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const symbol = (urlParams.get('symbol') || 'BMEA').toUpperCase();
-    document.getElementById('ticker-title').innerText = symbol + ' PROFILE';
-
-    // Initialize TradingView Widget
-    new TradingView.widget({
-      "width": "100%",
-      "height": 500,
-      "symbol": symbol,
-      "interval": "D",
-      "timezone": "Etc/UTC",
-      "theme": "dark",
-      "style": "1",
-      "locale": "en",
-      "toolbar_bg": "#12181e",
-      "enable_publishing": false,
-      "allow_symbol_change": true,
-      "container_id": "tradingview_chart"
-    });
-
-    function money(v) {
-      return '$' + Math.abs(v).toFixed(2);
-    }
-    function signed(v, decimals) {
-      return (v < 0 ? '-' : '+') + Math.abs(v).toFixed(decimals);
-    }
-
-    // Fetch and populate research data. research.json only contains
-    // currently-passing tickers; a symbol that no longer clears the gate
-    // (or never did) won't be here, which is shown honestly below rather
-    // than silently defaulting to a passing state.
-    fetch('research.json')
-      .then(res => res.json())
-      .then(data => {
-        const item = data[symbol];
-        if (!item) {
-          document.getElementById('company-name').innerText =
-            'Not currently on the daily screen';
-          document.getElementById('thesis-body').innerText =
-            'This ticker isn\u2019t in today\u2019s passing list \u2014 either it hasn\u2019t cleared the gate, or it hasn\u2019t been evaluated. Check the homepage for today\u2019s full list.';
-          document.getElementById('catalyst-body').innerText = '';
-          document.getElementById('risks-list').innerHTML = '';
-          return;
-        }
-
-        document.getElementById('company-name').innerText = item.name || symbol;
-
-        const price = typeof item.price === 'number' ? item.price : null;
-        const cps = typeof item.cps === 'number' ? item.cps : null;
-        const cushion = typeof item.cash_cushion_pct === 'number' ? item.cash_cushion_pct : null;
-        const drop = typeof item.five_day_drop_pct === 'number' ? item.five_day_drop_pct : null;
-        const dollarChange = typeof item.dollar_change === 'number' ? item.dollar_change : null;
-        const returnPct = typeof item.return_pct === 'number' ? item.return_pct : null;
-
-        document.getElementById('m-price').innerText = price != null ? money(price) : '--';
-        document.getElementById('m-drop').innerText = drop != null
-          ? signed(drop, 1) + '% (5-day)'
-          : '5-day drop unavailable';
-
-        // 1-Day Change: only shown if we actually have a stored baseline
-        // from yesterday's run. No fabricated number when we don't.
-        const changeEl = document.getElementById('m-change');
-        const changeBadge = document.getElementById('m-change-badge');
-        if (dollarChange != null && returnPct != null) {
-          changeEl.innerText = signed(dollarChange, 2);
-          changeEl.style.color = dollarChange > 0 ? 'var(--green)' : dollarChange < 0 ? 'var(--red)' : 'var(--text)';
-          changeBadge.className = 'metric-badge ' + (dollarChange > 0 ? 'badge-pass' : dollarChange < 0 ? 'badge-fail' : 'badge-pending');
-          changeBadge.innerText = signed(returnPct, 1) + '% vs. prior session';
-        } else {
-          changeEl.innerText = '--';
-          changeBadge.className = 'metric-badge badge-pending';
-          changeBadge.innerText = 'Pending baseline';
-        }
-
-        document.getElementById('m-cps').innerText = cps != null ? money(cps) : '--';
-
-        // Gatekeeper badge: PASS / FAIL / UNKNOWN, never a fabricated default.
-        const gateBadge = document.getElementById('m-gate-badge');
-        if (item.gate === 'PASS') {
-          gateBadge.className = 'metric-badge badge-pass';
-          gateBadge.innerText = (cushion != null ? cushion.toFixed(1) + '% ' : '') + 'Clears 30.0% Floor';
-        } else if (item.gate === 'FAIL') {
-          gateBadge.className = 'metric-badge badge-fail';
-          gateBadge.innerText = (cushion != null ? cushion.toFixed(1) + '% ' : '') + 'Below 30.0% Floor';
-        } else {
-          gateBadge.className = 'metric-badge badge-pending';
-          gateBadge.innerText = 'Balance sheet data pending';
-        }
-
-        document.getElementById('m-target').innerText = item.target_zone || '\u2014';
-        document.getElementById('thesis-body').innerText = item.thesis || 'No detailed thesis available.';
-        document.getElementById('catalyst-body').innerText = item.catalyst || 'No primary catalyst specified.';
-
-        const risksList = document.getElementById('risks-list');
-        if (item.risks && item.risks.length > 0) {
-          risksList.innerHTML = item.risks.map(r => `<li>${r.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</li>`).join('');
-        } else {
-          risksList.innerHTML = '<li>No specific risks noted.</li>';
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        document.getElementById('thesis-body').innerText = 'Unable to load research.json.';
-      });
-  </script>
-</body>
-</html>
+    with open(SNAPSHOT_FILE, "w") as f:
+        json.dump(snapshot_out, f, indent=2)
+ 
+    # research.json: only the current winners — the clean list index.html
+    # and stock.html show. A ticker that no longer passes is dropped here
+    # even though it stays visible in screen_snapshot.json.
+    passing = {t: r for t, r in evaluated.items() if r["gate"] == "PASS"}
+    research_out = dict(passing)
+    research_out["_meta"] = {"generated_at": generated_at}
+    with open(RESEARCH_FILE, "w") as f:
+        json.dump(research_out, f, indent=2)
+ 
+    print(
+        f"Database update complete. {len(evaluated)} evaluated, "
+        f"{len(passing)} currently passing."
+    )
+ 
+ 
+if __name__ == "__main__":
+    update_database()
+ 
