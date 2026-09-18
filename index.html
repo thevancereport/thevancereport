@@ -782,7 +782,7 @@
         <div class="wrap">
           <div class="sec-head">
             <h2>Today's scan</h2>
-            <span class="sec-meta">Top ten by net cash cushion<br />including the names that failed</span>
+            <span class="sec-meta">Names clearing both gates<br />ranked by net cash cushion</span>
           </div>
           <div class="table-scroll">
             <table class="scan-table">
@@ -985,7 +985,7 @@
             return;
           }
           if (!state.scan.length) {
-            body.innerHTML = '<tr><td colspan="8"><div class="state-msg">Nothing cleared the cash gate in today&rsquo;s run.</div></td></tr>';
+            body.innerHTML = '<tr><td colspan="8"><div class="state-msg">No names qualified in today&rsquo;s run. Some days the screen finds nothing &mdash; that is the screen working, not failing.</div></td></tr>';
             return;
           }
           body.innerHTML = state.scan.map(scanRow).join("");
@@ -1078,15 +1078,16 @@
           loadScan();
         }
 
-        // screen_snapshot.json is the full audit trail -- every name evaluated,
-        // not just the winners in research.json. The scan table needs the
-        // failures, otherwise every verdict would be a green thumb.
+        // The scan table lists only the names that qualified. research.json holds
+        // exactly those: passing both gates, already capped at three per sector
+        // and ten in total. screen_snapshot.json keeps the full evaluated set --
+        // including every rejection -- and report.html renders that.
         async function loadScan() {
           try {
-            var res = await fetch("screen_snapshot.json", { cache: "no-store", headers: { accept: "application/json" } });
+            var res = await fetch(DATA_URL, { cache: "no-store", headers: { accept: "application/json" } });
             if (!res.ok) throw new Error("HTTP " + res.status);
             var raw = await res.json();
-            if (!raw || typeof raw !== "object") throw new Error("Malformed screen_snapshot.json");
+            if (!raw || typeof raw !== "object") throw new Error("Malformed research.json");
             var rows = [];
             Object.keys(raw).forEach(function (key) {
               if (key.indexOf("_") === 0) return;
@@ -1107,7 +1108,7 @@
             state.scan = rows.slice(0, 10);
             state.scanStatus = "ok";
           } catch (err) {
-            console.error("Failed to load screen_snapshot.json:", err);
+            console.error("Failed to load research.json for the scan table:", err);
             state.scanStatus = "error";
           }
           renderScan();
