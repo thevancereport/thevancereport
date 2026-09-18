@@ -723,8 +723,19 @@
         <button type="button" class="x" data-close-alerts aria-label="Close">✕</button>
         <div id="alertsPane">
           <h2>Daily alerts</h2>
-          <form id="alertsForm">
-            <input type="email" id="alertsEmail" placeholder="name@firm.com" required />
+          <form
+            name="daily-alerts"
+            method="POST"
+            action="/"
+            data-netlify="true"
+            netlify-honeypot="bot-field"
+            id="alertsForm"
+          >
+            <input type="hidden" name="form-name" value="daily-alerts" />
+            <p hidden aria-hidden="true">
+              <label>Do not fill this out: <input name="bot-field" tabindex="-1" /></label>
+            </p>
+            <input type="email" id="alertsEmail" name="email" autocomplete="email" placeholder="name@firm.com" required />
             <button type="submit" class="submit" id="alertsSubmit">Submit</button>
             <p class="form-note" id="alertsNote" hidden></p>
           </form>
@@ -744,12 +755,16 @@
         var state = { rows: [], generatedAt: null, status: "loading" }; // loading | ok | error
 
         function toNum(v) {
-          if (typeof v === "number") return v;
-          if (typeof v === "string") return parseFloat(v.replace("%", ""));
+          if (typeof v === "number") return isFinite(v) ? v : null;
+          if (typeof v === "string") {
+            var parsed = parseFloat(v.replace(/[$,%\s,]/g, ""));
+            return isFinite(parsed) ? parsed : null;
+          }
           return null;
         }
 
         function normalizeRecord(sym, r) {
+          r = r && typeof r === "object" ? r : {};
           return {
             sym: sym,
             name: r.name || sym,
@@ -759,7 +774,7 @@
             cash: toNum(r.cash_cushion_pct),
             drop: toNum(r.five_day_drop_pct),
             mom: r.trend || "STABILIZING",            // REBOUND | STABILIZING | FALLING
-            marketCap: typeof r.market_cap === "number" ? r.market_cap : null,
+            marketCap: toNum(r.market_cap),
             dollarChange: toNum(r.dollar_change),      // real day-over-day change, or null if no baseline yet
             returnPct: toNum(r.return_pct),
             thesis: r.thesis || "Asset-backed balance sheet meeting minimum cash cushion threshold.",
@@ -892,6 +907,11 @@
             return;
           }
           var d = new Date(state.generatedAt);
+          if (isNaN(d.getTime())) {
+            if (runEl) runEl.textContent = "unknown";
+            if (cardEl) cardEl.textContent = "unknown";
+            return;
+          }
           var fullDate = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) +
             " " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
           var shortDate = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -986,6 +1006,7 @@
 
         function timeAgo(iso) {
           var d = new Date(iso);
+          if (isNaN(d.getTime())) return "recently";
           var days = Math.floor((Date.now() - d.getTime()) / 86400000);
           if (days <= 0) return "today";
           if (days === 1) return "yesterday";
@@ -1032,22 +1053,27 @@
 
     <!-- ============ ALERTS MODAL BEHAVIOR ============ -->
     <script>
-      // NOTE: this only opens/closes the modal and prevents the default page
-      // reload on submit. It does NOT send the email anywhere yet — there was
-      // no submit handler at all before, and no backend for it was found in
-      // netlify/functions. Wire this up to whatever should actually receive
-      // signups (Netlify Forms, an email service, etc.) before relying on it.
       (function () {
         var modal = document.getElementById("alertsModal");
         var openBtns = document.querySelectorAll("[data-open-alerts]");
         var closeBtns = document.querySelectorAll("[data-close-alerts]");
         var form = document.getElementById("alertsForm");
         var note = document.getElementById("alertsNote");
+        var submit = document.getElementById("alertsSubmit");
+
+        if (!modal || !form || !note || !submit) return;
 
         function openModal() {
           modal.hidden = false;
           var emailInput = document.getElementById("alertsEmail");
-          if (emailInput) emailInput.focus();
+          form.reset();
+          form.hidden = false;
+          note.hidden = true;
+          note.textContent = "";
+          note.className = "form-note";
+          submit.disabled = false;
+          submit.textContent = "Submit";
+          if (emailInput) setTimeout(function () { emailInput.focus(); }, 0);
         }
         function closeModal() {
           modal.hidden = true;
@@ -1065,9 +1091,34 @@
         if (form) {
           form.addEventListener("submit", function (e) {
             e.preventDefault();
-            note.textContent = "Signup isn't wired to a backend yet — see the code comment above this script.";
-            note.className = "form-note is-error";
-            note.hidden = false;
+            if (!form.checkValidity()) {
+              form.reportValidity();
+              return;
+            }
+
+            submit.disabled = true;
+            submit.textContent = "Submitting…";
+            note.hidden = true;
+
+            fetch(form.action || "/", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams(new FormData(form)).toString(),
+            })
+              .then(function (res) {
+                if (!res.ok) throw new Error("Request failed with status " + res.status);
+                form.hidden = true;
+                note.textContent = "Thank you — you’re on the daily-alert list.";
+                note.className = "form-note is-ok";
+                note.hidden = false;
+              })
+              .catch(function () {
+                submit.disabled = false;
+                submit.textContent = "Submit";
+                note.textContent = "We couldn’t submit your signup just now. Please try again.";
+                note.className = "form-note is-error";
+                note.hidden = false;
+              });
           });
         }
       })();
