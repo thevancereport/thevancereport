@@ -38,6 +38,7 @@ MOMENTUM_MOVE = 1.0         # day-over-day % move to call REBOUND / FALLING
 MIN_MARKET_CAP = 50_000_000
 MIN_VOLUME = 50_000
 MAX_HISTORY_CALLS = 150     # ceiling on per-ticker history requests per run
+MIN_FRAME_ROWS = 2000       # keep merging EDGAR quarters until this many filers
 
 # The SEC asks that automated clients identify themselves. Requests without a
 # real contact address get throttled or blocked.
@@ -133,22 +134,39 @@ def fetch_ticker_to_cik():
 
 
 def fetch_frame(taxonomy, tag, unit):
-    """Return {cik: value} for the newest populated quarter of one XBRL concept."""
+    """
+    Return {cik: value} for one XBRL concept, merged across recent quarters.
+
+    A quarter only fills up as companies file, so the newest one is nearly
+    empty for weeks after it opens -- CY2026Q3I carried 5 filers the day this
+    was written, against 4,184 in CY2026Q2I. Taking the newest quarter that
+    returns ANY rows therefore screens almost nothing.
+
+    Quarters are merged newest-first instead: a company that has already filed
+    contributes its latest figure, everyone else falls back to the quarter
+    before. Stops once enough filers are covered, so this is normally two
+    requests.
+    """
+    merged = {}
     for period in current_quarter_frames():
         url = SEC_FRAME.format(taxonomy=taxonomy, tag=tag, unit=unit, period=period)
         data = fetch_json(url, SEC_UA)
         rows = data.get("data") if isinstance(data, dict) else None
-        if rows:
-            out = {}
-            for row in rows:
-                cik, val = row.get("cik"), row.get("val")
-                if cik is not None and isinstance(val, (int, float)):
-                    out[int(cik)] = float(val)
-            print(f"EDGAR {tag} [{period}]: {len(out):,} filers.")
-            return out
-        print(f"EDGAR {tag} [{period}]: empty, trying previous quarter.")
-    print(f"EDGAR {tag}: no populated quarter found.")
-    return {}
+        added = 0
+        for row in rows or []:
+            cik, val = row.get("cik"), row.get("val")
+            if cik is None or not isinstance(val, (int, float)):
+                continue
+            cik = int(cik)
+            if cik not in merged:          # newest quarter wins
+                merged[cik] = float(val)
+                added += 1
+        print(f"EDGAR {tag} [{period}]: +{added:,} filers (running total {len(merged):,}).")
+        if len(merged) >= MIN_FRAME_ROWS:
+            break
+    if not merged:
+        print(f"EDGAR {tag}: no data in any recent quarter.")
+    return merged
 
 
 def fetch_market_rows():
