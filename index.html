@@ -705,24 +705,57 @@ LUMN: "Fiber connectivity deals with hyperscalers provide substantial milestone 
           });
         };
 
-        var form = document.getElementById("engForm");
-        form.addEventListener("submit", function (e) {
-          e.preventDefault();
-          var p = {
-            cash: parseFloat(document.getElementById("engCash").value),
-            drop: parseFloat(document.getElementById("engDrop").value),
-            cap: parseFloat(document.getElementById("engCap").value),
-            momentum: document.getElementById("engMom").value
-          };
-          var rows = window.filterUniverse(p);
-          document.getElementById("engOutput").hidden = false;
-          document.getElementById("engCount").textContent = rows.length + " candidates found";
-          document.getElementById("engResults").innerHTML = "<pre>" + JSON.stringify(rows, null, 2) + "</pre>";
-        });
-      })();
-    </script>
+      var form = document.getElementById("engForm");
+if (form) {
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var p = {
+      cash: parseFloat(document.getElementById("engCash").value),
+      drop: parseFloat(document.getElementById("engDrop").value),
+      cap: parseFloat(document.getElementById("engCap").value),
+      momentum: document.getElementById("engMom").value
+    };
 
-    <script>
+    var rows = window.filterUniverse(p);
+    var resultsContainer = document.getElementById("engResults");
+    var outputSection = document.getElementById("engOutput");
+
+    if (outputSection) outputSection.removeAttribute("hidden");
+    if (document.getElementById("engCount")) {
+      document.getElementById("engCount").innerText = rows.length + " candidates found";
+    }
+
+    if (!rows.length) {
+      resultsContainer.innerHTML = '<div style="padding: 24px 0; color: var(--paper-faint);">No tickers match these criteria.</div>';
+      return;
+    }
+
+    // Render HTML cards wrapped in .ledger to apply the CSS grid layout
+    resultsContainer.innerHTML = '<div class="ledger">' + rows.map(function (r) {
+      var price = typeof r.price === "number" ? r.price.toFixed(2) : r.price;
+      var cps = typeof r.cps === "number" ? r.cps.toFixed(2) : r.cps;
+      var drop = typeof r.drop === "number" ? r.drop.toFixed(1) : r.drop;
+      var cash = typeof r.cash === "number" ? r.cash.toFixed(1) : r.cash;
+
+      return `
+        <article class="entry">
+          <div class="ratio">${cash}%<span>Cash / price</span></div>
+          <div class="entry-body">
+            <h3>${r.sym} &mdash; <span>${r.name}, ${r.exch || 'NASDAQ'}</span></h3>
+            <p class="metrics">
+              <span>Price <b>$${price}</b></span>
+              <span>Cash/share <b>$${cps}</b></span>
+              <span>3-day drop <b>${drop}%</b></span>
+            </p>
+            <a class="chart" href="stock.html?symbol=${r.sym}" style="color: var(--amber, #e0a33c); font-size: 26px; font-weight: 500;">
+              Company profile &rarr;
+            </a>
+          </div>
+        </article>
+      `;
+    }).join("") + '</div>';
+  });
+}
       (async function () {
         async function loadLiveUniverse() {
           try {
