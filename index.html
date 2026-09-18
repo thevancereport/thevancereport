@@ -922,40 +922,14 @@
     <!-- ============ BOTTOM FLOATING DISCLAIMER ============ -->
     <div id="financialDisclaimerBar" class="disc-bar" role="region" aria-label="Financial Disclaimer">
       <div class="wrap disc-wrap">
-        <div class="disc-main">
-          <div class="disc-text">
-            <span class="disc-badge">Notice</span>
-            <strong>Educational Research Only:</strong> The Vance Report is an independent research publisher, not a registered investment advisor or broker-dealer. Cash-to-price metrics rely on lagging balance sheet data and do not constitute investment advice.
-          </div>
-          <div class="disc-actions">
-            <button type="button" class="disc-toggle" id="discToggle" aria-expanded="false" aria-controls="discContent">
-              <span>Full Disclaimer</span>
-              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" class="disc-chevron" aria-hidden="true">
-                <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3"/>
-              </svg>
-            </button>
-            <button type="button" class="disc-close" id="discClose" aria-label="Dismiss disclaimer">
-              ✕
-            </button>
-          </div>
+        <div class="disc-text">
+          <span class="disc-badge">Notice</span>
+          Educational research only — not investment advice. The Vance Report is not a registered investment adviser or broker-dealer.<br>
+          Screened securities are high-risk, volatile, and may involve total loss of principal. Data may be delayed or inaccurate — verify before relying on it.
         </div>
-
-        <div class="disc-content" id="discContent">
-          <div class="disc-divider"></div>
-          <div class="disc-grid">
-            <div>
-              <b class="disc-heading">1. No Fiduciary Duty</b>
-              <p>Content, daily screening outputs, and engine results are generated strictly for informational and educational purposes. No user relationship creates advisory or fiduciary obligations under SEC regulations.</p>
-            </div>
-            <div>
-              <b class="disc-heading">2. Balance Sheet &amp; Data Lag</b>
-              <p>Cash-per-share figures utilize reported quarterly disclosures. They do not account for ongoing burn rate, debt dilution, or material events occurring after filing dates.</p>
-            </div>
-            <div>
-              <b class="disc-heading">3. High Risk &amp; Due Diligence</b>
-              <p>Securities clearing the 30% Cash-to-Price gatekeeper often experience acute distress. Solvency metrics do not guarantee price recovery. Perform independent research before trading.</p>
-            </div>
-          </div>
+        <div class="disc-actions">
+          <a class="disc-link" href="disclaimer.html">Read full disclaimer &rarr;</a>
+          <button type="button" class="disc-close" id="discClose" aria-label="Dismiss disclaimer">✕</button>
         </div>
       </div>
     </div>
@@ -967,14 +941,11 @@
         left: 0;
         right: 0;
         z-index: 90;
-        background: rgba(12, 16, 20, 0.96);
+        background: rgba(12, 16, 20, 0.97);
         backdrop-filter: blur(10px);
         border-top: 1px solid var(--rule, #26303a);
         box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
-        color: var(--paper-dim, #a8a79f);
         font-family: var(--mono, "IBM Plex Mono", monospace);
-        font-size: 14px;
-        line-height: 1.6;
       }
 
       .disc-bar[hidden] {
@@ -982,32 +953,26 @@
       }
 
       .disc-wrap {
-        padding-top: 14px;
-        padding-bottom: 14px;
-      }
-
-      .disc-main {
+        padding: 16px 28px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 18px;
+        gap: 24px;
       }
 
       .disc-text {
         flex: 1;
-        color: var(--paper-dim, #a8a79f);
-        font-size: 14px;
-      }
-
-      .disc-text strong {
-        color: var(--paper, #e7e3d8);
-        font-weight: 500;
+        color: var(--amber, #e0a33c);
+        font-weight: 600;
+        font-size: 13.5px;
+        line-height: 1.55;
       }
 
       .disc-badge {
         display: inline-block;
         border: 1px solid var(--amber, #e0a33c);
         color: var(--amber, #e0a33c);
+        font-weight: 500;
         font-size: 11px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
@@ -1019,37 +984,25 @@
       .disc-actions {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 18px;
         flex-shrink: 0;
       }
 
-      .disc-toggle {
-        background: none;
-        border: 1px solid var(--rule, #26303a);
-        color: var(--paper-dim, #a8a79f);
-        cursor: pointer;
-        font-family: inherit;
+      .disc-link {
+        color: var(--paper, #e7e3d8);
+        text-decoration: none;
         font-size: 12px;
+        font-weight: 500;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        padding: 8px 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--amber, #e0a33c);
+        padding-bottom: 2px;
         transition: color 0.16s ease, border-color 0.16s ease;
       }
 
-      .disc-toggle:hover {
-        border-color: var(--amber, #e0a33c);
+      .disc-link:hover {
         color: var(--amber, #e0a33c);
-      }
-
-      .disc-chevron {
-        transition: transform 0.2s ease;
-      }
-
-      .disc-bar.is-expanded .disc-chevron {
-        transform: rotate(180deg);
       }
 
       .disc-close {
@@ -1060,62 +1013,21 @@
         font-size: 16px;
         padding: 4px 8px;
         transition: color 0.16s ease;
+        flex-shrink: 0;
       }
 
       .disc-close:hover {
         color: var(--paper, #e7e3d8);
       }
 
-      .disc-content {
-        display: none;
-      }
-
-      .disc-bar.is-expanded .disc-content {
-        display: block;
-      }
-
-      .disc-divider {
-        height: 1px;
-        background: var(--rule-soft, #1c242c);
-        margin: 14px 0 18px;
-      }
-
-      .disc-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 22px;
-        padding-bottom: 6px;
-      }
-
-      .disc-heading {
-        display: block;
-        color: var(--amber, #e0a33c);
-        font-size: 12px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        margin-bottom: 6px;
-      }
-
-      .disc-grid p {
-        margin: 0;
-        font-size: 12.5px;
-        color: var(--paper-dim, #a8a79f);
-        line-height: 1.6;
-      }
-
-      @media (max-width: 840px) {
-        .disc-main {
+      @media (max-width: 720px) {
+        .disc-wrap {
           flex-direction: column;
           align-items: flex-start;
         }
         .disc-actions {
           width: 100%;
           justify-content: space-between;
-          margin-top: 8px;
-        }
-        .disc-grid {
-          grid-template-columns: 1fr;
-          gap: 16px;
         }
       }
     </style>
@@ -1123,32 +1035,22 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         var bar = document.getElementById("financialDisclaimerBar");
-        var toggle = document.getElementById("discToggle");
         var closeBtn = document.getElementById("discClose");
+        if (!bar || !closeBtn) return;
 
-        if (!bar || !toggle || !closeBtn) return;
-
-        if (localStorage.getItem("vance_disclaimer_dismissed") === "true") {
+        // Re-shows once a day rather than being dismissed forever — a financial
+        // site's risk notice is worth re-surfacing on a fresh visit, not just
+        // permanently hidden after one click.
+        var DISMISS_KEY = "vance_disclaimer_dismissed_until";
+        var dismissedUntil = localStorage.getItem(DISMISS_KEY);
+        if (dismissedUntil && Date.now() < Number(dismissedUntil)) {
           bar.hidden = true;
-          return;
         }
 
-        toggle.addEventListener("click", function (e) {
-          e.preventDefault();
-          var isExpanded = bar.classList.contains("is-expanded");
-          if (isExpanded) {
-            bar.classList.remove("is-expanded");
-            toggle.setAttribute("aria-expanded", "false");
-          } else {
-            bar.classList.add("is-expanded");
-            toggle.setAttribute("aria-expanded", "true");
-          }
-        });
-
-        closeBtn.addEventListener("click", function (e) {
-          e.preventDefault();
+        closeBtn.addEventListener("click", function () {
           bar.hidden = true;
-          localStorage.setItem("vance_disclaimer_dismissed", "true");
+          var oneDayFromNow = Date.now() + 24 * 60 * 60 * 1000;
+          localStorage.setItem(DISMISS_KEY, String(oneDayFromNow));
         });
       });
     </script>
