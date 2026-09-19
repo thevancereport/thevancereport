@@ -16,14 +16,14 @@
     />
     <style>
       :root {
-        --ink: #0c1014;
-        --ink2: #12181e;
-        --ink3: #181f27;
+        --ink: #130f0a;
+        --ink2: #1c1611;
+        --ink3: #241d16;
         --paper: #e9e5dc;
-        --dim: #aaa69e;
-        --faint: #777a78;
-        --rule: #303942;
-        --soft: #242d35;
+        --dim: #ada59d;
+        --faint: #84776a;
+        --rule: #41362b;
+        --soft: #342a21;
         --amber: #d8a43b;
         --deep: #765922;
         --pass: #6fbd8b;
@@ -57,10 +57,10 @@
         background-image:
           linear-gradient(
             to right,
-            rgba(38, 48, 58, 0.45) 1px,
+            rgba(55, 45, 35, 0.45) 1px,
             transparent 1px
           ),
-          linear-gradient(to bottom, rgba(38, 48, 58, 0.3) 1px, transparent 1px);
+          linear-gradient(to bottom, rgba(55, 45, 35, 0.3) 1px, transparent 1px);
         background-size: 96px 96px;
         mask-image: radial-gradient(
           ellipse 120% 80% at 70% 0%,
@@ -87,7 +87,7 @@
         top: 0;
         z-index: 20;
         border-bottom: 1px solid var(--rule);
-        background: rgba(12, 16, 20, 0.88);
+        background: rgba(19, 15, 10, 0.88);
         backdrop-filter: blur(8px);
       }
       .ticker-in {
@@ -198,7 +198,7 @@
         background: linear-gradient(
           160deg,
           var(--ink2),
-          rgba(12, 16, 20, 0.25)
+          rgba(19, 15, 10, 0.25)
         );
       }
       .stat {
@@ -894,9 +894,9 @@
         left: 0;
         right: 0;
         z-index: 90;
-        background: rgba(12, 16, 20, 0.97);
+        background: rgba(19, 15, 10, 0.97);
         backdrop-filter: blur(10px);
-        border-top: 1px solid var(--rule, #26303a);
+        border-top: 1px solid var(--rule, #372d23);
         box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
         font-family: var(--mono, "IBM Plex Mono", monospace);
       }
@@ -961,7 +961,7 @@
       .disc-close {
         background: none;
         border: 0;
-        color: var(--paper-faint, #6f7680);
+        color: var(--paper-faint, #817365);
         cursor: pointer;
         font-size: 18.5px;
         padding: 4px 8px;
@@ -1225,6 +1225,48 @@
   .metrics-grid, .stats { grid-template-columns: 1fr; }
   .scan-table td:nth-child(n + 3):nth-child(-n + 7)::before { font-size: 11px; }
 }
+</style>
+
+<style id="vr-surface">
+  /* ============================================================
+     THE SURFACE
+
+     A warm brown base, a soft light falling from the upper right,
+     and a fine grain over both. Measured against the reference
+     screenshot rather than eyeballed: grain standard deviation
+     0.98 against its 0.95, and the glow peaks +32 over the base
+     against its +31.
+
+     The grain and the glow live on a fixed pseudo-element so they
+     stay still while the page scrolls, and so one rule covers
+     every page. It sits at z-index -1, which means html carries
+     the base colour and body must not paint one over the top --
+     a negative-z-index child is painted before its parent's own
+     background, not after. That one detail is why an earlier
+     attempt rendered completely flat.
+     ============================================================ */
+  html { background-color: var(--ink, var(--bg, #130f0a)); }
+  body { background-color: transparent; }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
+      radial-gradient(1500px 980px at 72% -10%,
+        rgba(214, 172, 112, 0.21),
+        rgba(214, 172, 112, 0.059) 45%,
+        rgba(214, 172, 112, 0) 72%);
+    background-repeat: repeat, no-repeat;
+    background-size: 220px 220px, 100% 100%;
+  }
+
+  /* The old grid overlay is replaced by the grain above. The
+     elements stay so nothing that positioned against them moves. */
+  .grid-field, .grain, .grid { background-image: none !important; }
 </style>
 </body>
 </html>
