@@ -37,7 +37,10 @@ def drop_of(row: dict) -> float:
 # What the screen calls the shape of a chart, and what the narrator says.
 # The three legacy values came from a run-to-run comparison that meant nothing;
 # they are mapped so a briefing built from an old file still says something.
-TREND_ALIASES = {"REBOUND": "UP", "FALLING": "DOWN", "STABILIZING": "SIDEWAYS"}
+# REBOUND and FALLING recorded a real price move. STABILIZING did not: the
+# old code returned it both for a small move and for no baseline at all, so it
+# is treated as no reading rather than as a flat chart.
+TREND_ALIASES = {"REBOUND": "UP", "FALLING": "DOWN"}
 TREND_WORDS = {
     "UP": "trending up",
     "DOWN": "still trending down",
