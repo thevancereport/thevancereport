@@ -148,6 +148,7 @@
     <div class="header-title-group">
       <h1 id="ticker-title" class="header-title">-- PROFILE</h1>
       <div id="company-name" class="header-sub">Loading profile...</div>
+      <div id="grade-slot"></div>
     </div>
   </div>
 
@@ -180,6 +181,24 @@
     <!-- Interactive TradingView Chart -->
     <div class="card">
       <div id="tradingview_chart"></div>
+    </div>
+
+    <!-- Check any stock -->
+    <div class="card">
+      <h3 class="section-title">Check another stock</h3>
+      <p class="lookup-caveat">
+        Runs the same conditions against any US-listed common stock. Balance
+        sheet figures come from that company's own SEC filings and lag the date
+        they were filed. This reports whether stated conditions are met on the
+        figures available — it is not a recommendation, and a pass is not a
+        prediction.
+      </p>
+      <form class="lookup-form" id="lookupForm">
+        <input id="lookupInput" type="text" maxlength="6" placeholder="Ticker, e.g. PALI"
+               autocomplete="off" spellcheck="false" aria-label="Ticker symbol" />
+        <button type="submit" id="lookupBtn">Run the screen</button>
+      </form>
+      <div id="lookupResult"></div>
     </div>
 
     <!-- Gatekeeper analysis -->
@@ -314,6 +333,7 @@
         document.getElementById('catalyst-body').innerText = item.catalyst || 'No primary catalyst specified.';
 
         renderGatekeeper(item, price, cps, cushion, drop);
+        loadGrade(symbol, 'grade-slot', null);
 
         const risksList = document.getElementById('risks-list');
         if (item.risks && item.risks.length > 0) {
@@ -326,6 +346,87 @@
         console.error(err);
         document.getElementById('thesis-body').innerText = 'Unable to load research.json.';
       });
+
+    const THUMB_PATH = 'M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z';
+
+    function gradeBadge(grade) {
+      const cls = grade === 'pass' ? 'grade-pass' : grade === 'fail' ? 'grade-fail' : 'grade-neutral';
+      const label = grade === 'pass' ? 'Pass' : grade === 'fail' ? 'Fail' : 'Neutral';
+      return '<div class="grade-badge ' + cls + '">' +
+        '<svg viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="' + label + '">' +
+        '<path d="' + THUMB_PATH + '"/></svg>' + label + '</div>';
+    }
+
+    function conditionRows(conditions) {
+      return conditions.map(function (c) {
+        const mark = c.met === true ? '<span class="gate-mark gate-met">Met</span>'
+                   : c.met === false ? '<span class="gate-mark gate-missed">Not met</span>'
+                   : '<span class="gate-mark gate-na">For context</span>';
+        const value = c.value === null || c.value === undefined ? 'not reported' : c.value;
+        return '<div class="gate-row">' +
+          '<div><span class="gate-name">' + c.name + '</span>' +
+          '<span class="gate-rule">' + c.rule + '</span></div>' +
+          '<div class="gate-value">' + value + '</div>' + mark + '</div>';
+      }).join('');
+    }
+
+    // The daily screen only publishes names that passed, so a grade taken from
+    // research.json would always read Pass. The API evaluates whatever symbol
+    // is asked for, which is the only way a Neutral or Fail can ever appear.
+    async function loadGrade(sym, slotId, intoConditions) {
+      const slot = document.getElementById(slotId);
+      try {
+        const res = await fetch('/api/evaluate?symbol=' + encodeURIComponent(sym), { cache: 'no-store' });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          if (slot) slot.innerHTML = '';
+          return { error: data.error || 'Unable to evaluate ' + sym + '.' };
+        }
+        if (slot) slot.innerHTML = gradeBadge(data.grade);
+        if (intoConditions) {
+          const host = document.getElementById(intoConditions);
+          if (host) host.innerHTML = conditionRows(data.conditions);
+        }
+        return data;
+      } catch (err) {
+        console.error(err);
+        if (slot) slot.innerHTML = '';
+        return { error: 'Unable to reach the screen just now.' };
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.getElementById('lookupForm');
+      if (!form) return;
+      const input = document.getElementById('lookupInput');
+      const btn = document.getElementById('lookupBtn');
+      const out = document.getElementById('lookupResult');
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const sym = (input.value || '').trim().toUpperCase();
+        if (!/^[A-Z]{1,6}$/.test(sym)) {
+          out.innerHTML = '<p class="notes-p">Enter a ticker symbol, letters only.</p>';
+          return;
+        }
+        btn.disabled = true;
+        btn.textContent = 'Checking\u2026';
+        out.innerHTML = '<p class="notes-p">Reading ' + sym + '\u2019s filings\u2026</p>';
+
+        const data = await loadGrade(sym, null, null);
+        btn.disabled = false;
+        btn.textContent = 'Run the screen';
+
+        if (data.error) {
+          out.innerHTML = '<p class="notes-p">' + data.error + '</p>';
+          return;
+        }
+        out.innerHTML =
+          '<div style="margin-bottom:14px;">' + gradeBadge(data.grade) +
+          '<div style="margin-top:8px;font-weight:600;">' + data.symbol + ' \u2014 ' + data.name + '</div>' +
+          '</div>' + conditionRows(data.conditions);
+      });
+    });
 
     // Each condition, this company's figure, and whether it was met. Missing
     // data reads as "not reported" rather than as a failure -- the screen does
@@ -550,6 +651,54 @@
       .gate-met { color: var(--green, #61a887); }
       .gate-missed { color: var(--red, #cc6250); }
       .gate-na { color: var(--muted, #8b95a1); }
+      /* ---------- grade badge + ticker lookup ---------- */
+      .grade-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 6px 13px;
+        border: 1px solid currentColor;
+        font-size: 12.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .grade-pass { color: var(--green, #61a887); }
+      .grade-neutral { color: var(--amber, #e0a33c); }
+      .grade-fail { color: var(--red, #cc6250); }
+      .grade-badge svg { width: 15px; height: 15px; }
+      .grade-neutral svg { transform: rotate(90deg); }
+      .grade-fail svg { transform: rotate(180deg); }
+      .lookup-form { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 12px; }
+      .lookup-form input {
+        flex: 1 1 180px;
+        min-width: 0;
+        background: var(--bg-2, #12181e);
+        border: 1px solid var(--border, #26303a);
+        color: inherit;
+        font: inherit;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 11px 13px;
+      }
+      .lookup-form button {
+        background: var(--amber, #e0a33c);
+        border: 0;
+        color: #0c1014;
+        font: inherit;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 11px 20px;
+        cursor: pointer;
+      }
+      .lookup-form button[disabled] { opacity: 0.55; cursor: default; }
+      .lookup-caveat {
+        font-size: 12.5px;
+        color: var(--muted, #8b95a1);
+        line-height: 1.6;
+        margin: 0 0 20px;
+      }
     </style>
 
     <script>
