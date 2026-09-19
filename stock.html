@@ -37,13 +37,13 @@
       color: var(--amber);
       text-decoration: none;
       font-family: var(--mono);
-      font-size: 14px;
+      font-size: 16px;
       letter-spacing: 0.5px;
     }
     .back-btn:hover { text-decoration: underline; }
     .header-title-group { text-align: right; }
     .header-title { color: var(--amber); margin: 0; font-size: 26px; letter-spacing: 1px; }
-    .header-sub { color: var(--text-muted); font-size: 13px; font-family: var(--mono); }
+    .header-sub { color: var(--text-muted); font-size: 15px; font-family: var(--mono); }
 
     .container { max-width: 1200px; margin: 0 auto; }
 
@@ -62,7 +62,7 @@
     }
     .metric-label {
       color: var(--text-muted);
-      font-size: 11px;
+      font-size: 12.5px;
       font-family: var(--mono);
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -78,7 +78,7 @@
       margin-top: 6px;
       padding: 2px 8px;
       border-radius: 4px;
-      font-size: 11px;
+      font-size: 12.5px;
       font-family: var(--mono);
       font-weight: 600;
     }
@@ -108,7 +108,7 @@
     }
 
     .section-title {
-      font-size: 14px;
+      font-size: 16px;
       font-family: var(--mono);
       color: var(--amber);
       text-transform: uppercase;
@@ -122,19 +122,19 @@
     .notes-p {
       line-height: 1.6;
       color: var(--text);
-      font-size: 14px;
+      font-size: 16px;
       margin-bottom: 16px;
     }
     .notes-list {
       margin: 0;
       padding-left: 20px;
       color: var(--text-muted);
-      font-size: 14px;
+      font-size: 16px;
       line-height: 1.6;
     }
     .notes-list li { margin-bottom: 8px; }
     .data-note {
-      font-size: 11px;
+      font-size: 12.5px;
       color: var(--text-muted);
       margin-top: -12px;
       margin-bottom: 24px;
@@ -173,13 +173,26 @@
       <div class="metric-card">
         <div class="metric-label">Target Execution Zone</div>
         <div id="m-target" class="metric-value">--</div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Risk/Reward Baseline</div>
+        <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">Risk/Reward Baseline</div>
       </div>
     </div>
 
     <!-- Interactive TradingView Chart -->
     <div class="card">
       <div id="tradingview_chart"></div>
+    </div>
+
+    <!-- Gatekeeper analysis -->
+    <div class="card">
+      <h3 class="section-title">Gatekeeper analysis</h3>
+      <p class="notes-p" style="margin-bottom: 6px;">
+        Every condition the screen applies, with this company's figure beside it.
+        The conditions are fixed and applied to every listed US common stock each
+        trading day.
+      </p>
+      <div id="gate-analysis">
+        <div class="notes-p">Loading gatekeeper analysis&hellip;</div>
+      </div>
     </div>
 
     <!-- Deep Dive Research Grid -->
@@ -300,6 +313,8 @@
         document.getElementById('thesis-body').innerText = item.thesis || 'No detailed thesis available.';
         document.getElementById('catalyst-body').innerText = item.catalyst || 'No primary catalyst specified.';
 
+        renderGatekeeper(item, price, cps, cushion, drop);
+
         const risksList = document.getElementById('risks-list');
         if (item.risks && item.risks.length > 0) {
           risksList.innerHTML = item.risks.map(r => `<li>${r.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</li>`).join('');
@@ -311,6 +326,89 @@
         console.error(err);
         document.getElementById('thesis-body').innerText = 'Unable to load research.json.';
       });
+
+    // Each condition, this company's figure, and whether it was met. Missing
+    // data reads as "not reported" rather than as a failure -- the screen does
+    // not hold an absent filing against a company.
+    function renderGatekeeper(item, price, cps, cushion, drop) {
+      const host = document.getElementById('gate-analysis');
+      if (!host) return;
+
+      const n = v => typeof v === 'number' && isFinite(v);
+      const rows = [];
+
+      rows.push({
+        name: 'Five-day move',
+        rule: 'must have fallen 15% or more',
+        value: n(drop) ? drop.toFixed(1) + '%' : 'not reported',
+        met: n(drop) ? drop <= -15 : null
+      });
+
+      rows.push({
+        name: 'Net cash cushion',
+        rule: '(cash minus total liabilities) per share, against price; 30% or more',
+        value: n(cushion) ? cushion.toFixed(1) + '%' : 'not reported',
+        met: n(cushion) ? cushion >= 30 : null
+      });
+
+      const gross = item.gross_cash_per_share, liab = item.liabilities_per_share;
+      rows.push({
+        name: 'Balance sheet per share',
+        rule: n(gross) && n(liab)
+          ? 'cash $' + gross.toFixed(2) + ' less liabilities $' + liab.toFixed(2)
+          : 'from the most recent filing',
+        value: n(cps) ? '$' + cps.toFixed(2) + ' net' : 'not reported',
+        met: null
+      });
+
+      const runway = item.runway_years;
+      rows.push({
+        name: 'Runway',
+        rule: 'net cash divided by annual operating burn; two years or more',
+        value: runway === 'cash generative' ? 'cash generative'
+             : (n(runway) ? runway.toFixed(1) + ' years' : 'not reported'),
+        met: runway === 'cash generative' ? true : (n(runway) ? runway >= 2 : null)
+      });
+
+      const dilution = item.dilution_pct;
+      rows.push({
+        name: 'Share issuance',
+        rule: 'share count against the same quarter a year earlier; 25% or less',
+        value: n(dilution) ? (dilution >= 0 ? '+' : '') + dilution.toFixed(1) + '%' : 'not reported',
+        met: n(dilution) ? dilution <= 25 : null
+      });
+
+      rows.push({
+        name: 'Market capitalisation',
+        rule: '$50m or more, common stock only',
+        value: n(item.market_cap) ? '$' + Math.round(item.market_cap / 1e6).toLocaleString() + 'm' : 'not reported',
+        met: n(item.market_cap) ? item.market_cap >= 50e6 : null
+      });
+
+      const buys = item.insider_buys;
+      rows.push({
+        name: 'Insider purchases',
+        rule: 'open-market buys over 180 days; reported, never required',
+        value: n(buys)
+          ? (buys > 0
+              ? buys + (buys === 1 ? ' purchase' : ' purchases')
+                + (n(item.insider_value) && item.insider_value > 0
+                    ? ', $' + Math.round(item.insider_value).toLocaleString() : '')
+              : 'none filed')
+          : 'not checked',
+        met: null
+      });
+
+      host.innerHTML = rows.map(function (r) {
+        const mark = r.met === true ? '<span class="gate-mark gate-met">Met</span>'
+                   : r.met === false ? '<span class="gate-mark gate-missed">Not met</span>'
+                   : '<span class="gate-mark gate-na">For context</span>';
+        return '<div class="gate-row">' +
+          '<div><span class="gate-name">' + r.name + '</span>' +
+          '<span class="gate-rule">' + r.rule + '</span></div>' +
+          '<div class="gate-value">' + r.value + '</div>' + mark + '</div>';
+      }).join('');
+    }
   </script>
 
 <!-- ============ BOTTOM FLOATING DISCLAIMER ============ -->
@@ -358,7 +456,7 @@
         flex: 1;
         color: var(--amber, #e0a33c);
         font-weight: 400;
-        font-size: 13.5px;
+        font-size: 15.5px;
         line-height: 1.55;
       }
 
@@ -367,7 +465,7 @@
         border: 1px solid var(--amber, #e0a33c);
         color: var(--amber, #e0a33c);
         font-weight: 500;
-        font-size: 11px;
+        font-size: 12.5px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
         padding: 2px 7px;
@@ -385,7 +483,7 @@
       .disc-link {
         color: var(--paper, #e7e3d8);
         text-decoration: none;
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 500;
         letter-spacing: 0.1em;
         text-transform: uppercase;
@@ -404,7 +502,7 @@
         border: 0;
         color: var(--paper-faint, #6f7680);
         cursor: pointer;
-        font-size: 16px;
+        font-size: 18.5px;
         padding: 4px 8px;
         transition: color 0.16s ease;
         flex-shrink: 0;
@@ -424,6 +522,34 @@
           justify-content: space-between;
         }
       }
+      /* ---------- gatekeeper analysis ---------- */
+      .gate-row {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 16px;
+        align-items: baseline;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--border, #26303a);
+      }
+      .gate-row:last-child { border-bottom: 0; }
+      .gate-name { font-weight: 600; }
+      .gate-rule {
+        font-size: 12.5px;
+        color: var(--muted, #8b95a1);
+        display: block;
+        margin-top: 3px;
+        font-weight: 400;
+      }
+      .gate-value { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .gate-mark {
+        font-size: 12.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .gate-met { color: var(--green, #61a887); }
+      .gate-missed { color: var(--red, #cc6250); }
+      .gate-na { color: var(--muted, #8b95a1); }
     </style>
 
     <script>
