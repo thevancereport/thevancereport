@@ -14,13 +14,18 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://thevancereport.com/">
     <meta property="og:site_name" content="The Vance Report">
+    <meta property="og:image" content="https://thevancereport.com/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="The Vance Report — a daily screen for US stocks trading below net cash">
+    <meta property="og:locale" content="en_US">
     <meta name="google-site-verification" content="JH0CxvwbRv7hBx1LE-Ctkx3YgaKefbEw0rieD4_JcLY" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="The Vance Report | Daily Cash Cushion Screener">
     <meta name="twitter:description" content="Find high-conviction financial signals and fundamental value metrics inside market selloffs.">
-    <meta name="twitter:image" content="https://thevancereport.com/favicon.png">
+    <meta name="twitter:image" content="https://thevancereport.com/og-card.png">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -1682,6 +1687,39 @@
         if (!v || !v.video_id || v.video_id === "DRYRUN") throw new Error("no video");
         var mins = v.duration_seconds ? Math.round(v.duration_seconds / 60) : null;
         var syms = (v.symbols || []).map(esc).join(" &middot; ") || "None cleared";
+
+        var ld = document.createElement("script");
+        ld.type = "application/ld+json";
+        ld.textContent = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "VideoObject",
+          "name": v.title,
+          "description": v.description || v.title,
+          "thumbnailUrl": [v.thumbnail],
+          "uploadDate": v.generated_at,
+          "duration": v.duration_iso,
+          "embedUrl": v.embed,
+          "url": v.url,
+          "contentUrl": v.url,
+          "publisher": {
+            "@type": "Organization",
+            "name": "The Vance Report",
+            "url": "https://thevancereport.com/"
+          },
+          "isFamilyFriendly": true,
+          "inLanguage": "en-US",
+          "hasPart": (v.chapters || []).map(function (c, i, all) {
+            return {
+              "@type": "Clip",
+              "name": c.title,
+              "startOffset": Math.round(c.start),
+              "endOffset": Math.round(i + 1 < all.length ? all[i + 1].start
+                                                         : (v.duration_seconds || c.start + 30)),
+              "url": v.url + "&t=" + Math.round(c.start) + "s"
+            };
+          })
+        });
+        document.head.appendChild(ld);
         slot.className = "briefing";
         slot.innerHTML =
           '<div class="briefing-player"><iframe src="' + esc(v.embed) +
