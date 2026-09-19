@@ -154,15 +154,21 @@ jobs:
           python3 scripts/upload_youtube.py --build build --out video.json
           echo "published=yes" >> "$GITHUB_OUTPUT"
 
-      - name: Commit video.json
-        if: steps.publish.outputs.published == 'yes'
+      # The link-preview card is rebuilt every run and names today's tickers,
+      # so it is committed whether or not the video was published.
+      - name: Commit video.json and the social card
         run: |
-          set -euo pipefail
+          set -eo pipefail
+          cp -f build/og-card.png og-card.png 2>/dev/null || true
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- video.json; then
-            echo "video.json unchanged"; exit 0
+          git add -- og-card.png 2>/dev/null || true
+          if [ "${{ steps.publish.outputs.published }}" = "yes" ]; then
+            git add -- video.json
           fi
-          git add video.json
-          git commit -m "Daily briefing video $(python3 -c "import json;print(json.load(open('video.json'))['run_date'])")"
+          if git diff --cached --quiet; then
+            echo "nothing changed"; exit 0
+          fi
+          STAMP=$(python3 -c "import json;print(json.load(open('build/meta.json'))['run_date'])")
+          git commit -m "Daily briefing $STAMP [skip ci]"
           git push
