@@ -588,12 +588,13 @@
                     <th class="c">1-day change</th>
                     <th class="c">Cash cushion</th>
                     <th class="c" id="th-drop">Price move</th>
+                    <th class="c" id="th-trend">Trend</th>
                     <th class="c">Gatekeeper status</th>
                   </tr>
                 </thead>
                 <tbody id="screenRows">
                   <tr>
-                    <td class="catalyst" colspan="6">
+                    <td class="catalyst" colspan="7">
                       Loading today&rsquo;s snapshot&hellip;
                     </td>
                   </tr>
@@ -603,7 +604,9 @@
             <p class="framing">
               A name that clears is a name to look at, not a name to buy. It has
               passed two arithmetic tests and nothing else &mdash; not a judgement
-              on the business, the price, or whether the fall is finished.
+              on the business, the price, or whether the fall is finished. These
+              names are looked at on a three to six month view; nothing here is
+              intended for day trading or short-term trading of any kind.
             </p>
             <p class="note">
               Cash-per-share figures reflect the most recently reported balance
@@ -656,7 +659,8 @@
           // Five, not three, because that is what a file written before the
           // window changed actually contains. _meta.criteria overrides it the
           // moment the screener has run once.
-          DROP_WINDOW = 5;
+          DROP_WINDOW = 5,
+          TREND_WINDOW = 10;
 
         function safe(v) {
           var e = document.createElement("span");
@@ -711,7 +715,7 @@
         }
         function message(text) {
           rows.innerHTML =
-            '<tr><td class="catalyst" colspan="6">' + safe(text) + "</td></tr>";
+            '<tr><td class="catalyst" colspan="7">' + safe(text) + "</td></tr>";
         }
 
         function stockCell(ticker, r) {
@@ -825,6 +829,32 @@
           return tests[0].met && tests[1].met ? "PASS" : "FAIL";
         }
 
+        // The shape of the chart over the run's trend window. The label is a
+        // claim; the figure under it is the evidence the classifier used, and
+        // neither is a forecast.
+        function trendCell(r) {
+          var shapes = {
+            UP: ["pass", "Trending up"],
+            DOWN: ["fail", "Trending down"],
+            SIDEWAYS: ["", "Sideways"],
+          };
+          var aliases = { REBOUND: "UP", FALLING: "DOWN", STABILIZING: "SIDEWAYS" };
+          var key = String(r.trend || "").toUpperCase();
+          key = aliases[key] || key;
+          var shape = shapes[key];
+          if (!shape) {
+            return '<td class="c">&mdash;<div class="sub">No reading</div></td>';
+          }
+          var detail = num(r.trend_pct)
+            ? signedPct1(r.trend_pct) + " over " + (r.trend_window_days || TREND_WINDOW) + " sessions"
+            : "";
+          return (
+            '<td class="c ' + shape[0] + '">' + shape[1] +
+            (detail ? '<div class="sub">' + safe(detail) + "</div>" : "") +
+            "</td>"
+          );
+        }
+
         function dropCell(r) {
           var drop = dropOf(r);
           if (drop === null) {
@@ -887,6 +917,9 @@
           if (num(criteria.drop_threshold)) DROP_FLOOR = criteria.drop_threshold;
           if (num(criteria.drop_window_days)) DROP_WINDOW = criteria.drop_window_days;
 
+          if (num(criteria.trend_window_days)) TREND_WINDOW = criteria.trend_window_days;
+          var thTrend = document.getElementById("th-trend");
+          if (thTrend) thTrend.textContent = "Trend (" + TREND_WINDOW + " sessions)";
           var thDrop = document.getElementById("th-drop");
           if (thDrop) thDrop.textContent = windowLabel() + " move";
           var floorsLabel = document.getElementById("stat-floors-label");
@@ -1007,6 +1040,7 @@
                 changeCell(r) +
                 cushionCell(r) +
                 dropCell(r) +
+                trendCell(r) +
                 gateCell(r) +
                 "</tr>"
               );
@@ -1379,7 +1413,8 @@
   .results td:nth-child(3)::before { content: "1-day change"; }
   .results td:nth-child(4)::before { content: "Cash cushion"; }
   .results td:nth-child(5)::before { content: "Price move"; }
-  .results td:nth-child(6)::before { content: "Gatekeeper"; }
+  .results td:nth-child(6)::before { content: "Trend"; }
+  .results td:nth-child(7)::before { content: "Gatekeeper"; }
   .results td .sub { display: inline; margin-left: 8px; }
   .results td:nth-child(1) .sub { display: block; margin-left: 0; }
 

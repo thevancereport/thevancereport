@@ -169,6 +169,7 @@
         <div class="metric-label">Current Market Price</div>
         <div id="m-price" class="metric-value">--</div>
         <span id="m-drop" class="metric-badge badge-discount">--</span>
+        <span id="m-trend" class="metric-badge" style="margin-left: 6px;">--</span>
       </div>
       <div class="metric-card">
         <div class="metric-label">1-Day Change</div>
@@ -202,7 +203,9 @@
         A name that clears this screen is a name to look at, not a name to buy.
         It has passed two arithmetic tests and nothing else &mdash; not a
         judgement on the business, the price, or whether the fall is finished.
-        The screen finds candidates. The work after that is yours.
+        These names are looked at on a three to six month view; nothing here is
+        intended for day trading or short-term trading of any kind. The screen
+        finds candidates. The work after that is yours.
       </p>
     </div>
 
@@ -331,6 +334,32 @@
         document.getElementById('m-drop').innerText = drop != null
           ? signed(drop, 1) + '% (' + dropWindow + '-day)'
           : dropWindow + '-day move unavailable';
+
+        // The shape of the chart over the run's trend window, with the move
+        // that produced the label. A description, not a forecast.
+        const trendEl = document.getElementById('m-trend');
+        if (trendEl) {
+          const aliases = { REBOUND: 'UP', FALLING: 'DOWN', STABILIZING: 'SIDEWAYS' };
+          let key = String(item.trend || '').toUpperCase();
+          key = aliases[key] || key;
+          const shapes = {
+            UP: ['badge-pass', 'Trending up'],
+            DOWN: ['badge-fail', 'Trending down'],
+            SIDEWAYS: ['badge-pending', 'Sideways'],
+          };
+          const shape = shapes[key];
+          if (!shape) {
+            trendEl.className = 'metric-badge badge-pending';
+            trendEl.innerText = 'No trend reading';
+          } else {
+            const sessions = typeof item.trend_window_days === 'number' ? item.trend_window_days : 10;
+            trendEl.className = 'metric-badge ' + shape[0];
+            trendEl.innerText = shape[1] +
+              (typeof item.trend_pct === 'number'
+                ? ' \u00b7 ' + signed(item.trend_pct, 1) + '% over ' + sessions + ' sessions'
+                : '');
+          }
+        }
 
         // 1-Day Change: only shown if we actually have a stored baseline
         // from yesterday's run. No fabricated number when we don't.
