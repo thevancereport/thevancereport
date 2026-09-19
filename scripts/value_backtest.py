@@ -28,6 +28,7 @@ from urllib.request import Request, urlopen
 
 import value_core as vc
 import value_data as vd
+import value_prices as vp
 
 # --------------------------------------------------------------------------
 # Run settings
@@ -42,7 +43,7 @@ HOLDOUT_FROM = date.fromisoformat(os.environ.get("HOLDOUT_FROM", "2023-10-01"))
 HORIZONS = {"3m": 63, "6m": 126, "12m": 252}
 DECILES = 10
 MAX_SYMBOLS = int(os.environ.get("MAX_SYMBOLS", "0"))     # 0 = no cap
-PRICE_WORKERS = int(os.environ.get("PRICE_WORKERS", "8"))
+PRICE_WORKERS = int(os.environ.get("PRICE_WORKERS", "4"))
 OUT_FILE = os.environ.get("OUT_FILE", "value_backtest.json")
 
 # VALUE_SPEC.md section 5.5
@@ -94,35 +95,13 @@ def ticker_map():
     return out
 
 
-def fetch_prices(symbol):
-    """Daily closes and volumes from Stooq, oldest first."""
-    url = f"https://stooq.com/q/d/l/?s={symbol.lower()}.us&i=d"
-    try:
-        text = _get(url, timeout=45, attempts=2).decode("utf-8", "replace")
-    except Exception:                                     # noqa: BLE001
-        return None
-    lines = text.strip().split("\n")
-    if len(lines) < 200 or not lines[0].lower().startswith("date"):
-        return None
-    days, closes, vols = [], [], []
-    for line in lines[1:]:
-        parts = line.split(",")
-        if len(parts) < 6:
-            continue
-        try:
-            d = date.fromisoformat(parts[0])
-            c = float(parts[4])
-            v = float(parts[5]) if parts[5] else 0.0
-        except ValueError:
-            continue
-        if c <= 0:
-            continue
-        days.append(d)
-        closes.append(c)
-        vols.append(v)
-    if len(days) < 300:
-        return None
-    return days, closes, vols
+def fetch_prices(symbol, start=None, end=None):
+    """Delegates to value_prices, which tries several sources and records why
+    each one refused. The first smoke run got zero histories and the log could
+    not say why; that is what this indirection buys."""
+    return vp.fetch_prices(symbol,
+                           start or date(FIRST_DATE.year - 2, 1, 1),
+                           end or date.today())
 
 
 def idx_on_or_before(days, when):
@@ -247,6 +226,19 @@ def main():
     log(__doc__.strip().split("\n\n")[0])
     log()
 
+    if os.environ.get("PROBE_ONLY", "").lower() in ("1", "true", "yes"):
+        log("PROBE ONLY: checking the price sources, not running the backtest.\n")
+        for sym in ("AAPL", "MSFT", "JNJ", "PLAB", "F", "IWM"):
+            got = fetch_prices(sym, date(2015, 1, 1), date.today())
+            if got:
+                d, c, _ = got
+                log(f"  {sym:6s} {len(d):,} sessions, {d[0]} to {d[-1]}, "
+                    f"last close {c[-1]:.2f}")
+            else:
+                log(f"  {sym:6s} nothing")
+        log("\n" + vp.report())
+        return 0
+
     quarters = vd.quarters_between(FIRST_Q, LAST_Q)
     log(f"Reading {len(quarters)} SEC data sets, {quarters[0]} to {quarters[-1]}.")
     facts, subs = {}, {}
@@ -295,9 +287,12 @@ def main():
         for sym, p in pool.map(grab, symbols):
             if p:
                 prices[sym] = p
-    log(f"{len(prices):,} usable price histories.\n")
+    log(f"{len(prices):,} usable price histories.")
+    log(vp.report() + "\n")
     if len(prices) < 200:
         log("Too few price histories to say anything. Stopping.")
+        log("The refusal breakdown above says which source failed and how; "
+            "fix that rather than re-running this unchanged.")
         return 1
 
     data_end = max(days[-1] for days, _c, _v in prices.values())
