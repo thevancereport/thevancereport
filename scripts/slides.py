@@ -18,6 +18,17 @@ from pathlib import Path
 
 W, H = 1920, 1080
 
+# Chromium's --window-size is the WINDOW, and the viewport it gives you is
+# about 87px shorter. New headless paints nothing below the viewport fold, so
+# a window of exactly W x H loses the bottom ~90px of every frame -- the
+# footer and the caption rule sat in that band and simply never rendered.
+#
+# Ask for a taller window so the whole frame is painted, then trim the slack
+# off the bottom. The trim happens once, in the single ffmpeg encode for the
+# video and in one call for the thumbnail, rather than per frame.
+VIEWPORT_SLACK = 220
+
+
 INK = "#0c1014"
 INK2 = "#11171d"
 RULE = "#26303a"
@@ -39,6 +50,11 @@ def _shell(body: str, caption: str, footer: str) -> str:
   * {{ margin:0; padding:0; box-sizing:border-box; }}
   html,body {{ width:{W}px; height:{H}px; background:{INK}; color:{PAPER};
                font-family:{MONO}; overflow:hidden; }}
+  /* Everything positions inside .page, never against the viewport.
+     Chromium's --window-size is the WINDOW, and the viewport it gives you
+     is ~100px shorter; anchoring to `inset:0` silently laid every frame out
+     in 1920x980 and left a dead band along the bottom of the picture. */
+  .page {{ position:relative; width:{W}px; height:{H}px; overflow:hidden; }}
   .grid {{ position:absolute; inset:0;
            background-image:
              linear-gradient(to right, rgba(255,255,255,.022) 1px, transparent 1px),
@@ -90,6 +106,7 @@ def _shell(body: str, caption: str, footer: str) -> str:
   .note {{ color:{DIM}; font-size:30px; line-height:1.45; max-width:44ch; }}
   .band {{ border:1px solid {RULE}; background:{INK2}; padding:34px 40px; }}
 </style></head><body>
+<div class="page">
 <div class="grid"></div>
 <div class="frame">
   <div class="rail"><span class="mk">VR</span><span>The Vance Report</span></div>
@@ -97,6 +114,7 @@ def _shell(body: str, caption: str, footer: str) -> str:
 </div>
 <div class="cap">{html.escape(caption)}</div>
 <div class="foot"><span>Opinion &middot; not investment advice</span><span>{html.escape(footer)}</span></div>
+</div>
 </body></html>"""
 
 
@@ -184,6 +202,83 @@ def body_for(kind: str, d: dict) -> str:
     return f'<h2>{html.escape(kind)}</h2>'
 
 
+def thumbnail(out_path: Path, chromium: str, symbols: list[str],
+              run_date: str, headline: str) -> Path:
+    """
+    A 1280x720 thumbnail.
+
+    Legible at the size a phone actually renders it: the tickers are the
+    picture, everything else is small. YouTube search results are roughly
+    360px wide, so anything below about 40px here is decoration.
+    """
+    syms = " ".join(symbols[:3]) if symbols else "NO NAMES"
+    page = f"""<!doctype html>
+<html><head><meta charset="utf-8"><style>
+  * {{ margin:0; padding:0; box-sizing:border-box; }}
+  html,body {{ width:1280px; height:720px; background:{INK}; color:{PAPER};
+               font-family:{MONO}; overflow:hidden; }}
+  .page {{ position:relative; width:1280px; height:720px; overflow:hidden; }}
+  .g {{ position:absolute; inset:0;
+        background-image:
+          linear-gradient(to right, rgba(255,255,255,.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px);
+        background-size:64px 64px; }}
+  .w {{ position:absolute; inset:0; padding:56px 64px; display:flex;
+        flex-direction:column; justify-content:space-between; }}
+  .top {{ display:flex; align-items:center; gap:14px; color:{AMBER};
+          font-size:23px; letter-spacing:.3em; text-transform:uppercase; }}
+  .top .mk {{ border:1px solid {AMBER}; padding:3px 9px; font-size:20px;
+              letter-spacing:.12em; }}
+  .syms {{ font-size:{150 if len(syms) <= 8 else 112}px; font-weight:600;
+           color:{AMBER}; letter-spacing:.02em; line-height:1; }}
+  .head {{ font-family:{SERIF}; font-size:62px; font-weight:400;
+           line-height:1.04; margin-top:16px; max-width:20ch; }}
+  .bot {{ display:flex; justify-content:space-between; align-items:flex-end;
+          color:{FAINT}; font-size:22px; letter-spacing:.14em;
+          text-transform:uppercase; }}
+  .bar {{ position:absolute; left:0; right:0; bottom:0; height:9px;
+          background:{AMBER}; }}
+
+</style></head><body>
+<div class="page">
+<div class="g"></div>
+<div class="w">
+  <div class="top"><span class="mk">VR</span><span>The Vance Report</span></div>
+  <div>
+    <div class="syms">{html.escape(syms)}</div>
+    <div class="head">{html.escape(headline)}</div>
+  </div>
+  <div class="bot"><span>{html.escape(run_date)}</span><span>Opinion &middot; not advice</span></div>
+</div>
+<div class="bar"></div>
+</div>
+</body></html>"""
+    out_path = out_path.resolve()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    src = out_path.with_suffix(".html")
+    src.write_text(page, encoding="utf-8")
+    subprocess.run(
+        [chromium, "--headless", "--disable-gpu", "--no-sandbox",
+         "--hide-scrollbars", "--force-device-scale-factor=1",
+         "--no-first-run", "--no-default-browser-check",
+         "--disable-background-networking", "--disable-component-update",
+         "--disable-client-side-phishing-detection", "--disable-sync",
+         "--disable-default-apps", "--disable-extensions",
+         "--metrics-recording-only", "--safebrowsing-disable-auto-update",
+         "--disable-domain-reliability", "--disable-breakpad",
+         "--virtual-time-budget=4000",
+         f"--user-data-dir={out_path.parent / '_chrome-profile'}",
+         f"--window-size=1280,{720 + VIEWPORT_SLACK}",
+         f"--screenshot={out_path}", src.as_uri()],
+        check=True, capture_output=True, timeout=120)
+    trimmed = out_path.with_name(out_path.stem + "-1280x720.png")
+    subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(out_path),
+                    "-vf", "crop=1280:720:0:0", str(trimmed)],
+                   check=True, capture_output=True, timeout=120)
+    trimmed.replace(out_path)
+    return out_path
+
+
 def render(frames: list[dict], out_dir: Path, chromium: str) -> list[Path]:
     """
     frames: [{kind, data, caption, footer}] -> one PNG each, in order.
@@ -216,10 +311,89 @@ def render(frames: list[dict], out_dir: Path, chromium: str) -> list[Path]:
              "--disable-domain-reliability", "--disable-breakpad",
              "--virtual-time-budget=4000",
              f"--user-data-dir={profile}",
-             f"--window-size={W},{H}", f"--screenshot={png}", page.as_uri()],
+             f"--window-size={W},{H + VIEWPORT_SLACK}",
+             f"--screenshot={png}", page.as_uri()],
             check=True, capture_output=True, timeout=120,
         )
         if not png.exists():
             raise RuntimeError(f"chromium produced no PNG for frame {i}")
         paths.append(png)
     return paths
+
+
+def social_card(out_path: Path, chromium: str, symbols: list[str]) -> Path:
+    """
+    The 1200x630 card that link previews use (og:image / twitter:image).
+
+    Rebuilt on every run so the site's preview names today's tickers rather
+    than a fixed slogan. The page it advertises is the screen, so the card
+    says what the screen does, in the words someone would search for.
+    """
+    W2, H2 = 1200, 630
+    line = (", ".join(symbols[:4]) + (" and more" if len(symbols) > 4 else "")
+            if symbols else "No name cleared the screen today")
+    page = f"""<!doctype html>
+<html><head><meta charset="utf-8"><style>
+  * {{ margin:0; padding:0; box-sizing:border-box; }}
+  html,body {{ width:{W2}px; height:{H2}px; background:{INK}; color:{PAPER};
+               font-family:{MONO}; overflow:hidden; }}
+  .page {{ position:relative; width:{W2}px; height:{H2}px; overflow:hidden; }}
+  .g {{ position:absolute; inset:0;
+        background-image:
+          linear-gradient(to right, rgba(255,255,255,.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px);
+        background-size:60px 60px; }}
+  .w {{ position:absolute; inset:0; padding:60px 72px; display:flex;
+        flex-direction:column; justify-content:space-between; }}
+  .top {{ display:flex; align-items:center; gap:14px; color:{AMBER};
+          font-size:21px; letter-spacing:.3em; text-transform:uppercase; }}
+  .mk {{ border:1px solid {AMBER}; padding:3px 9px; font-size:18px;
+         letter-spacing:.12em; }}
+  .rule {{ height:4px; background:{AMBER}; width:110px; margin-bottom:24px; }}
+  h1 {{ font-family:{SERIF}; font-weight:400; font-size:76px; line-height:1.0;
+        letter-spacing:-.02em; max-width:15ch; }}
+  .sub {{ color:{DIM}; font-size:25px; line-height:1.45; margin-top:20px;
+          max-width:44ch; }}
+  .bot {{ display:flex; justify-content:space-between; align-items:flex-end;
+          color:{FAINT}; font-size:19px; letter-spacing:.14em;
+          text-transform:uppercase; }}
+</style></head><body>
+<div class="page">
+  <div class="g"></div>
+  <div class="w">
+    <div class="top"><span class="mk">VR</span><span>The Vance Report</span></div>
+    <div>
+      <div class="rule"></div>
+      <h1>Find the signal inside the selloff</h1>
+      <p class="sub">A daily screen for US stocks that fell 15% in five days and
+      still hold net cash worth 30% or more of the share price. Today:
+      {html.escape(line)}.</p>
+    </div>
+    <div class="bot"><span>thevancereport.com</span><span>Opinion &middot; not investment advice</span></div>
+  </div>
+</div>
+</body></html>"""
+    out_path = out_path.resolve()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    src = out_path.with_suffix(".html")
+    src.write_text(page, encoding="utf-8")
+    subprocess.run(
+        [chromium, "--headless", "--disable-gpu", "--no-sandbox",
+         "--hide-scrollbars", "--force-device-scale-factor=1",
+         "--no-first-run", "--no-default-browser-check",
+         "--disable-background-networking", "--disable-component-update",
+         "--disable-client-side-phishing-detection", "--disable-sync",
+         "--disable-default-apps", "--disable-extensions",
+         "--metrics-recording-only", "--safebrowsing-disable-auto-update",
+         "--disable-domain-reliability", "--disable-breakpad",
+         "--virtual-time-budget=4000",
+         f"--user-data-dir={out_path.parent / '_chrome-profile'}",
+         f"--window-size={W2},{H2 + VIEWPORT_SLACK}",
+         f"--screenshot={out_path}", src.as_uri()],
+        check=True, capture_output=True, timeout=120)
+    trimmed = out_path.with_name(out_path.stem + "-trim.png")
+    subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(out_path),
+                    "-vf", f"crop={W2}:{H2}:0:0", str(trimmed)],
+                   check=True, capture_output=True, timeout=120)
+    trimmed.replace(out_path)
+    return out_path

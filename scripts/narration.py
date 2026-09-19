@@ -129,6 +129,7 @@ def build(research: dict, run_date: str) -> list[dict]:
     # ---- open ----
     slides.append({
         "kind": "title",
+        "chapter": "Intro",
         "data": {"date": run_date, "count": len(names)},
         "beats": [
             beat("This is the Vance Report daily briefing for " + run_date + ".",
@@ -154,6 +155,7 @@ def build(research: dict, run_date: str) -> list[dict]:
     # ---- how the screen works ----
     slides.append({
         "kind": "method",
+        "chapter": "How the screen works",
         "data": {"gate": CASH_GATE, "drop": DROP_THRESHOLD},
         "beats": [
             beat(
@@ -249,6 +251,7 @@ def build(research: dict, run_date: str) -> list[dict]:
 
         slides.append({
             "kind": "stock",
+            "chapter": f"{sym} - why it cleared",
             "data": {
                 "rank": rank, "symbol": sym, "name": name, "sector": sector,
                 "price": price, "cps": cps, "cushion": cushion, "drop": drop,
@@ -261,6 +264,7 @@ def build(research: dict, run_date: str) -> list[dict]:
         # ---- the screen's own levels ----
         slides.append({
             "kind": "levels",
+            "chapter": f"{sym} - the screen's levels",
             "data": {"symbol": sym, "price": price, "cps": cps,
                      "ceiling": ceiling, "cushion": cushion},
             "beats": [
@@ -289,6 +293,7 @@ def build(research: dict, run_date: str) -> list[dict]:
     # ---- horizon ----
     slides.append({
         "kind": "horizon",
+        "chapter": "Horizon: 3 to 6 months",
         "data": {},
         "beats": [
             beat(
@@ -310,6 +315,7 @@ def build(research: dict, run_date: str) -> list[dict]:
     # ---- disclaimer ----
     slides.append({
         "kind": "disclaimer",
+        "chapter": "Disclaimer",
         "data": {},
         "beats": [
             beat(

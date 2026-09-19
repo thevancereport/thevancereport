@@ -221,6 +221,9 @@ def main() -> int:
         ["ffmpeg", "-y", "-v", "error",
          "-f", "concat", "-safe", "0", "-i", str(concat_v),
          "-i", str(audio),
+         # Frames come out taller than the video on purpose; see
+         # VIEWPORT_SLACK in slides.py. Trim the slack here, once.
+         "-vf", f"crop={slides.W}:{slides.H}:0:0",
          "-c:v", "libx264", "-preset", "medium", "-crf", "20",
          "-pix_fmt", "yuv420p", "-r", "30",
          "-c:a", "aac", "-b:a", "160k", "-shortest",
@@ -234,24 +237,83 @@ def main() -> int:
         t += d
     (out / "briefing.srt").write_text("\n".join(srt), encoding="utf-8")
 
+    # ---- chapters ----------------------------------------------------------
+    # YouTube builds a chapter list when the description contains timestamps
+    # starting at 0:00, at least three of them, each at least ten seconds
+    # long. These come from the real beat durations, so they land on the word
+    # rather than near it.
+    chapters: list[dict] = []
+    clock, i = 0.0, 0
+    for slide in deck:
+        n = len(slide["beats"])
+        chapters.append({"title": slide.get("chapter", slide["kind"]),
+                         "start": clock,
+                         "seconds": sum(durations[i:i + n])})
+        clock += sum(durations[i:i + n])
+        i += n
+    # Merge any chapter shorter than YouTube's ten-second floor into the one
+    # before it, rather than emitting a list YouTube silently ignores.
+    merged: list[dict] = []
+    for ch in chapters:
+        if merged and ch["seconds"] < 10:
+            merged[-1]["seconds"] += ch["seconds"]
+        else:
+            merged.append(dict(ch))
+    chapters = merged
+
+    def stamp(t: float) -> str:
+        m, s = divmod(int(t), 60)
+        h, m = divmod(m, 60)
+        return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
+
+    chapter_lines = [f"{stamp(c['start'])} {c['title']}" for c in chapters]
+    if chapter_lines:
+        chapter_lines[0] = f"0:00 {chapters[0]['title']}"
+
     # ---- text that travels with the video ----------------------------------
     passers = [s for s in deck if s["kind"] == "stock"]
     syms = [s["data"]["symbol"] for s in passers]
-    title = (f"Daily cash-cushion screen — {run_date}"
-             + (f" — {', '.join(syms)}" if syms else " — no names cleared"))
+
+    # Front-load what someone would actually type into a search box. The
+    # tickers first, then the thing that makes the screen distinctive, then
+    # the date -- dates are worth little to search and go last.
+    if syms:
+        head = ", ".join(syms[:3]) + ("" if len(syms) <= 3 else f" +{len(syms) - 3}")
+        title = f"{head}: Stocks Trading Below Net Cash | Daily Screen {run_date}"
+    else:
+        title = f"No Stock Cleared the Net-Cash Screen Today | {run_date}"
+    if len(title) > 100:
+        title = f"{head}: Stocks Below Net Cash | {run_date}"[:100]
     (out / "title.txt").write_text(title[:100], encoding="utf-8")
 
+    # The first ~150 characters are what shows in search and in the collapsed
+    # description, so they carry the query terms rather than a greeting.
+    opener = (
+        f"{', '.join(syms)} cleared a daily screen for US stocks trading below "
+        f"net cash: a 15% five-day drop plus cash minus total liabilities worth "
+        f"30% or more of the share price. Here is exactly why each one passed."
+    ) if syms else (
+        "No US stock cleared the net-cash screen today. Here is what the screen "
+        "looks for, and why an empty day is a normal result rather than a "
+        "reason to lower the bar."
+    )
+
     description = "\n".join([
-        f"The Vance Report daily briefing for {run_date}.",
+        opener,
         "",
-        "Every trading day a screen runs across every listed US common stock "
-        "looking for two things at once: a five-day fall of 15% or more, and "
-        "net cash — cash after total liabilities — worth at least 30% of the "
-        "share price. Runway, dilution and open-market insider buying are "
-        "checked behind those two.",
+        "CHAPTERS",
+        *chapter_lines,
         "",
-        ("Names in this briefing: " + ", ".join(syms)) if syms
-        else "No name cleared both gates today.",
+        "WHAT THE SCREEN LOOKS FOR",
+        "1. A five-day fall of 15% or more",
+        "2. Net cash — cash after total liabilities — per share, worth at "
+        "least 30% of the share price",
+        "3. Runway against operating burn, share issuance over the past year, "
+        "and open-market insider buying",
+        "",
+        "Balance-sheet figures come from each company's own SEC filings. "
+        "Liabilities are subtracted before the division, because gross cash "
+        "flatters a company that borrowed to hold it.",
         "",
         "HORIZON",
         "These names are looked at on a three to six month view. They are not "
@@ -267,13 +329,35 @@ def main() -> int:
         "level mentioned is arithmetic on the screen's own 30% threshold, not a "
         "target and not a suggested entry.",
         "",
-        "Full screen and full disclaimer: https://thevancereport.com",
+        "Full screen, every figure, and the full disclaimer: "
+        "https://thevancereport.com",
         "",
         "— TRANSCRIPT —",
         "",
         narration.plain_script(deck),
     ])
     (out / "description.txt").write_text(description[:4900], encoding="utf-8")
+
+    # ---- thumbnail ---------------------------------------------------------
+    thumb = None
+    try:
+        headline = ("Below net cash after a 15% drop" if syms
+                    else "Nothing cleared the screen today")
+        thumb = slides.thumbnail(out / "thumbnail.jpg.png", find_chromium(),
+                                 syms, run_date, headline)
+        # YouTube accepts PNG; keep the extension honest.
+        final = out / "thumbnail.png"
+        thumb.replace(final)
+        thumb = final
+    except Exception as exc:                        # noqa: BLE001
+        print(f"thumbnail skipped ({exc})", file=sys.stderr)
+
+    # The site's link-preview card. Rebuilt daily so a shared link names
+    # today's tickers; the workflow commits it next to video.json.
+    try:
+        slides.social_card(out / "og-card.png", find_chromium(), syms)
+    except Exception as exc:                        # noqa: BLE001
+        print(f"social card skipped ({exc})", file=sys.stderr)
 
     meta = {
         "run_date": run_date,
@@ -283,6 +367,10 @@ def main() -> int:
         "duration_seconds": round(sum(durations), 2),
         "narrated": bool(tts),
         "title": title[:100],
+        "description_head": opener,
+        "chapters": [{"title": c["title"], "start": round(c["start"], 2)}
+                     for c in chapters],
+        "thumbnail": thumb.name if thumb else None,
     }
     (out / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 

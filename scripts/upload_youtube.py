@@ -42,7 +42,16 @@ UPLOAD_URL = ("https://www.googleapis.com/upload/youtube/v3/videos"
               "?uploadType=resumable&part=snippet,status")
 CAPTION_URL = ("https://www.googleapis.com/upload/youtube/v3/captions"
                "?uploadType=multipart&part=snippet")
+THUMB_URL = "https://www.googleapis.com/upload/youtube/v3/thumbnails/set"
 CHUNK = 8 * 1024 * 1024
+
+# The Vance Report's channel. A channel id is public, not a secret -- it is on
+# the channel page. It is here as a guard: if the refresh token ever belongs to
+# a different account, the upload lands somewhere unintended and silently. The
+# check runs after the upload, because the youtube.upload scope cannot list
+# channels; a loud failure with the video id beats no check at all.
+EXPECTED_CHANNEL = os.environ.get(
+    "YT_CHANNEL_ID", "UCplN4kMRgUbAI9pT31DCbAw")
 
 
 def access_token() -> str:
@@ -106,8 +115,18 @@ def upload(token: str, mp4: Path, title: str, description: str,
                          "Content-Length": str(len(chunk)),
                          "Content-Range": f"bytes {sent}-{last}/{size}"})
             if r.status_code in (200, 201):
-                vid = r.json()["id"]
-                print(f"uploaded {vid} ({privacy})")
+                resource = r.json()
+                vid = resource["id"]
+                landed = (resource.get("snippet") or {}).get("channelId")
+                print(f"uploaded {vid} ({privacy}) to channel {landed}")
+                if EXPECTED_CHANNEL and landed and landed != EXPECTED_CHANNEL:
+                    sys.exit(
+                        f"Refusing to continue: the video uploaded to channel "
+                        f"{landed}, not {EXPECTED_CHANNEL}. The refresh token "
+                        f"belongs to a different account. The video exists at "
+                        f"https://www.youtube.com/watch?v={vid} and is "
+                        f"{privacy} -- delete it there, then reissue the token "
+                        f"as the right channel owner.")
                 return vid
             if r.status_code == 308:
                 rng = r.headers.get("Range")
@@ -136,6 +155,29 @@ def add_captions(token: str, video_id: str, srt: Path) -> None:
         print(f"captions skipped ({exc})")
 
 
+def set_thumbnail(token: str, video_id: str, png: Path) -> None:
+    """
+    Best effort. Custom thumbnails need a verified channel; if yours is not,
+    YouTube answers 403 and keeps its auto-generated frame, which is a worse
+    thumbnail but not a failed run.
+    """
+    try:
+        r = requests.post(
+            THUMB_URL, params={"videoId": video_id}, timeout=180,
+            headers={"Authorization": f"Bearer {token}",
+                     "Content-Type": "image/png"},
+            data=png.read_bytes())
+        if r.status_code in (200, 201):
+            print("thumbnail set")
+        elif r.status_code == 403:
+            print("thumbnail skipped: channel not verified for custom "
+                  "thumbnails (youtube.com/verify)")
+        else:
+            print(f"thumbnail skipped ({r.status_code}: {r.text[:160]})")
+    except Exception as exc:                     # noqa: BLE001
+        print(f"thumbnail skipped ({exc})")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--build", default="build")
@@ -157,13 +199,23 @@ def main() -> int:
         if not mp4.exists():
             sys.exit(f"no video at {mp4}")
         token = access_token()
-        tags = ["stocks", "stock screener", "value investing", "deep value",
-                "net cash", "balance sheet"] + meta.get("symbols", [])
+        # Tags count for little on their own, but they do help YouTube
+        # disambiguate a two-letter ticker like EQ from the English word.
+        tags = ["net cash stocks", "stock screener", "deep value investing",
+                "trading below cash", "balance sheet analysis",
+                "value investing", "SEC filings", "stock analysis",
+                "cash cushion"]
+        tags += [s for s in meta.get("symbols", [])]
+        tags += [f"{s} stock" for s in meta.get("symbols", [])[:3]]
         video_id = upload(token, mp4, title, description, tags)
         srt = build / "briefing.srt"
         if srt.exists():
             add_captions(token, video_id, srt)
+        thumb = build / (meta.get("thumbnail") or "thumbnail.png")
+        if thumb.exists():
+            set_thumbnail(token, video_id, thumb)
 
+    secs = int(meta.get("duration_seconds") or 0)
     out = {
         "video_id": video_id,
         "title": title,
@@ -171,8 +223,15 @@ def main() -> int:
         "generated_at": meta.get("generated_at"),
         "symbols": meta.get("symbols", []),
         "duration_seconds": meta.get("duration_seconds"),
+        # ISO 8601, for the VideoObject markup on the site.
+        "duration_iso": f"PT{secs // 60}M{secs % 60}S",
+        "description": meta.get("description_head", ""),
+        "chapters": meta.get("chapters", []),
+        "channel": f"https://www.youtube.com/channel/{EXPECTED_CHANNEL}",
         "url": f"https://www.youtube.com/watch?v={video_id}",
         "embed": f"https://www.youtube-nocookie.com/embed/{video_id}",
+        # i.ytimg.com serves this for any public video without an API call.
+        "thumbnail": f"https://i.ytimg.com/vi/{video_id}/maxresdefault.jpg",
     }
     Path(args.out).write_text(json.dumps(out, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {args.out}: {video_id}")
