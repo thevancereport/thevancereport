@@ -101,22 +101,30 @@ def from_stooq(symbol, start, end):
     return days, closes, vols
 
 
-def from_nasdaq(symbol, start, end):
-    url = (f"https://api.nasdaq.com/api/quote/{symbol}/historical"
-           f"?assetclass=stocks&fromdate={start.isoformat()}"
-           f"&todate={end.isoformat()}&limit=9999")
-    text, err = _fetch(url, headers={"User-Agent": BROWSER_UA, "Accept": "application/json"})
-    if err:
-        _note("nasdaq", err)
-        return None
-    try:
-        data = json.loads(text)
-    except ValueError:
-        _note("nasdaq", "not json")
-        return None
-    rows = (((data or {}).get("data") or {}).get("tradesTable") or {}).get("rows")
+def from_nasdaq(symbol, start, end, classes=("stocks", "etf")):
+    """Nasdaq keys this endpoint by asset class and answers a wrong class with
+    an empty table rather than an error, so the classes are tried in turn. The
+    premise-check study lost a whole run to exactly this."""
+    rows = None
+    for cls in classes:
+        url = (f"https://api.nasdaq.com/api/quote/{symbol}/historical"
+               f"?assetclass={cls}&fromdate={start.isoformat()}"
+               f"&todate={end.isoformat()}&limit=9999")
+        text, err = _fetch(url, headers={"User-Agent": BROWSER_UA,
+                                         "Accept": "application/json"})
+        if err:
+            _note("nasdaq", err)
+            return None
+        try:
+            data = json.loads(text)
+        except ValueError:
+            _note("nasdaq", "not json")
+            return None
+        rows = (((data or {}).get("data") or {}).get("tradesTable") or {}).get("rows")
+        if rows:
+            break
     if not rows:
-        _note("nasdaq", "empty table")
+        _note("nasdaq", "empty table (not a listed common stock or ETF)")
         return None
     out = []
     for r in rows:
@@ -173,11 +181,19 @@ def from_yahoo(symbol, start, end):
     return days, closes, vols
 
 
-SOURCES = [("nasdaq", from_nasdaq), ("stooq", from_stooq), ("yahoo", from_yahoo)]
+# Measured from GitHub Actions on 19 Sep 2026: Nasdaq served 8 of 10 symbols,
+# Stooq returned an HTML block page rather than CSV, and Yahoo answered 429 on
+# the first request. So Nasdaq is the source and the other two are kept only as
+# a fallback that has to be asked for -- two dead requests per symbol across
+# four thousand symbols is an hour of nothing.
+_ALL = {"nasdaq": from_nasdaq, "stooq": from_stooq, "yahoo": from_yahoo}
+_WANTED = [s.strip() for s in os.environ.get("PRICE_SOURCES", "nasdaq").split(",") if s.strip()]
+SOURCES = [(n, _ALL[n]) for n in _WANTED if n in _ALL] or [("nasdaq", from_nasdaq)]
 
 # Which source answered for each symbol, so the run can report the mix rather
 # than pretending one number came from one place.
 SERVED = {}
+COVERAGE = {"earliest": None, "latest": None, "shortest": None, "longest": None}
 
 
 def fetch_prices(symbol, start, end, order=None):
@@ -189,6 +205,13 @@ def fetch_prices(symbol, start, end, order=None):
             got = None
         if got:
             SERVED[name] = SERVED.get(name, 0) + 1
+            days = got[0]
+            c = COVERAGE
+            c["earliest"] = days[0] if not c["earliest"] else min(c["earliest"], days[0])
+            c["latest"] = days[-1] if not c["latest"] else max(c["latest"], days[-1])
+            n = len(days)
+            c["shortest"] = n if c["shortest"] is None else min(c["shortest"], n)
+            c["longest"] = n if c["longest"] is None else max(c["longest"], n)
             return got
     return None
 
@@ -200,6 +223,10 @@ def report():
             lines.append(f"  {name}: served {n:,} symbols")
     else:
         lines.append("  nothing served a single symbol")
+    c = COVERAGE
+    if c["earliest"]:
+        lines.append(f"  coverage: {c['earliest']} to {c['latest']}, "
+                     f"{c['shortest']:,}-{c['longest']:,} sessions per symbol")
     for name, reasons in REASONS.items():
         top = sorted(reasons.items(), key=lambda kv: -kv[1])[:4]
         lines.append(f"  {name} refusals: " + ", ".join(f"{r} x{n:,}" for r, n in top))

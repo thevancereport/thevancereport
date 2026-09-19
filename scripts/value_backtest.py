@@ -43,7 +43,7 @@ HOLDOUT_FROM = date.fromisoformat(os.environ.get("HOLDOUT_FROM", "2023-10-01"))
 HORIZONS = {"3m": 63, "6m": 126, "12m": 252}
 DECILES = 10
 MAX_SYMBOLS = int(os.environ.get("MAX_SYMBOLS", "0"))     # 0 = no cap
-PRICE_WORKERS = int(os.environ.get("PRICE_WORKERS", "4"))
+PRICE_WORKERS = int(os.environ.get("PRICE_WORKERS", "6"))
 OUT_FILE = os.environ.get("OUT_FILE", "value_backtest.json")
 
 # VALUE_SPEC.md section 5.5
