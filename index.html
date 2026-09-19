@@ -738,7 +738,7 @@
         <div class="wrap">
           <div class="sec-head">
             <h2>Custom screen engine</h2>
-            <p class="sec-meta">Re-filter today's gate-clearing names</p>
+            <p class="sec-meta">Re-run today's screen over every name it evaluated</p>
           </div>
 
           <div class="engine">
@@ -747,11 +747,27 @@
               <span class="on" id="engStatus">Loading data&hellip;</span>
             </div>
 
+            <p
+              id="engUniverse"
+              style="
+                margin: 0;
+                padding: 16px 20px 0;
+                color: var(--paper-faint);
+                font-size: 13.5px;
+                line-height: 1.6;
+              "
+            >
+              Loading today&rsquo;s evaluated set&hellip;
+            </p>
+
             <form class="console" id="engForm" novalidate>
               <div class="eng-grid">
                 <div class="eng-field">
                   <label for="engCash">Cash-to-price minimum</label>
                   <select id="engCash" name="cash">
+                    <option value="15.0">15.0%</option>
+                    <option value="20.0">20.0%</option>
+                    <option value="25.0">25.0%</option>
                     <option value="30.0" selected>30.0%</option>
                     <option value="40.0">40.0%</option>
                     <option value="50.0">50.0%</option>
@@ -760,6 +776,9 @@
                 <div class="eng-field">
                   <label for="engDrop">5-day drop minimum</label>
                   <select id="engDrop" name="drop">
+                    <option value="999">Any 5-day move</option>
+                    <option value="-5.0">-5.0%</option>
+                    <option value="-10.0">-10.0%</option>
                     <option value="-15.0" selected>-15.0%</option>
                     <option value="-20.0">-20.0%</option>
                     <option value="-30.0">-30.0%</option>
@@ -813,7 +832,7 @@
         <div class="wrap">
           <div class="sec-head">
             <h2>Today's scan</h2>
-            <span class="sec-meta">Names clearing both gates<br />ranked by net cash cushion</span>
+            <span class="sec-meta">The ten largest cash cushions<br />the screen evaluated, pass or fail</span>
           </div>
           <div class="table-scroll">
             <table class="scan-table">
@@ -878,7 +897,18 @@
         // reserved "_meta" key holding { generated_at }.
         var DATA_URL = "research.json";
 
-        var state = { rows: [], scan: [], generatedAt: null, status: "loading", scanStatus: "loading" }; // loading | ok | error
+        // research.json holds only the names that already cleared both gates.
+        // Screening that file could only ever subtract: the controls looked
+        // like a screen and behaved like a delete key. screen_snapshot.json
+        // is the full evaluated set, rejections included, and it is what the
+        // engine and the scan table read.
+        var UNIVERSE_URL = "screen_snapshot.json";
+
+        // Defaults only; the run's real thresholds arrive in _meta.criteria.
+        var CASH_GATE = 30.0;
+        var DROP_GATE = -15.0;
+
+        var state = { rows: [], scan: [], universe: [], generatedAt: null, status: "loading", scanStatus: "loading", universeStatus: "loading" }; // loading | ok | error
 
         function toNum(v) {
           if (typeof v === "number") return isFinite(v) ? v : null;
@@ -908,7 +938,7 @@
         }
 
         function filterUniverse(p, source) {
-          var universe = source || state.rows;
+          var universe = source || state.universe;
           return universe.filter(function (r) {
             return (
               r.cash != null && r.cash >= p.cash &&
@@ -984,8 +1014,8 @@
         }
 
         function scanRow(r) {
-          var cushionMet = isNum(r.cushion) && r.cushion >= 30;
-          var dropMet = isNum(r.drop) && r.drop <= -15;
+          var cushionMet = isNum(r.cushion) && r.cushion >= CASH_GATE;
+          var dropMet = isNum(r.drop) && r.drop <= DROP_GATE;
           return "<tr>" +
             "<td>" + thumbSvg(r.gate) + "</td>" +
             '<td><span class="scan-sym">' + escapeHtml(r.sym) + "</span>" +
@@ -1016,7 +1046,7 @@
             return;
           }
           if (!state.scan.length) {
-            body.innerHTML = '<tr><td colspan="8"><div class="state-msg">No names qualified in today&rsquo;s run. Some days the screen finds nothing &mdash; that is the screen working, not failing.</div></td></tr>';
+            body.innerHTML = '<tr><td colspan="8"><div class="state-msg">Nothing was evaluated in today&rsquo;s run. Some days the screen finds nothing &mdash; that is the screen working, not failing.</div></td></tr>';
             return;
           }
           body.innerHTML = state.scan.map(scanRow).join("");
@@ -1030,7 +1060,11 @@
           var qEl = document.getElementById("summary-qualified-count");
           var aEl = document.getElementById("summary-avg-cushion");
           if (uEl) uEl.textContent = total;
-          if (qEl) qEl.textContent = total + " Qualified";
+          if (qEl) {
+            qEl.textContent = state.universe.length
+              ? total + " of " + state.universe.length
+              : total + " Qualified";
+          }
           if (aEl) aEl.textContent = withCash.length ? avgCushion.toFixed(1) + "%" : "\u2014";
         }
 
@@ -1045,16 +1079,26 @@
           if (state.status === "loading") {
             label.textContent = "Loading\u2026";
             el.classList.add("is-stale");
-            if (engStatus) { engStatus.textContent = "Loading data\u2026"; engStatus.className = "on is-loading"; }
           } else if (state.status === "error") {
             label.textContent = "Data unavailable";
             el.classList.add("is-error");
-            if (engStatus) { engStatus.textContent = "Unavailable"; engStatus.className = "on is-error"; }
           } else {
             label.textContent = "Screen updated daily";
-            if (engStatus) { engStatus.textContent = "Ready"; engStatus.className = "on"; }
           }
-          if (engSubmit) engSubmit.disabled = state.status !== "ok";
+
+          if (engStatus) {
+            if (state.universeStatus === "loading") {
+              engStatus.textContent = "Loading data\u2026";
+              engStatus.className = "on is-loading";
+            } else if (state.universeStatus === "error") {
+              engStatus.textContent = "Unavailable";
+              engStatus.className = "on is-error";
+            } else {
+              engStatus.textContent = "Ready \u00b7 " + state.universe.length + " names";
+              engStatus.className = "on";
+            }
+          }
+          if (engSubmit) engSubmit.disabled = state.universeStatus !== "ok";
         }
 
         function updateDates() {
@@ -1106,24 +1150,30 @@
           renderLedger();
           updateLiveIndicator();
           updateDates();
-          loadScan();
         }
 
-        // The scan table lists only the names that qualified. research.json holds
-        // exactly those: passing both gates, already capped at three per sector
-        // and ten in total. screen_snapshot.json keeps the full evaluated set --
-        // including every rejection -- and report.html renders that.
-        async function loadScan() {
+        // Both the scan table and the engine read the full evaluated set.
+        // The legend under the scan table has always promised that the
+        // rejections are visible; reading research.json meant only winners
+        // were ever drawn, and the fail markers in the legend described rows
+        // that could not appear.
+        async function loadUniverse() {
           try {
-            var res = await fetch(DATA_URL, { cache: "no-store", headers: { accept: "application/json" } });
+            var res = await fetch(UNIVERSE_URL, { cache: "no-store", headers: { accept: "application/json" } });
             if (!res.ok) throw new Error("HTTP " + res.status);
             var raw = await res.json();
-            if (!raw || typeof raw !== "object") throw new Error("Malformed research.json");
-            var rows = [];
+            if (!raw || typeof raw !== "object") throw new Error("Malformed " + UNIVERSE_URL);
+
+            var criteria = (raw._meta && raw._meta.criteria) || {};
+            if (typeof criteria.cash_gate === "number") CASH_GATE = criteria.cash_gate;
+            if (typeof criteria.drop_threshold === "number") DROP_GATE = criteria.drop_threshold;
+
+            var rows = [], scan = [];
             Object.keys(raw).forEach(function (key) {
               if (key.indexOf("_") === 0) return;
               var r = raw[key] || {};
-              rows.push({
+              rows.push(normalizeRecord(key, r));
+              scan.push({
                 sym: key,
                 name: r.name || key,
                 price: toNum(r.price),
@@ -1132,17 +1182,68 @@
                 drop: toNum(r.five_day_drop_pct),
                 mom: r.trend || "STABILIZING",
                 sector: r.sector || null,
-                gate: String(r.gate || "UNKNOWN").toUpperCase()
+                gate: gateOf(r)
               });
             });
-            rows.sort(function (a, b) { return (b.cushion || 0) - (a.cushion || 0); });
-            state.scan = rows.slice(0, 10);
+            scan.sort(function (a, b) { return (b.cushion || 0) - (a.cushion || 0); });
+
+            state.universe = rows;
+            state.scan = scan.slice(0, 10);
+            state.universeStatus = "ok";
             state.scanStatus = "ok";
           } catch (err) {
-            console.error("Failed to load research.json for the scan table:", err);
+            console.error("Failed to load " + UNIVERSE_URL + ":", err);
+            state.universeStatus = "error";
             state.scanStatus = "error";
           }
           renderScan();
+          renderLedger();
+          updateLiveIndicator();
+          describeUniverse();
+        }
+
+        // Derived from the figures rather than read from the stored field,
+        // so the thumb on a row always agrees with the two numbers beside it.
+        function gateOf(r) {
+          var cushion = toNum(r.cash_cushion_pct), drop = toNum(r.five_day_drop_pct);
+          if (cushion == null || drop == null) return "UNKNOWN";
+          return cushion >= CASH_GATE && drop <= DROP_GATE ? "PASS" : "FAIL";
+        }
+
+        // The lowest cushion in the file is the lowest the engine can ever
+        // reach, so a cash rung below it is worth nothing. Saying so is
+        // cheaper than letting someone work it out by getting no result.
+        function describeUniverse() {
+          var el = document.getElementById("engUniverse");
+          if (!el) return;
+          if (state.universeStatus === "loading") {
+            el.textContent = "Loading today\u2019s evaluated set\u2026";
+            return;
+          }
+          if (state.universeStatus === "error") {
+            el.textContent =
+              "Today\u2019s evaluated set is unavailable, so the engine has nothing to screen. We do not fall back to older data.";
+            return;
+          }
+          var withCash = state.universe.filter(function (r) { return r.cash != null; });
+          if (!withCash.length) {
+            el.textContent = state.universe.length + " names were evaluated in today\u2019s run.";
+            return;
+          }
+          var lo = withCash.reduce(function (m, r) { return Math.min(m, r.cash); }, Infinity);
+          var hi = withCash.reduce(function (m, r) { return Math.max(m, r.cash); }, -Infinity);
+          var moods = {};
+          state.universe.forEach(function (r) { moods[r.mom] = 1; });
+          var moodKeys = Object.keys(moods);
+          var moodNote =
+            moodKeys.length === 1 && state.universe.length > 1
+              ? " Every name is currently labelled " + formatMomentum(moodKeys[0]).replace(/<[^>]+>/g, "").replace(/^[^A-Za-z]+/, "").toLowerCase() +
+                ", so the momentum filter cannot narrow anything today."
+              : "";
+          el.textContent =
+            state.universe.length + " names were evaluated in today\u2019s run, with cash cushions from " +
+            lo.toFixed(1) + "% to " + hi.toFixed(1) + "%. A cash floor below " + lo.toFixed(1) +
+            "% cannot widen the result any further today." + moodNote;
         }
 
         // Custom screener submission
@@ -1150,7 +1251,7 @@
         if (form) {
           form.addEventListener("submit", function (e) {
             e.preventDefault();
-            if (state.status !== "ok") return;
+            if (state.universeStatus !== "ok") return;
 
             var p = {
               cash: parseFloat(document.getElementById("engCash").value),
@@ -1165,11 +1266,16 @@
 
             if (outputSection) outputSection.removeAttribute("hidden");
             var countEl = document.getElementById("engCount");
-            if (countEl) countEl.textContent = rows.length + " candidates found";
+            if (countEl) {
+              countEl.textContent =
+                rows.length + " of " + state.universe.length + " evaluated names match";
+            }
             var appliedEl = document.getElementById("engApplied");
             if (appliedEl) {
               appliedEl.textContent =
-                "Cash \u2265 " + p.cash + "% \u00b7 5-day drop \u2264 " + p.drop + "% \u00b7 Cap \u2265 $" + p.cap + "M" +
+                "Cash \u2265 " + p.cash.toFixed(1) + "% \u00b7 " +
+                (p.drop >= 999 ? "any 5-day move" : "5-day move \u2264 " + p.drop.toFixed(1) + "%") +
+                " \u00b7 Cap \u2265 $" + p.cap + "M" +
                 (p.momentum ? " \u00b7 Momentum: " + p.momentum : "");
             }
 
@@ -1181,6 +1287,7 @@
 
         function init() {
           loadData();
+          loadUniverse();
         }
 
         if (document.readyState === "loading") {

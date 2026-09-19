@@ -535,16 +535,17 @@
           <div class="wrap">
             <div class="stats">
               <div class="stat">
-                <small>Targets screened</small><strong id="stat-screened">&mdash;</strong>
+                <small>Names evaluated</small><strong id="stat-screened">&mdash;</strong>
               </div>
               <div class="stat">
-                <small>Gatekeeper pass</small><strong class="pass" id="stat-pass">&mdash;</strong>
+                <small>Cleared both tests</small><strong class="pass" id="stat-pass">&mdash;</strong>
               </div>
               <div class="stat">
-                <small>Gatekeeper fail</small><strong class="fail" id="stat-fail">&mdash;</strong>
+                <small>Held back</small><strong class="fail" id="stat-fail">&mdash;</strong>
               </div>
               <div class="stat">
-                <small>Cash threshold</small><strong>30.0%</strong>
+                <small>Cash floor / 5-day floor</small
+                ><strong id="stat-floors">&mdash;</strong>
               </div>
             </div>
           </div>
@@ -565,8 +566,8 @@
                 <span class="label">Screen output / 02</span>
                 <h2>Gatekeeper results</h2>
               </div>
-              <div class="criteria">
-                5-day dislocation<br />Cash / price &ge; 30.0%
+              <div class="criteria" id="screenCriteria">
+                Two tests &mdash; both must clear
               </div>
             </div>
             <div class="table-scroll">
@@ -577,12 +578,13 @@
                     <th class="c">Prior session</th>
                     <th class="c">1-day change</th>
                     <th class="c">Cash cushion</th>
+                    <th class="c">5-day move</th>
                     <th class="c">Gatekeeper status</th>
                   </tr>
                 </thead>
                 <tbody id="screenRows">
                   <tr>
-                    <td class="catalyst" colspan="5">
+                    <td class="catalyst" colspan="6">
                       Loading today&rsquo;s snapshot&hellip;
                     </td>
                   </tr>
@@ -630,9 +632,13 @@
     </div>
     <script>
       (function () {
+        // Defaults only. The thresholds the screen actually ran with travel
+        // with the data in _meta.criteria, so this page cannot quietly drift
+        // out of step with the script that produced the file.
         var rows = document.getElementById("screenRows"),
           meta = document.getElementById("screenMeta"),
-          THRESHOLD = 30.0;
+          THRESHOLD = 30.0,
+          DROP_FLOOR = -15.0;
 
         function safe(v) {
           var e = document.createElement("span");
@@ -651,6 +657,9 @@
         function signedPct(v) {
           return (v < 0 ? "-" : "+") + Math.abs(v).toFixed(2) + "%";
         }
+        function signedPct1(v) {
+          return (v < 0 ? "-" : "+") + Math.abs(v).toFixed(1) + "%";
+        }
         function tone(v) {
           return v > 0 ? "pass" : v < 0 ? "fail" : "";
         }
@@ -666,7 +675,7 @@
         }
         function message(text) {
           rows.innerHTML =
-            '<tr><td class="catalyst" colspan="5">' + safe(text) + "</td></tr>";
+            '<tr><td class="catalyst" colspan="6">' + safe(text) + "</td></tr>";
         }
 
         function stockCell(ticker, r) {
@@ -719,7 +728,11 @@
           if (!num(r.cash_cushion_pct)) {
             return '<td class="c">&mdash;<div class="sub">Balance sheet pending</div></td>';
           }
-          var state = r.gate === "PASS" ? "pass" : "fail";
+          // Judge the cushion on the cushion, not on the row's overall
+          // verdict. A name holding cash worth 183% of its price that was
+          // held back by the five-day test did not fail on cash, and
+          // colouring that figure red said that it had.
+          var state = r.cash_cushion_pct >= THRESHOLD ? "pass" : "fail";
           return (
             '<td class="c">' +
             '<span class="ratio ' +
@@ -733,23 +746,93 @@
           );
         }
 
+        // The screen has two tests and they are failed for different
+        // reasons. Printing one fixed sentence under every rejection told
+        // readers that names with 180% cash cushions had failed on cash.
+        // Every reason below is worked out from the row's own figures.
+        function gateTests(r) {
+          var cash = num(r.cash_cushion_pct) ? r.cash_cushion_pct : null;
+          var drop = num(r.five_day_drop_pct) ? r.five_day_drop_pct : null;
+          return [
+            {
+              known: cash !== null,
+              met: cash !== null && cash >= THRESHOLD,
+              miss:
+                cash === null
+                  ? "cash per share unavailable"
+                  : "cash cushion " +
+                    cash.toFixed(1) +
+                    "% is under the " +
+                    THRESHOLD.toFixed(1) +
+                    "% floor",
+            },
+            {
+              known: drop !== null,
+              met: drop !== null && drop <= DROP_FLOOR,
+              miss:
+                drop === null
+                  ? "no five-day price history"
+                  : "5-day move " +
+                    signedPct1(drop) +
+                    " is not a fall of " +
+                    Math.abs(DROP_FLOOR).toFixed(1) +
+                    "% or more",
+            },
+          ];
+        }
+
+        function verdict(r) {
+          var tests = gateTests(r);
+          for (var i = 0; i < tests.length; i++) {
+            if (!tests[i].known) return "PENDING";
+          }
+          return tests[0].met && tests[1].met ? "PASS" : "FAIL";
+        }
+
+        function dropCell(r) {
+          if (!num(r.five_day_drop_pct)) {
+            return '<td class="c">&mdash;<div class="sub">No 5-day history</div></td>';
+          }
+          var met = r.five_day_drop_pct <= DROP_FLOOR;
+          return (
+            '<td class="c">' +
+            '<span class="ratio ' +
+            (met ? "pass" : "fail") +
+            '">' +
+            signedPct1(r.five_day_drop_pct) +
+            "</span>" +
+            '<div class="sub">' +
+            (met ? "at or past the floor" : "short of the floor") +
+            "</div></td>"
+          );
+        }
+
         function gateCell(r) {
-          var floor = THRESHOLD.toFixed(1) + "%";
-          if (r.gate === "PASS") {
+          var tests = gateTests(r);
+          var pending = tests.filter(function (t) { return !t.known; });
+          var failed = tests.filter(function (t) { return t.known && !t.met; });
+
+          if (pending.length) {
             return (
-              '<td class="c pass">Pass<div class="sub">Clears the ' +
-              floor +
-              " cash floor</div></td>"
+              '<td class="c">Pending<div class="sub">' +
+              safe(pending.map(function (t) { return t.miss; }).join("; ")) +
+              "</div></td>"
             );
           }
-          if (r.gate === "FAIL") {
+          if (failed.length) {
             return (
-              '<td class="c fail">Fail<div class="sub">Below the ' +
-              floor +
-              " cash floor</div></td>"
+              '<td class="c fail">Fail<div class="sub">' +
+              safe(failed.map(function (t) { return t.miss; }).join("; ")) +
+              "</div></td>"
             );
           }
-          return '<td class="c">Pending<div class="sub">Cash per share unavailable</div></td>';
+          return (
+            '<td class="c pass">Pass<div class="sub">Clears the ' +
+            THRESHOLD.toFixed(1) +
+            "% cash floor and the " +
+            DROP_FLOOR.toFixed(1) +
+            "% 5-day floor</div></td>"
+          );
         }
 
         function draw(snapshot) {
@@ -758,35 +841,98 @@
             .map(function (ticker) { return [ticker, snapshot[ticker]]; });
 
           var meta_ = snapshot._meta || {};
+          var criteria = meta_.criteria || {};
+          if (num(criteria.cash_gate)) THRESHOLD = criteria.cash_gate;
+          if (num(criteria.drop_threshold)) DROP_FLOOR = criteria.drop_threshold;
+
           var today = fullDate(meta_.generated_at);
           var prior = fullDate(meta_.previous_generated_at);
 
           document.getElementById("issue-date").textContent = today || "unknown";
           document.getElementById("issue-status").textContent = entries.length ? "Complete" : "No data";
 
-          var passCount = entries.filter(function (e) { return e[1].gate === "PASS"; }).length;
-          var failCount = entries.filter(function (e) { return e[1].gate === "FAIL"; }).length;
+          var floorsEl = document.getElementById("stat-floors");
+          if (floorsEl) {
+            floorsEl.textContent =
+              THRESHOLD.toFixed(1) + "% / " + DROP_FLOOR.toFixed(1) + "%";
+          }
+          var critEl = document.getElementById("screenCriteria");
+          if (critEl) {
+            critEl.innerHTML =
+              "Cash / price &ge; " + safe(THRESHOLD.toFixed(1)) + "%<br />5-day move &le; " +
+              safe(DROP_FLOOR.toFixed(1)) + "%";
+          }
+
+          // Verdicts are derived from the figures on the page rather than
+          // read from the stored gate field, so what a reader is told and
+          // what they can check always agree. If the two ever disagree the
+          // pipeline has drifted, and that is worth knowing about.
+          var drift = entries.filter(function (e) {
+            var stored = String(e[1].gate || "").toUpperCase();
+            return stored && stored !== "UNKNOWN" && stored !== verdict(e[1]);
+          });
+          if (drift.length) {
+            console.warn(
+              "Stored gate disagrees with the figures for: " +
+                drift.map(function (e) { return e[0]; }).join(", ")
+            );
+          }
+
+          var passCount = entries.filter(function (e) { return verdict(e[1]) === "PASS"; }).length;
+          var pendingCount = entries.filter(function (e) { return verdict(e[1]) === "PENDING"; }).length;
+          var failCount = entries.length - passCount - pendingCount;
           document.getElementById("stat-screened").textContent = entries.length;
           document.getElementById("stat-pass").textContent = passCount;
-          document.getElementById("stat-fail").textContent = failCount;
+          // "Held back" means everything that did not clear, which includes
+          // the rows still waiting on data. The paragraph below itemises the
+          // same total, so the two have to agree.
+          document.getElementById("stat-fail").textContent = failCount + pendingCount;
 
           var briefCopy = document.getElementById("briefCopy");
           if (!entries.length) {
             briefCopy.innerHTML = "<p>No candidates were evaluated in the latest run.</p>";
           } else {
-            var passing = entries.filter(function (e) { return e[1].gate === "PASS"; })
+            var passing = entries.filter(function (e) { return verdict(e[1]) === "PASS"; })
               .sort(function (a, b) { return (b[1].cash_cushion_pct || 0) - (a[1].cash_cushion_pct || 0); });
             var lead = passing[0];
-            var p1 = entries.length + " US name" + (entries.length === 1 ? "" : "s") +
-              " registered a severe five-day drawdown. " + passCount + " retain" +
-              (passCount === 1 ? "s" : "") + " cash equal to at least 30% of " +
-              (passCount === 1 ? "its" : "their") + " quoted share price, placing " +
-              (passCount === 1 ? "it" : "them") + " through today\u2019s balance-sheet gatekeeper.";
-            var p2 = lead
-              ? lead[0] + " leads the passing group with a " + lead[1].cash_cushion_pct.toFixed(1) +
-                "% cash cushion" + (num(lead[1].return_pct) ? " and a " + signedPct(lead[1].return_pct) + " move" : "") + "."
-              : "";
-            briefCopy.innerHTML = "<p>" + safe(p1) + "</p>" + (p2 ? "<p>" + safe(p2) + "</p>" : "");
+
+            var reasons = { cash: 0, drop: 0, both: 0 };
+            entries.forEach(function (e) {
+              if (verdict(e[1]) !== "FAIL") return;
+              var t = gateTests(e[1]);
+              if (!t[0].met && !t[1].met) reasons.both++;
+              else if (!t[0].met) reasons.cash++;
+              else reasons.drop++;
+            });
+
+            var cushionOK = entries.filter(function (e) {
+              return num(e[1].cash_cushion_pct) && e[1].cash_cushion_pct >= THRESHOLD;
+            }).length;
+
+            var p1 = entries.length + " name" + (entries.length === 1 ? " was" : "s were") +
+              " measured against today\u2019s two floors. " + cushionOK + " hold cash worth at least " +
+              THRESHOLD.toFixed(1) + "% of the share price, and " + passCount + " of those " +
+              (passCount === 1 ? "has" : "have") + " also fallen " +
+              Math.abs(DROP_FLOOR).toFixed(1) + "% or more over five days \u2014 the dislocation " +
+              "the screen is waiting for. Holding cash is common; being sold off while holding it is not.";
+
+            var parts = [];
+            if (reasons.drop) parts.push(reasons.drop + " on the five-day move alone");
+            if (reasons.cash) parts.push(reasons.cash + " on cash alone");
+            if (reasons.both) parts.push(reasons.both + " on both");
+            if (pendingCount) parts.push(pendingCount + " still waiting on data");
+            var p2 = parts.length ? "Held back: " + parts.join(", ") + "." : "";
+
+            var p3 = lead
+              ? lead[0] + " leads the names that cleared, with a " + lead[1].cash_cushion_pct.toFixed(1) +
+                "% cash cushion" +
+                (num(lead[1].five_day_drop_pct) ? " after a " + signedPct1(lead[1].five_day_drop_pct) + " five-day move" : "") + "."
+              : "No name cleared both floors today. That is the screen working, not failing.";
+
+            briefCopy.innerHTML =
+              "<p>" + safe(p1) + "</p>" +
+              (p2 ? "<p>" + safe(p2) + "</p>" : "") +
+              "<p>" + safe(p3) + "</p>";
           }
 
           if (!entries.length) {
@@ -804,6 +950,7 @@
                 priorCell(r) +
                 changeCell(r) +
                 cushionCell(r) +
+                dropCell(r) +
                 gateCell(r) +
                 "</tr>"
               );
@@ -811,10 +958,16 @@
             .join("");
 
           if (!meta) return;
-          meta.textContent = prior
-            ? "1-day change compares the " + (today || "latest") +
-              " session against the stored " + prior + " snapshot."
-            : "1-day change will be available once a second snapshot has been recorded.";
+          // When the screener runs twice in one day the stored baseline is
+          // hours old, not a day. Saying "1-day change" anyway would be a
+          // small lie told every morning.
+          var sameDay = today && prior && today === prior;
+          meta.textContent = !prior
+            ? "1-day change will be available once a second run has been recorded."
+            : sameDay
+              ? "The change column compares this run against an earlier run on the same day, so it is a within-day move rather than a full session."
+              : "1-day change compares the " + (today || "latest") +
+                " run against the stored " + prior + " run.";
         }
 
         fetch("screen_snapshot.json", { cache: "no-store" })
@@ -1169,7 +1322,8 @@
   .results td:nth-child(2)::before { content: "Prior session"; }
   .results td:nth-child(3)::before { content: "1-day change"; }
   .results td:nth-child(4)::before { content: "Cash cushion"; }
-  .results td:nth-child(5)::before { content: "Gatekeeper"; }
+  .results td:nth-child(5)::before { content: "5-day move"; }
+  .results td:nth-child(6)::before { content: "Gatekeeper"; }
   .results td .sub { display: inline; margin-left: 8px; }
   .results td:nth-child(1) .sub { display: block; margin-left: 0; }
 
