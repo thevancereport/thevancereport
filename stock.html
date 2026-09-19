@@ -180,11 +180,30 @@
         <div id="m-cps" class="metric-value">--</div>
         <span id="m-gate-badge" class="metric-badge">--</span>
       </div>
+      <!--
+        This card used to read "Target Execution Zone" and printed today's
+        price times 0.95 to 1.02 -- arithmetic on the current quote, dressed
+        as a level someone had chosen. On a page whose whole point is that a
+        pass is not a buy, a number labelled "target" was the worst thing on
+        it. The cushion ceiling is a real derived level and points the other
+        way: it is where the thesis stops being true.
+      -->
       <div class="metric-card">
-        <div class="metric-label">Target Execution Zone</div>
-        <div id="m-target" class="metric-value">--</div>
-        <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">Risk/Reward Baseline</div>
+        <div class="metric-label">Cushion ceiling</div>
+        <div id="m-ceiling" class="metric-value">--</div>
+        <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">
+          Above this price the cash no longer clears the floor
+        </div>
       </div>
+    </div>
+
+    <div class="card" style="border-left: 2px solid var(--amber);">
+      <p class="notes-p" style="margin: 0;">
+        A name that clears this screen is a name to look at, not a name to buy.
+        It has passed two arithmetic tests and nothing else &mdash; not a
+        judgement on the business, the price, or whether the fall is finished.
+        The screen finds candidates. The work after that is yours.
+      </p>
     </div>
 
     <!-- Interactive TradingView Chart -->
@@ -298,14 +317,20 @@
         const price = typeof item.price === 'number' ? item.price : null;
         const cps = typeof item.cps === 'number' ? item.cps : null;
         const cushion = typeof item.cash_cushion_pct === 'number' ? item.cash_cushion_pct : null;
-        const drop = typeof item.five_day_drop_pct === 'number' ? item.five_day_drop_pct : null;
+        // drop_pct carries the window the verdict was actually made on.
+        // Files written before the window was configurable only have the
+        // five-day field.
+        const dropWindow = typeof item.drop_window_days === 'number' ? item.drop_window_days : 5;
+        const drop = Object.prototype.hasOwnProperty.call(item, 'drop_pct')
+          ? (typeof item.drop_pct === 'number' ? item.drop_pct : null)
+          : (typeof item.five_day_drop_pct === 'number' ? item.five_day_drop_pct : null);
         const dollarChange = typeof item.dollar_change === 'number' ? item.dollar_change : null;
         const returnPct = typeof item.return_pct === 'number' ? item.return_pct : null;
 
         document.getElementById('m-price').innerText = price != null ? money(price) : '--';
         document.getElementById('m-drop').innerText = drop != null
-          ? signed(drop, 1) + '% (5-day)'
-          : '5-day drop unavailable';
+          ? signed(drop, 1) + '% (' + dropWindow + '-day)'
+          : dropWindow + '-day move unavailable';
 
         // 1-Day Change: only shown if we actually have a stored baseline
         // from yesterday's run. No fabricated number when we don't.
@@ -324,20 +349,42 @@
 
         document.getElementById('m-cps').innerText = cps != null ? money(cps) : '--';
 
-        // Gatekeeper badge: PASS / FAIL / UNKNOWN, never a fabricated default.
+        // Gatekeeper badge. This used to print "Below 30.0% Floor" under every
+        // rejection, including names holding cash worth 180% of their price
+        // that were held back by the price test instead. The reason is now
+        // worked out from this row's own two figures.
+        const criteria = (data._meta && data._meta.criteria) || {};
+        const cashGate = typeof criteria.cash_gate === 'number' ? criteria.cash_gate : 30.0;
+        const dropGate = typeof criteria.drop_threshold === 'number' ? criteria.drop_threshold : -15.0;
+        const cushionMet = cushion != null && cushion >= cashGate;
+        const dropMet = drop != null && drop <= dropGate;
+
         const gateBadge = document.getElementById('m-gate-badge');
-        if (item.gate === 'PASS') {
-          gateBadge.className = 'metric-badge badge-pass';
-          gateBadge.innerText = (cushion != null ? cushion.toFixed(1) + '% ' : '') + 'Clears 30.0% Floor';
-        } else if (item.gate === 'FAIL') {
-          gateBadge.className = 'metric-badge badge-fail';
-          gateBadge.innerText = (cushion != null ? cushion.toFixed(1) + '% ' : '') + 'Below 30.0% Floor';
-        } else {
+        if (cushion == null || drop == null) {
           gateBadge.className = 'metric-badge badge-pending';
-          gateBadge.innerText = 'Balance sheet data pending';
+          gateBadge.innerText = cushion == null
+            ? 'Balance sheet data pending'
+            : dropWindow + '-day price history pending';
+        } else if (cushionMet && dropMet) {
+          gateBadge.className = 'metric-badge badge-pass';
+          gateBadge.innerText = cushion.toFixed(1) + '% \u00b7 worth a look';
+        } else {
+          const why = [];
+          if (!cushionMet) why.push('cash ' + cushion.toFixed(1) + '% under ' + cashGate.toFixed(1) + '%');
+          if (!dropMet) why.push(dropWindow + '-day move ' + signed(drop, 1) + '% not steep enough');
+          gateBadge.className = 'metric-badge badge-fail';
+          gateBadge.innerText = 'Held back \u2014 ' + why.join('; ');
         }
 
-        document.getElementById('m-target').innerText = item.target_zone || '\u2014';
+        // Where the cash stops clearing the floor: net cash per share divided
+        // by the floor. Arithmetic on the screen's own threshold, not a target
+        // and not a valuation.
+        const ceilingEl = document.getElementById('m-ceiling');
+        if (ceilingEl) {
+          ceilingEl.innerText = cps != null && cashGate > 0
+            ? money(cps / (cashGate / 100))
+            : '--';
+        }
         document.getElementById('thesis-body').innerText = item.thesis || 'No detailed thesis available.';
         document.getElementById('catalyst-body').innerText = item.catalyst || 'No primary catalyst specified.';
 
