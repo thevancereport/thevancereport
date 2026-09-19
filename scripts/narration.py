@@ -17,7 +17,37 @@ from __future__ import annotations
 
 CASH_GATE = 30.0          # matches scripts/update_research.py
 DROP_THRESHOLD = -15.0
+DROP_WINDOW_DAYS = 3      # ditto; a fallback, the run's own value wins
 MAX_NAMES = 5             # a briefing longer than this stops being watched
+
+
+def drop_of(row: dict) -> float:
+    """The move the verdict was made on.
+
+    drop_pct arrived when the window became configurable. Files written before
+    that only carry the five-day figure, and a briefing that reads zero because
+    a field was renamed is worse than one that reads the old field.
+    """
+    value = row.get("drop_pct")
+    if value is None:
+        value = row.get("five_day_drop_pct")
+    return value or 0.0
+
+
+def window_of(row: dict) -> int:
+    """How many sessions that move was measured over.
+
+    A row with no drop_window_days key came out of a run made before the
+    window was configurable, and its move is a five-session one. Defaulting to
+    the current window there would have the narrator say "three sessions" over
+    a five-session figure.
+    """
+    if "drop_window_days" not in row:
+        return 5
+    try:
+        return int(row["drop_window_days"] or DROP_WINDOW_DAYS)
+    except (TypeError, ValueError):
+        return DROP_WINDOW_DAYS
 
 ONES = [
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
@@ -153,16 +183,17 @@ def build(research: dict, run_date: str) -> list[dict]:
     })
 
     # ---- how the screen works ----
+    win = window_of(names[0][1]) if names else DROP_WINDOW_DAYS
     slides.append({
         "kind": "method",
         "chapter": "How the screen works",
-        "data": {"gate": CASH_GATE, "drop": DROP_THRESHOLD},
+        "data": {"gate": CASH_GATE, "drop": DROP_THRESHOLD, "window": win},
         "beats": [
             beat(
                 "The first condition is price. A stock has to have fallen fifteen "
-                "percent or more over five sessions. That is the dislocation the "
-                "screen is looking for.",
-                "1 — Five-day move of −15% or worse"),
+                f"percent or more over {words(win)} sessions. That is the "
+                "dislocation the screen is looking for.",
+                f"1 — {win}-day move of −15% or worse"),
             beat(
                 "The second is cash. The screen takes the cash on the company's "
                 "most recent balance sheet, subtracts total liabilities, divides "
@@ -179,6 +210,17 @@ def build(research: dict, run_date: str) -> list[dict]:
                 "grown in a year, and whether insiders have bought in the open "
                 "market.",
                 "Runway · dilution · insider buying"),
+            # Said here rather than only in the disclaimer at the end, because
+            # by the time the disclaimer runs the viewer has already heard five
+            # tickers and made up their mind about them.
+            beat(
+                "And one thing to be clear about before any name is read out. "
+                "Clearing this screen is not a recommendation to buy. It means "
+                "two arithmetic tests came back clean and the name has earned a "
+                "closer look. Nothing in it says the price is right, the business "
+                "is sound, or the fall is finished. The screen finds candidates. "
+                "The work after that is yours.",
+                "Clearing is a reason to look, not a reason to buy"),
         ],
     })
 
@@ -188,7 +230,8 @@ def build(research: dict, run_date: str) -> list[dict]:
         price = row.get("price") or 0.0
         cps = row.get("cps") or 0.0
         cushion = row.get("cash_cushion_pct") or 0.0
-        drop = row.get("five_day_drop_pct") or 0.0
+        drop = drop_of(row)
+        win = window_of(row)
         sector = row.get("sector") or "—"
         runway = row.get("runway_years")
         dilution = row.get("dilution_pct")
@@ -206,8 +249,8 @@ def build(research: dict, run_date: str) -> list[dict]:
                 f"{sym} — {name}"),
             beat(
                 f"It qualified on price because it fell {pct(abs(drop))} over the "
-                f"last five sessions, against a threshold of fifteen.",
-                f"Five-day move {drop:+.1f}%  ·  threshold −15.0%"),
+                f"last {words(win)} sessions, against a threshold of fifteen.",
+                f"{win}-day move {drop:+.1f}%  ·  threshold −15.0%"),
             beat(
                 f"On cash: {money(gross)} a share of cash, less {money(liab)} a "
                 f"share of total liabilities, leaves {money(cps)} of net cash "
@@ -325,8 +368,9 @@ def build(research: dict, run_date: str) -> list[dict]:
             beat(
                 "The Vance Report is not a registered investment adviser and not "
                 "a broker-dealer. Nothing here is a recommendation to buy or sell "
-                "anything.",
-                "Not a registered investment adviser. Not a broker-dealer."),
+                "anything. A name clearing the screen is a name to look at, not "
+                "a name to buy.",
+                "Not advice. A name to look at, not a name to buy."),
             beat(
                 "The stocks this screen surfaces have fallen hard for reasons the "
                 "screen does not evaluate. They are volatile, they are high risk, "

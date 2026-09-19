@@ -33,11 +33,25 @@ from urllib.request import Request, urlopen
 RESEARCH_FILE = "research.json"
 SNAPSHOT_FILE = "screen_snapshot.json"
 
-DROP_THRESHOLD = -15.0      # 5-day move must be at least this bad to qualify
+# How far back the price test looks, in trading sessions, and how bad the move
+# over that window has to be.
+#
+# The window was three days by intent. It became five on 17 Sep 2026 because
+# the data source of the day (FMP's stock-price-change endpoint) offered 1D,
+# 5D, 1M and 3M and nothing in between, so 5D was the closest thing on the
+# shelf. Nothing was decided; the API chose. Since the move to Nasdaq's daily
+# closes the window is ours again, so it goes back to three.
+#
+# Both windows are computed and stored on every row from the same request.
+# Only DROP_WINDOW_DAYS decides the verdict; the other is there so the cost of
+# this choice is visible in the data rather than argued about.
+DROP_WINDOW_DAYS = 3
+DROP_WINDOWS = (3, 5)
+DROP_THRESHOLD = -15.0      # move over the window must be at least this bad
 CASH_GATE = 30.0            # cash per share as % of price needed to pass
 # What the snapshot keeps, as opposed to what passes. Cutting the file at the
 # cash gate meant every name in it had already cleared that test, so the site
-# could only ever show rejections on the five-day move -- and a reader turning
+# could only ever show rejections on the price move -- and a reader turning
 # the cash dial down saw nothing change. Keeping the near misses costs a few
 # kilobytes and makes the cash test visible as a test.
 SNAPSHOT_FLOOR = 15.0
@@ -219,8 +233,14 @@ def fetch_market_rows():
     return rows
 
 
-def fetch_five_day_drop(symbol):
-    """Percentage move from the close 5 sessions ago to the latest close."""
+def fetch_drop_windows(symbol):
+    """Percentage move over each window in DROP_WINDOWS, from one request.
+
+    Returns {sessions: pct} for every window the history is long enough to
+    measure, or None if the history is unusable. Windows are counted in
+    trading sessions, not calendar days, so a holiday week does not quietly
+    shorten the lookback.
+    """
     now = time.time()
     url = NASDAQ_HISTORY.format(
         symbol=quote(symbol),
@@ -233,13 +253,19 @@ def fetch_five_day_drop(symbol):
         return None
 
     closes = [money(r.get("close")) for r in rows if money(r.get("close"))]
-    if len(closes) < 6:
+    latest = closes[0] if closes else None   # Nasdaq returns newest first
+    if not latest:
         return None
 
-    latest, prior = closes[0], closes[5]   # Nasdaq returns newest first
-    if not prior:
-        return None
-    return round((latest - prior) / prior * 100, 1)
+    out = {}
+    for sessions in DROP_WINDOWS:
+        if len(closes) <= sessions:
+            continue
+        prior = closes[sessions]
+        if not prior:
+            continue
+        out[sessions] = round((latest - prior) / prior * 100, 1)
+    return out or None
 
 
 def fetch_insider_buys(cik):
@@ -449,7 +475,7 @@ def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_
     return candidates
 
 
-def build_record(candidate, drop_pct, previous):
+def build_record(candidate, drops, previous):
     price = candidate["price"]
     previous_price = previous.get("price") if previous else None
 
@@ -462,6 +488,8 @@ def build_record(candidate, drop_pct, previous):
     # Two tests, and the file now carries names that fail either one, so the
     # verdict has to check both rather than assume the cash test was already
     # settled by the retention cut above.
+    drops = drops or {}
+    drop_pct = drops.get(DROP_WINDOW_DAYS)
     cushion = candidate["cash_cushion_pct"]
     if drop_pct is None:
         gate = "UNKNOWN"
@@ -478,7 +506,16 @@ def build_record(candidate, drop_pct, previous):
         "dollar_change": round(dollar_change, 2) if dollar_change is not None else None,
         "return_pct": round(return_pct, 2) if return_pct is not None else None,
         "market_cap": candidate["market_cap"],
-        "five_day_drop_pct": drop_pct,
+        # drop_pct is the figure the verdict was made on. The per-window
+        # figures sit beside it so a reader, and the next person to argue
+        # about the window, can see what the other one would have said.
+        "drop_pct": drop_pct,
+        "drop_window_days": DROP_WINDOW_DAYS,
+        "three_day_drop_pct": drops.get(3),
+        # Kept under its old name as well: the pages, the stock profile and
+        # the video all read this field, and a rename is not worth a day of
+        # blank columns.
+        "five_day_drop_pct": drops.get(5),
         "trend": resolve_momentum(return_pct),
         "cps": candidate["cps"],
         "cash_cushion_pct": candidate["cash_cushion_pct"],
@@ -618,9 +655,9 @@ def update_database():
     evaluated_ciks = {c["symbol"]: c.get("cik") for c in checked}
     evaluated = {}
     for i, candidate in enumerate(checked, 1):
-        drop_pct = fetch_five_day_drop(candidate["symbol"])
+        drops = fetch_drop_windows(candidate["symbol"])
         evaluated[candidate["symbol"]] = build_record(
-            candidate, drop_pct, baseline.get(candidate["symbol"])
+            candidate, drops, baseline.get(candidate["symbol"])
         )
         if i % 25 == 0:
             print(f"  ...{i}/{len(checked)} price histories fetched")
@@ -630,12 +667,27 @@ def update_database():
         print("Nothing usable this run; leaving files unchanged.")
         return
 
+    # What the other window would have done, printed every run. The window is
+    # a judgement call and this is the only place the cost of it is cheap to
+    # see: same data, same threshold, different lookback.
+    for sessions in DROP_WINDOWS:
+        field = {3: "three_day_drop_pct", 5: "five_day_drop_pct"}[sessions]
+        measured = [r for r in evaluated.values() if r.get(field) is not None]
+        would_pass = sum(
+            1 for r in measured
+            if r[field] <= DROP_THRESHOLD and r["cash_cushion_pct"] >= CASH_GATE
+        )
+        marker = "  <- in force" if sessions == DROP_WINDOW_DAYS else ""
+        print(f"  {sessions}-session window at {DROP_THRESHOLD:.1f}%: "
+              f"{would_pass} of {len(measured)} measured would clear both tests{marker}")
+
     # The thresholds travel with the data. The pages used to have 30.0 and
     # -15.0 typed into them in half a dozen places, so changing a number here
     # left the site describing a screen that no longer existed.
     criteria = {
         "cash_gate": CASH_GATE,
         "drop_threshold": DROP_THRESHOLD,
+        "drop_window_days": DROP_WINDOW_DAYS,
         "snapshot_floor": SNAPSHOT_FLOOR,
         "min_runway_years": MIN_RUNWAY_YEARS,
         "max_dilution_pct": MAX_DILUTION_PCT,
