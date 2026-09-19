@@ -1,0 +1,128 @@
+name: Daily briefing video
+
+# Runs after the screener has written research.json. Building a video from a
+# stale screen is worse than not publishing one, so this job reads the file
+# from the repo rather than regenerating it, and stops if it is not from today.
+
+on:
+  workflow_run:
+    workflows: ["Daily Financial Data Sync"]   # the screener workflow, by its name: field
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      privacy:
+        description: "YouTube privacy for this run"
+        type: choice
+        default: private
+        options: [private, unlisted, public]
+      allow_stale:
+        description: "Build even if research.json is not from today"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-video
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    # Skip when the screener failed: no point narrating yesterday's numbers.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Check research.json is current
+        id: freshness
+        run: |
+          set -euo pipefail
+          GEN=$(python3 -c "import json;print(json.load(open('research.json'))['_meta']['generated_at'])")
+          echo "generated_at=$GEN"
+          python3 - "$GEN" <<'PY'
+          import sys, datetime
+          gen = datetime.datetime.fromisoformat(sys.argv[1].replace("Z", "+00:00"))
+          age = (datetime.datetime.now(datetime.timezone.utc) - gen).total_seconds() / 3600
+          print(f"research.json is {age:.1f}h old")
+          open("AGE", "w").write(f"{age:.1f}")
+          PY
+          AGE=$(cat AGE)
+          STALE=$(python3 -c "print('yes' if float('$AGE') > 26 else 'no')")
+          echo "stale=$STALE" >> "$GITHUB_OUTPUT"
+
+      - name: Stop on stale data
+        if: steps.freshness.outputs.stale == 'yes' && inputs.allow_stale != true
+        run: |
+          echo "::warning::research.json is more than 26h old - not publishing a briefing."
+          exit 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg, Chromium and the site's typefaces
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg chromium-browser fonts-ibm-plex \
+            || sudo apt-get install -y -qq ffmpeg chromium fonts-ibm-plex
+          fc-cache -f >/dev/null
+          pip install --quiet requests
+
+      - name: Install piper and the narration voice
+        run: |
+          set -euo pipefail
+          pip install --quiet piper-tts
+          mkdir -p voice
+          BASE=https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high
+          curl -fsSL -o voice/en_US-ryan-high.onnx      "$BASE/en_US-ryan-high.onnx"
+          curl -fsSL -o voice/en_US-ryan-high.onnx.json "$BASE/en_US-ryan-high.onnx.json"
+          ls -la voice
+
+      - name: Build the video
+        env:
+          PIPER_VOICE: voice/en_US-ryan-high.onnx
+          CHROMIUM_PATH: /usr/bin/chromium-browser
+        run: |
+          which chromium-browser || export CHROMIUM_PATH=/usr/bin/chromium
+          python3 scripts/build_video.py --out build
+          python3 -c "
+          import json; m=json.load(open('build/meta.json'))
+          assert m['narrated'], 'built without narration - refusing to publish'
+          print(m)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: briefing-${{ github.run_number }}
+          path: |
+            build/briefing.mp4
+            build/briefing.srt
+            build/description.txt
+          retention-days: 14
+
+      - name: Upload to YouTube
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          YT_PRIVACY: ${{ inputs.privacy || vars.YT_PRIVACY || 'private' }}
+        run: python3 scripts/upload_youtube.py --build build --out video.json
+
+      - name: Commit video.json
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- video.json; then
+            echo "video.json unchanged"; exit 0
+          fi
+          git add video.json
+          git commit -m "Daily briefing video $(python3 -c "import json;print(json.load(open('video.json'))['run_date'])")"
+          git push
