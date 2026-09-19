@@ -1,0 +1,70 @@
+name: Value screen backtest
+
+# Not part of the daily pipeline, not on a schedule, and it writes nothing the
+# site reads. It answers one question: does the screen described in
+# scripts/VALUE_SPEC.md rank companies in an order that meant anything?
+#
+# The offline tests run first and the job stops if any of them fail, because a
+# broken percentile is cheaper to find in ten seconds than in forty minutes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      first_date:
+        description: "First rebalance (YYYY-MM-DD)"
+        default: "2016-01-01"
+      last_date:
+        description: "Last rebalance (YYYY-MM-DD)"
+        default: "2025-03-01"
+      first_q:
+        description: "First SEC data set, as YYYY,Q"
+        default: "2015,1"
+      last_q:
+        description: "Last SEC data set, as YYYY,Q"
+        default: "2025,2"
+      max_symbols:
+        description: "Cap the symbol count for a quick smoke run (0 = no cap)"
+        default: "0"
+
+permissions:
+  contents: read
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check the maths before spending an hour on it
+        working-directory: scripts
+        run: |
+          python test_value_core.py
+          python test_value_data.py
+          python test_value_backtest.py
+          python test_end_to_end.py
+
+      - name: Run the backtest
+        working-directory: scripts
+        env:
+          FIRST_DATE: ${{ inputs.first_date }}
+          LAST_DATE: ${{ inputs.last_date }}
+          FIRST_Q: ${{ inputs.first_q }}
+          LAST_Q: ${{ inputs.last_q }}
+          MAX_SYMBOLS: ${{ inputs.max_symbols }}
+          OUT_FILE: ${{ github.workspace }}/value_backtest.json
+          SEC_UA: "TheVanceReport research contact@thevancereport.com"
+        run: python value_backtest.py
+
+      - name: Keep the result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: value-backtest
+          path: value_backtest.json
+          if-no-files-found: warn
