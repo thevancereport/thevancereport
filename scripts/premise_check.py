@@ -77,7 +77,11 @@ LOOKAHEAD_GUARD_DAYS = 100            # a quarter is unusable until this has pas
 MIN_NET_CASH = 15_000_000             # below this, no price can clear both gates
 SAMPLE_SIZE = int(os.environ.get("SAMPLE_SIZE", "500"))
 SAMPLE_SEED = int(os.environ.get("SAMPLE_SEED", "20260919"))
-BENCHMARK = "IWM"
+# IWM is the small-cap benchmark this screen should be judged against. The
+# others are here only so a single bad endpoint cannot waste a whole run; the
+# one actually used is named in the output and in the JSON.
+BENCHMARKS = ("IWM", "VTWO", "SPY")
+BENCHMARK = BENCHMARKS[0]
 OUT_FILE = "premise_check.json"
 
 
@@ -120,13 +124,24 @@ def usable_quarters(on: date):
     return [p for _, p in ends[:2]]
 
 
-def fetch_history(symbol, start, end):
-    """Daily closes for one symbol as [(date, close, volume)], oldest first."""
-    url = live.NASDAQ_HISTORY.format(
-        symbol=quote(symbol), start=start.isoformat(), end=end.isoformat()
-    ).replace("limit=30", "limit=5000")
-    data = live.fetch_json(url, live.BROWSER_UA, timeout=45, attempts=2)
-    rows = (((data or {}).get("data") or {}).get("tradesTable") or {}).get("rows")
+def fetch_history(symbol, start, end, asset_classes=("stocks",)):
+    """Daily closes for one symbol as [(date, close, volume)], oldest first.
+
+    Nasdaq keys this endpoint by asset class and returns an empty table, not an
+    error, when the class is wrong. Every name in the screen's universe is a
+    common stock, but the benchmark is an ETF, so the caller passes the classes
+    to try and we stop at the first one that answers with rows.
+    """
+    rows = None
+    for cls in asset_classes:
+        url = live.NASDAQ_HISTORY.format(
+            symbol=quote(symbol), start=start.isoformat(), end=end.isoformat()
+        ).replace("limit=30", "limit=5000").replace("assetclass=stocks", "assetclass=" + cls)
+        data = live.fetch_json(url, live.BROWSER_UA, timeout=45, attempts=2)
+        rows = (((data or {}).get("data") or {}).get("tradesTable") or {}).get("rows")
+        if rows:
+            break
+        time.sleep(0.4)
     out = []
     for r in rows or []:
         close = live.money(r.get("close"))
@@ -247,20 +262,33 @@ def main():
     # ---- prices, one read per symbol, reused by every date ----
     span_start = FIRST_OBSERVATION - timedelta(days=30)
     span_end = min(date.today(), LAST_OBSERVATION + timedelta(days=300))
+    # The benchmark goes first. Without it there is nothing to compare against
+    # and the run is wasted, so we find that out in ten seconds rather than
+    # twenty-five minutes.
     history = {}
-    for i, sym in enumerate(sample + [BENCHMARK], start=1):
+    bench = None
+    for candidate in BENCHMARKS:
+        bench = fetch_history(candidate, span_start, span_end,
+                              asset_classes=("etf", "stocks", "index"))
+        if len(bench or []) > 200:
+            globals()["BENCHMARK"] = candidate
+            history[candidate] = bench
+            print(f"Benchmark {candidate}: {len(bench):,} sessions.\n")
+            break
+        print(f"Benchmark {candidate}: no usable history, trying the next one.")
+        bench = None
+    if not bench:
+        print("No benchmark history; refusing to report returns without one.")
+        return 1
+
+    for i, sym in enumerate(sample, start=1):
         series = fetch_history(sym, span_start, span_end)
         if len(series) > 200:
             history[sym] = series
         if i % 25 == 0:
-            print(f"  ...{i}/{len(sample) + 1} price histories")
+            print(f"  ...{i}/{len(sample)} price histories")
         time.sleep(0.2)
     print(f"{len(history):,} usable histories.\n")
-
-    bench = history.get(BENCHMARK)
-    if not bench:
-        print("No benchmark history; refusing to report returns without one.")
-        return 1
 
     picks, per_date = [], []
     for when in dates:
@@ -324,6 +352,7 @@ def main():
                   "drop_window_days": DROP_WINDOW_DAYS,
                   "min_market_cap": MIN_MARKET_CAP},
         "sample": {"size": len(sample), "seed": SAMPLE_SEED, "eligible": len(eligible)},
+        "benchmark": BENCHMARK,
         "limitations": [
             "Universe is today's listed symbols: delisted and bankrupt names are "
             "absent, so every figure here is an upper bound.",
