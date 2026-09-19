@@ -9,8 +9,8 @@ Data sources, all free and keyless:
                           companies are screened.
   Nasdaq screener         last price, market cap and volume for every listed
                           US stock, in a single request.
-  Nasdaq historical       daily closes, fetched ONLY for names that already
-                          clear the cash gate, which keeps this to ~100 calls.
+  Nasdaq historical       daily closes, fetched ONLY for names retained at or
+                          above the snapshot floor, keeping this to ~150 calls.
 
 This replaces an implementation built on Financial Modeling Prep's v3 API,
 which FMP retired on 2025-08-31 (HTTP 403 "Legacy Endpoint") and whose
@@ -35,6 +35,12 @@ SNAPSHOT_FILE = "screen_snapshot.json"
 
 DROP_THRESHOLD = -15.0      # 5-day move must be at least this bad to qualify
 CASH_GATE = 30.0            # cash per share as % of price needed to pass
+# What the snapshot keeps, as opposed to what passes. Cutting the file at the
+# cash gate meant every name in it had already cleared that test, so the site
+# could only ever show rejections on the five-day move -- and a reader turning
+# the cash dial down saw nothing change. Keeping the near misses costs a few
+# kilobytes and makes the cash test visible as a test.
+SNAPSHOT_FLOOR = 15.0
 MOMENTUM_MOVE = 1.0         # day-over-day % move to call REBOUND / FALLING
 MIN_MARKET_CAP = 50_000_000
 MIN_VOLUME = 50_000
@@ -339,7 +345,12 @@ def is_common_stock(name):
 
 def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_cik,
                           burn_by_cik, shares_prior_by_cik):
-    """Names clearing the net-cash gate. Costs no extra requests."""
+    """Names at or above the snapshot floor. Costs no extra requests.
+
+    The floor is deliberately below the cash gate so that the near misses
+    survive into the published file and the cash test stays visible as a
+    test rather than as a silent precondition.
+    """
     candidates = []
     for row in rows:
         symbol = (row.get("symbol") or "").strip().upper()
@@ -387,7 +398,7 @@ def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_
 
         cps = net_cash / shares
         cushion = cps / price * 100
-        if cushion < CASH_GATE:
+        if cushion < SNAPSHOT_FLOOR:
             continue
 
         # Runway, not just cash. Two companies with the same cash per share are
@@ -448,8 +459,16 @@ def build_record(candidate, drop_pct, previous):
     else:
         dollar_change = return_pct = None
 
-    passes = drop_pct is not None and drop_pct <= DROP_THRESHOLD
-    gate = "PASS" if passes else ("UNKNOWN" if drop_pct is None else "FAIL")
+    # Two tests, and the file now carries names that fail either one, so the
+    # verdict has to check both rather than assume the cash test was already
+    # settled by the retention cut above.
+    cushion = candidate["cash_cushion_pct"]
+    if drop_pct is None:
+        gate = "UNKNOWN"
+    elif cushion >= CASH_GATE and drop_pct <= DROP_THRESHOLD:
+        gate = "PASS"
+    else:
+        gate = "FAIL"
 
     record = {
         "name": candidate["name"],
@@ -563,22 +582,45 @@ def update_database():
         rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_cik,
         burn_by_cik, shares_prior_by_cik
     )
-    print(f"{len(candidates)} names clear the {CASH_GATE:.0f}% NET cash gate.")
+    clearing = sum(1 for c in candidates if c["cash_cushion_pct"] >= CASH_GATE)
+    print(f"{len(candidates)} names retained at or above the {SNAPSHOT_FLOOR:.0f}% "
+          f"snapshot floor; {clearing} of them clear the {CASH_GATE:.0f}% NET cash gate.")
     if not candidates:
-        print("Nothing cleared the cash gate; leaving files unchanged.")
+        print("Nothing cleared the snapshot floor; leaving files unchanged.")
         return
 
     checked = candidates[:MAX_HISTORY_CALLS]
     if len(candidates) > MAX_HISTORY_CALLS:
         print(f"Checking price history for the top {MAX_HISTORY_CALLS} by cushion.")
 
+    generated_at = datetime.now(timezone.utc).isoformat()
+    previous_meta = load_json(SNAPSHOT_FILE).get("_meta", {})
     previous_snapshot = strip_meta(load_json(SNAPSHOT_FILE))
+
+    # The baseline for "1-day change" is the last stored run. When the job
+    # runs more than once in a day, rolling the baseline forward every time
+    # turns a day's move into a half-hour's move while the column still says
+    # one day. On a rerun the earlier baseline is carried forward instead, so
+    # the comparison stays a session against a session.
+    prior_generated_at = previous_meta.get("generated_at")
+    same_day = bool(prior_generated_at) and prior_generated_at[:10] == generated_at[:10]
+    if same_day:
+        baseline = {
+            symbol: {"price": record.get("previous_price")}
+            for symbol, record in previous_snapshot.items()
+        }
+        baseline_generated_at = previous_meta.get("previous_generated_at")
+        print("Rerun on the same date; carrying the previous session's baseline forward.")
+    else:
+        baseline = previous_snapshot
+        baseline_generated_at = prior_generated_at
+
     evaluated_ciks = {c["symbol"]: c.get("cik") for c in checked}
     evaluated = {}
     for i, candidate in enumerate(checked, 1):
         drop_pct = fetch_five_day_drop(candidate["symbol"])
         evaluated[candidate["symbol"]] = build_record(
-            candidate, drop_pct, previous_snapshot.get(candidate["symbol"])
+            candidate, drop_pct, baseline.get(candidate["symbol"])
         )
         if i % 25 == 0:
             print(f"  ...{i}/{len(checked)} price histories fetched")
@@ -588,14 +630,26 @@ def update_database():
         print("Nothing usable this run; leaving files unchanged.")
         return
 
-    generated_at = datetime.now(timezone.utc).isoformat()
-    previous_meta = load_json(SNAPSHOT_FILE).get("_meta", {})
+    # The thresholds travel with the data. The pages used to have 30.0 and
+    # -15.0 typed into them in half a dozen places, so changing a number here
+    # left the site describing a screen that no longer existed.
+    criteria = {
+        "cash_gate": CASH_GATE,
+        "drop_threshold": DROP_THRESHOLD,
+        "snapshot_floor": SNAPSHOT_FLOOR,
+        "min_runway_years": MIN_RUNWAY_YEARS,
+        "max_dilution_pct": MAX_DILUTION_PCT,
+        "min_market_cap": MIN_MARKET_CAP,
+        "min_dollar_volume": MIN_DOLLAR_VOLUME,
+        "max_per_sector": MAX_PER_SECTOR,
+    }
 
     snapshot_out = dict(evaluated)
     snapshot_out["_meta"] = {
         "generated_at": generated_at,
-        "previous_generated_at": previous_meta.get("generated_at"),
+        "previous_generated_at": baseline_generated_at,
         "sources": ["SEC EDGAR XBRL frames", "Nasdaq screener"],
+        "criteria": criteria,
     }
     with open(SNAPSHOT_FILE, "w") as fh:
         json.dump(snapshot_out, fh, indent=2)
@@ -623,7 +677,7 @@ def update_database():
                   f"${insider['value']:,} total")
 
     research_out = dict(published)            # the site shows a top ten
-    research_out["_meta"] = {"generated_at": generated_at}
+    research_out["_meta"] = {"generated_at": generated_at, "criteria": criteria}
     with open(RESEARCH_FILE, "w") as fh:
         json.dump(research_out, fh, indent=2)
 
