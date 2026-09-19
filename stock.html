@@ -339,7 +339,9 @@
         // that produced the label. A description, not a forecast.
         const trendEl = document.getElementById('m-trend');
         if (trendEl) {
-          const aliases = { REBOUND: 'UP', FALLING: 'DOWN', STABILIZING: 'SIDEWAYS' };
+          // STABILIZING was the old code's value for "no baseline", not for a
+          // flat chart, so it reads as no reading rather than as Sideways.
+          const aliases = { REBOUND: 'UP', FALLING: 'DOWN' };
           let key = String(item.trend || '').toUpperCase();
           key = aliases[key] || key;
           const shapes = {

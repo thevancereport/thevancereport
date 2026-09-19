@@ -994,7 +994,12 @@
         // the previous run, which on a day the job ran twice was a half-hour
         // move. The old values are still mapped so a file written before this
         // renders as something rather than nothing.
-        var TREND_ALIASES = { REBOUND: "UP", FALLING: "DOWN", STABILIZING: "SIDEWAYS" };
+        // REBOUND and FALLING recorded an actual price move, short as it was,
+        // so they still map. STABILIZING did not: the old code returned it both
+        // for a small move and for "no baseline at all", and on the file this
+        // page was serving it meant the second. Mapping it to Sideways put a
+        // reading on all 23 rows that nothing had measured.
+        var TREND_ALIASES = { REBOUND: "UP", FALLING: "DOWN" };
 
         function trendOf(r) {
           var t = String((r && r.trend) || "").toUpperCase();

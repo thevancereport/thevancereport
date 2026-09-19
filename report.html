@@ -838,7 +838,9 @@
             DOWN: ["fail", "Trending down"],
             SIDEWAYS: ["", "Sideways"],
           };
-          var aliases = { REBOUND: "UP", FALLING: "DOWN", STABILIZING: "SIDEWAYS" };
+          // STABILIZING was the old code's value for "no baseline", not for a
+          // flat chart, so it reads as no reading rather than as Sideways.
+          var aliases = { REBOUND: "UP", FALLING: "DOWN" };
           var key = String(r.trend || "").toUpperCase();
           key = aliases[key] || key;
           var shape = shapes[key];
