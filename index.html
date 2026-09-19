@@ -644,7 +644,19 @@
         text-transform: uppercase;
         color: var(--paper-faint);
       }
-    </style>
+    
+    /* ---------- daily briefing video ---------- */
+    .briefing { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.85fr); gap: 34px; align-items: start; }
+    .briefing-player { position: relative; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--rule); background: var(--ink-2); }
+    .briefing-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .briefing-side { border: 1px solid var(--rule); background: var(--ink-2); padding: 22px 24px; }
+    .briefing-side h3 { font-family: var(--serif, Georgia, serif); font-weight: 400; font-size: 21px; margin: 0 0 14px; }
+    .briefing-meta { display: grid; gap: 11px; margin: 0 0 16px; font-size: 13.5px; color: var(--paper-faint); }
+    .briefing-meta div { display: flex; justify-content: space-between; gap: 16px; border-bottom: 1px dashed var(--rule-soft); padding-bottom: 9px; }
+    .briefing-meta b { color: var(--paper); font-weight: 500; font-variant-numeric: tabular-nums; }
+    .briefing-note { font-size: 13px; line-height: 1.55; color: var(--paper-faint); margin: 0 0 14px; }
+    .briefing-link { display: inline-block; color: var(--amber); text-decoration: none; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--amber-deep); }
+  </style>
   </head>
   <body>
     <div class="grid-field" aria-hidden="true"></div>
@@ -778,6 +790,17 @@
       </section>
 
       <!-- ============ DAILY SCAN ============ -->
+      <!-- ============ DAILY BRIEFING VIDEO ============ -->
+      <section class="block" id="briefing">
+        <div class="wrap">
+          <div class="sec-head">
+            <h2>Daily briefing</h2>
+            <span class="sec-meta">Why each name cleared<br>the screen today</span>
+          </div>
+          <div id="briefingSlot" class="state-msg">Loading today&rsquo;s briefing&hellip;</div>
+        </div>
+      </section>
+
       <section class="block">
         <div class="wrap">
           <div class="sec-head">
@@ -1439,7 +1462,7 @@
 /* ---------- 860px: fold the two-column layouts ---------- */
 @media (max-width: 860px) {
   .wrap { padding-left: 22px; padding-right: 22px; }
-  .hero-grid, .mast-grid, .brief, .head-grid, .research-grid { grid-template-columns: 1fr !important; }
+  .hero-grid, .mast-grid, .brief, .head-grid, .research-grid, .briefing { grid-template-columns: 1fr !important; }
   .hero-grid { gap: 42px; }
   .eng-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metrics-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
@@ -1643,5 +1666,44 @@
   .scan-table td:nth-child(n + 3):nth-child(-n + 7)::before { font-size: 11px; }
 }
 </style>
+<script>
+  /* Daily briefing. video.json is written by .github/workflows/daily_video.yml
+     after the briefing is uploaded; until then the slot says so plainly rather
+     than showing an empty player. */
+  (function () {
+    var slot = document.getElementById("briefingSlot");
+    if (!slot) return;
+    function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    function quiet(msg) { slot.className = "state-msg"; slot.textContent = msg; }
+    fetch("video.json?cb=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (v) {
+        if (!v || !v.video_id || v.video_id === "DRYRUN") throw new Error("no video");
+        var mins = v.duration_seconds ? Math.round(v.duration_seconds / 60) : null;
+        var syms = (v.symbols || []).map(esc).join(" &middot; ") || "None cleared";
+        slot.className = "briefing";
+        slot.innerHTML =
+          '<div class="briefing-player"><iframe src="' + esc(v.embed) +
+          '" title="' + esc(v.title) + '" loading="lazy" allowfullscreen ' +
+          'allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"></iframe></div>' +
+          '<div class="briefing-side">' +
+            "<h3>Today&rsquo;s briefing</h3>" +
+            '<div class="briefing-meta">' +
+              "<div><span>Run date</span><b>" + esc(v.run_date || "&mdash;") + "</b></div>" +
+              "<div><span>Names covered</span><b>" + syms + "</b></div>" +
+              (mins ? "<div><span>Runtime</span><b>" + mins + " min</b></div>" : "") +
+            "</div>" +
+            '<p class="briefing-note">The briefing walks through what put each name ' +
+            "through the screen and the levels the formula itself works from. Opinion " +
+            "and education, not investment advice, and not intended for day or " +
+            "short-term trading.</p>" +
+            '<a class="briefing-link" href="' + esc(v.url) + '" target="_blank" rel="noopener">' +
+            "Watch on YouTube &rarr;</a>" +
+          "</div>";
+      })
+      .catch(function () { quiet("Today\u2019s briefing has not been published yet."); });
+  })();
+</script>
 </body>
 </html>
