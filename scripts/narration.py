@@ -34,6 +34,17 @@ def drop_of(row: dict) -> float:
     return value or 0.0
 
 
+# What the screen calls the shape of a chart, and what the narrator says.
+# The three legacy values came from a run-to-run comparison that meant nothing;
+# they are mapped so a briefing built from an old file still says something.
+TREND_ALIASES = {"REBOUND": "UP", "FALLING": "DOWN", "STABILIZING": "SIDEWAYS"}
+TREND_WORDS = {
+    "UP": "trending up",
+    "DOWN": "still trending down",
+    "SIDEWAYS": "moving sideways",
+}
+
+
 def window_of(row: dict) -> int:
     """How many sessions that move was measured over.
 
@@ -232,6 +243,13 @@ def build(research: dict, run_date: str) -> list[dict]:
         cushion = row.get("cash_cushion_pct") or 0.0
         drop = drop_of(row)
         win = window_of(row)
+        trend_pct = row.get("trend_pct")
+        trend_win = int(row.get("trend_window_days") or 10)
+        trend_shape = TREND_WORDS.get(
+            TREND_ALIASES.get(str(row.get("trend") or "").upper(),
+                              str(row.get("trend") or "").upper()))
+        if trend_pct is None:
+            trend_shape = None
         sector = row.get("sector") or "—"
         runway = row.get("runway_years")
         dilution = row.get("dilution_pct")
@@ -251,6 +269,18 @@ def build(research: dict, run_date: str) -> list[dict]:
                 f"It qualified on price because it fell {pct(abs(drop))} over the "
                 f"last {words(win)} sessions, against a threshold of fifteen.",
                 f"{win}-day move {drop:+.1f}%  ·  threshold −15.0%"),
+            # A description of the chart, said as a description. The screen has
+            # no opinion about what the price does next and neither does this.
+            (beat(
+                f"Over a longer look, the last {words(trend_win)} sessions, the "
+                f"chart is {trend_shape}: a move of {pct(abs(trend_pct))} "
+                f"{'up' if trend_pct >= 0 else 'down'}, measured against how much "
+                "this stock moves on an ordinary day. That is what the price has "
+                "done, not a view on what it does next.",
+                f"{trend_win}-session trend: {trend_shape} ({trend_pct:+.1f}%)")
+             if trend_shape else
+             beat("There is not enough price history to describe the longer trend.",
+                  "Longer trend: no reading")),
             beat(
                 f"On cash: {money(gross)} a share of cash, less {money(liab)} a "
                 f"share of total liabilities, leaves {money(cps)} of net cash "

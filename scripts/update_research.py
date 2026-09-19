@@ -55,7 +55,15 @@ CASH_GATE = 30.0            # cash per share as % of price needed to pass
 # the cash dial down saw nothing change. Keeping the near misses costs a few
 # kilobytes and makes the cash test visible as a test.
 SNAPSHOT_FLOOR = 15.0
-MOMENTUM_MOVE = 1.0         # day-over-day % move to call REBOUND / FALLING
+# The shape of the chart, read over this many trading sessions. TREND_SMOOTH
+# sessions are averaged at each end so one loud day does not decide it.
+#
+# This replaces a "momentum" field that compared one run against the previous
+# run. When the job ran twice in a day that was a half-hour move, which is why
+# every name on the site read STABILIZING. The twenty days of closes needed to
+# answer the question properly were already being fetched and thrown away.
+TREND_WINDOW = 10
+TREND_SMOOTH = 3
 MIN_MARKET_CAP = 50_000_000
 MIN_VOLUME = 50_000
 MIN_DOLLAR_VOLUME = 250_000  # price x volume; a liquidity floor, not a price floor
@@ -233,13 +241,13 @@ def fetch_market_rows():
     return rows
 
 
-def fetch_drop_windows(symbol):
-    """Percentage move over each window in DROP_WINDOWS, from one request.
+def fetch_price_read(symbol):
+    """Everything the daily closes can say, from one request.
 
-    Returns {sessions: pct} for every window the history is long enough to
-    measure, or None if the history is unusable. Windows are counted in
+    Returns {"drops": {sessions: pct}, "trend": {...}} -- the move over each
+    window in DROP_WINDOWS, and the shape of the chart. Windows are counted in
     trading sessions, not calendar days, so a holiday week does not quietly
-    shorten the lookback.
+    shorten the lookback. None if the history is unusable.
     """
     now = time.time()
     url = NASDAQ_HISTORY.format(
@@ -257,15 +265,19 @@ def fetch_drop_windows(symbol):
     if not latest:
         return None
 
-    out = {}
+    drops = {}
     for sessions in DROP_WINDOWS:
         if len(closes) <= sessions:
             continue
         prior = closes[sessions]
         if not prior:
             continue
-        out[sessions] = round((latest - prior) / prior * 100, 1)
-    return out or None
+        drops[sessions] = round((latest - prior) / prior * 100, 1)
+
+    trend = read_trend(closes)
+    if not drops and not trend:
+        return None
+    return {"drops": drops, "trend": trend}
 
 
 def fetch_insider_buys(cik):
@@ -337,14 +349,63 @@ def fetch_insider_buys(cik):
 # Screen
 # --------------------------------------------------------------------------
 
-def resolve_momentum(return_pct):
-    if return_pct is None:
-        return "STABILIZING"          # no baseline yet -- neutral, not a guess
-    if return_pct >= MOMENTUM_MOVE:
-        return "REBOUND"
-    if return_pct <= -MOMENTUM_MOVE:
-        return "FALLING"
-    return "STABILIZING"
+def read_trend(closes):
+    """Up, down or sideways, from the shape of the last TREND_WINDOW sessions.
+
+    The middle close of the last TREND_SMOOTH sessions against the middle close
+    of the TREND_SMOOTH sessions at the far end. Middles rather than averages,
+    because an average lets one loud day carry the verdict: a stock flat for a
+    month that jumps fifteen percent this morning is a stock that jumped this
+    morning, not a stock in an uptrend.
+
+    The move between the two ends is called a trend only when it is larger than
+    what this stock moves anyway over the same span. A fixed percentage would
+    label almost every name here a trend, because many of them move five
+    percent on a quiet day. The yardstick is the median absolute daily move,
+    scaled by the square root of the distance between the two ends.
+
+    This is a description of the chart. It is not a forecast, and nothing about
+    it is an opinion on where the price goes next.
+    """
+    if len(closes) < TREND_WINDOW + 1:
+        return None
+
+    recent = sorted(closes[:TREND_SMOOTH])
+    older = sorted(closes[TREND_WINDOW - TREND_SMOOTH:TREND_WINDOW])
+    if not all(recent) or not all(older):
+        return None
+
+    head = recent[len(recent) // 2]
+    tail = older[len(older) // 2]
+    if tail <= 0:
+        return None
+    move_pct = (head - tail) / tail * 100
+
+    steps = []
+    for i in range(TREND_WINDOW):
+        prior = closes[i + 1]
+        if prior:
+            steps.append(abs(closes[i] - prior) / prior * 100)
+    if not steps:
+        return None
+    steps.sort()
+    typical = steps[len(steps) // 2]
+    span = TREND_WINDOW - TREND_SMOOTH      # sessions between the two centres
+    band = max(typical * (span ** 0.5), 1.0)  # a floor, for names that barely move
+
+    if move_pct > band:
+        label = "UP"
+    elif move_pct < -band:
+        label = "DOWN"
+    else:
+        label = "SIDEWAYS"
+
+    return {
+        "trend": label,
+        "trend_pct": round(move_pct, 1),
+        "trend_band_pct": round(band, 1),
+        "trend_window_days": TREND_WINDOW,
+    }
 
 
 COMMON_STOCK = ("common stock", "ordinary share", "ordinary shares")
@@ -475,7 +536,7 @@ def build_cash_candidates(rows, ticker_cik, cash_by_cik, shares_by_cik, liab_by_
     return candidates
 
 
-def build_record(candidate, drops, previous):
+def build_record(candidate, price_read, previous):
     price = candidate["price"]
     previous_price = previous.get("price") if previous else None
 
@@ -488,7 +549,9 @@ def build_record(candidate, drops, previous):
     # Two tests, and the file now carries names that fail either one, so the
     # verdict has to check both rather than assume the cash test was already
     # settled by the retention cut above.
-    drops = drops or {}
+    price_read = price_read or {}
+    drops = price_read.get("drops") or {}
+    trend = price_read.get("trend") or {}
     drop_pct = drops.get(DROP_WINDOW_DAYS)
     cushion = candidate["cash_cushion_pct"]
     if drop_pct is None:
@@ -516,7 +579,13 @@ def build_record(candidate, drops, previous):
         # the video all read this field, and a rename is not worth a day of
         # blank columns.
         "five_day_drop_pct": drops.get(5),
-        "trend": resolve_momentum(return_pct),
+        # The shape of the chart over TREND_WINDOW sessions: UP, DOWN or
+        # SIDEWAYS, with the move and the band it was judged against, so a
+        # reader can check the label rather than take it on trust.
+        "trend": trend.get("trend"),
+        "trend_pct": trend.get("trend_pct"),
+        "trend_band_pct": trend.get("trend_band_pct"),
+        "trend_window_days": trend.get("trend_window_days"),
         "cps": candidate["cps"],
         "cash_cushion_pct": candidate["cash_cushion_pct"],
         "sector": candidate.get("sector"),
@@ -655,9 +724,9 @@ def update_database():
     evaluated_ciks = {c["symbol"]: c.get("cik") for c in checked}
     evaluated = {}
     for i, candidate in enumerate(checked, 1):
-        drops = fetch_drop_windows(candidate["symbol"])
+        price_read = fetch_price_read(candidate["symbol"])
         evaluated[candidate["symbol"]] = build_record(
-            candidate, drops, baseline.get(candidate["symbol"])
+            candidate, price_read, baseline.get(candidate["symbol"])
         )
         if i % 25 == 0:
             print(f"  ...{i}/{len(checked)} price histories fetched")
@@ -688,6 +757,7 @@ def update_database():
         "cash_gate": CASH_GATE,
         "drop_threshold": DROP_THRESHOLD,
         "drop_window_days": DROP_WINDOW_DAYS,
+        "trend_window_days": TREND_WINDOW,
         "snapshot_floor": SNAPSHOT_FLOOR,
         "min_runway_years": MIN_RUNWAY_YEARS,
         "max_dilution_pct": MAX_DILUTION_PCT,
