@@ -123,9 +123,10 @@ Fixed in advance, so the test cannot be graded on a curve:
 
 1. **Decile spread is the headline.** Sort the universe by composite at each
    rebalance, form ten equal buckets, hold 3/6/12 months, equal weight. The
-   claim is supported only if decile 1 beats decile 10 **and** the gradient
-   across the deciles is broadly monotonic. A good top decile with a random
-   middle is noise that happened to land well.
+   claim is supported only if decile 1 beats decile 10 **and** the table as a
+   whole is ordered — Spearman ρ between decile number and decile mean of
+   −0.6 or stronger. A good top decile with a random middle is noise that
+   happened to land well. *(Amended 19 Sep 2026; see the change log.)*
 2. **Benchmark** is the equal-weighted eligible universe at the same date, not
    an index. That removes size and sector drift from the comparison.
 3. **Rebalance** monthly, first trading day.
@@ -139,7 +140,8 @@ Fixed in advance, so the test cannot be graded on a curve:
 ### What would falsify it
 
 - Decile 1 does not beat decile 10 after costs, or
-- the decile gradient is not monotone, or
+- the decile table is not ordered (ρ weaker than −0.6), or
+- decile 1's mean excess has a date-block bootstrap interval touching zero, or
 - the result depends on a single year, or
 - the result disappears in the holdout, or
 - the result disappears under the mid-case delisting assumption.
@@ -173,5 +175,27 @@ optimistic case, it is reported as not surviving.
 
 ## Changes after freezing
 
-*(none yet — any change goes here with its date and reason, and the superseded
-rule stays written above)*
+**19 Sep 2026 — the gradient test in §5.1.**
+
+*Superseded rule:* "the gradient across the deciles is broadly monotone",
+implemented as the share of adjacent decile pairs that step the right way,
+with a pass at ≥70%.
+
+*New rule:* Spearman rank correlation between decile number and decile mean,
+with a pass at **ρ ≤ −0.6**. The pairwise figure is still printed, but it no
+longer decides anything.
+
+*Reason:* adjacent deciles hold neighbouring scores and are not statistically
+distinguishable from one another, so the order of any given pair is close to a
+coin flip even when the table as a whole is clearly ordered. On a synthetic
+universe built with a **known** planted signal, the pipeline recovered a
++12.2pp decile-1-minus-decile-10 spread with a visibly descending table, and
+the pairwise measure scored it 56% — it would have failed a screen that was
+working perfectly. Spearman asks the question the claim actually makes, which
+is whether the whole ranking is ordered.
+
+*When:* made against synthetic data, **before any run against real market
+data**. No real result had been computed under either rule at the time of the
+change. The new gate is not looser: it still rejects a table where one good
+decile sits above a random middle, which is the failure mode §5.1 was written
+to catch, and that case is in the test suite.
