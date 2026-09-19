@@ -297,6 +297,16 @@
         text-align: right;
       }
 
+      .framing {
+        margin: 18px 0 0;
+        padding: 14px 16px;
+        border-left: 2px solid var(--amber);
+        background: rgba(214, 172, 112, 0.05);
+        color: var(--paper);
+        font-size: 14.5px;
+        line-height: 1.65;
+      }
+
       /* ---------- custom engine ---------- */
       .engine {
         border: 1px solid var(--rule);
@@ -690,8 +700,10 @@
             <h1>Find The Signal Inside the Selloff</h1>
             <p class="hero-lede">
               <span id="hero-universe-count">&mdash;</span> US names currently clear the daily screen's
-              <b>30.0% cash-to-price</b> gatekeeper after a 5-day drop of at least 15% —
+              <b id="hero-cash-rule">30.0% cash-to-price</b> gatekeeper after
+              <span id="hero-drop-rule">a 5-day drop of at least 15%</span> &mdash;
               the balance sheet is doing the arguing, not the narrative.
+              Clearing is a reason to look, not a reason to buy.
               Data as of <b id="hero-run-date">&mdash;</b>.
             </p>
             <div class="cta-row">
@@ -774,9 +786,9 @@
                   </select>
                 </div>
                 <div class="eng-field">
-                  <label for="engDrop">5-day drop minimum</label>
+                  <label for="engDrop" id="engDropLabel">Price drop minimum</label>
                   <select id="engDrop" name="drop">
-                    <option value="999">Any 5-day move</option>
+                    <option value="999" id="engDropAny">Any move</option>
                     <option value="-5.0">-5.0%</option>
                     <option value="-10.0">-10.0%</option>
                     <option value="-15.0" selected>-15.0%</option>
@@ -793,12 +805,12 @@
                   </select>
                 </div>
                 <div class="eng-field">
-                  <label for="engMom">Momentum filter</label>
+                  <label for="engMom">Trend filter</label>
                   <select id="engMom" name="momentum">
-                    <option value="">Any momentum</option>
-                    <option value="REBOUND">Rebounding</option>
-                    <option value="STABILIZING">Stabilizing</option>
-                    <option value="FALLING">Falling</option>
+                    <option value="">Any trend</option>
+                    <option value="UP">Trending up</option>
+                    <option value="SIDEWAYS">Sideways</option>
+                    <option value="DOWN">Trending down</option>
                   </select>
                 </div>
               </div>
@@ -843,8 +855,8 @@
                   <th scope="col" class="c">Price</th>
                   <th scope="col" class="c">Net cash / share</th>
                   <th scope="col" class="c">Cushion vs 30%</th>
-                  <th scope="col" class="c">5-day vs &minus;15%</th>
-                  <th scope="col" class="c">Momentum</th>
+                  <th scope="col" class="c" id="th-scan-drop">Price move</th>
+                  <th scope="col" class="c" id="th-trend">Trend</th>
                   <th scope="col"></th>
                 </tr>
               </thead>
@@ -853,10 +865,17 @@
               </tbody>
             </table>
           </div>
+          <p class="framing">
+            A name that clears is a name to look at, not a name to buy. It has
+            passed two arithmetic tests and nothing else &mdash; not a judgement
+            on the business, the price, or whether the fall is finished. These
+            names are looked at on a three to six month view; nothing here is
+            intended for day trading or short-term trading of any kind.
+          </p>
           <p class="scan-legend">
-            <span><svg class="thumb thumb-pass" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Cleared both gates</span>
+            <span><svg class="thumb thumb-pass" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Worth a look &mdash; cleared both tests</span>
             <span><svg class="thumb thumb-neutral" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Price history unavailable</span>
-            <span><svg class="thumb thumb-fail" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Cash held, 5-day drop did not qualify</span>
+            <span><svg class="thumb thumb-fail" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Held back &mdash; cash held, the fall was not steep enough</span>
           </p>
         </div>
       </section>
@@ -905,8 +924,27 @@
         var UNIVERSE_URL = "screen_snapshot.json";
 
         // Defaults only; the run's real thresholds arrive in _meta.criteria.
+        // The window defaults to five because that is what a file written
+        // before the window became configurable actually contains.
         var CASH_GATE = 30.0;
         var DROP_GATE = -15.0;
+        var DROP_WINDOW = 5;
+        var TREND_WINDOW = 0;   // 0 until a file says otherwise
+
+        function windowLabel() {
+          return DROP_WINDOW + "-day";
+        }
+        // drop_pct is the move the verdict was made on. Older files only have
+        // the five-day field; read it rather than showing a dash for a figure
+        // the file does contain.
+        function dropOf(r) {
+          // drop_pct present but null means the move could not be measured.
+          // Only a file old enough to lack the key entirely falls back.
+          if (r && Object.prototype.hasOwnProperty.call(r, "drop_pct")) {
+            return toNum(r.drop_pct);
+          }
+          return toNum(r.five_day_drop_pct);
+        }
 
         var state = { rows: [], scan: [], universe: [], generatedAt: null, status: "loading", scanStatus: "loading", universeStatus: "loading" }; // loading | ok | error
 
@@ -928,8 +966,10 @@
             price: toNum(r.price),
             cps: toNum(r.cps),
             cash: toNum(r.cash_cushion_pct),
-            drop: toNum(r.five_day_drop_pct),
-            mom: r.trend || "STABILIZING",            // REBOUND | STABILIZING | FALLING
+            drop: dropOf(r),
+            mom: trendOf(r),                          // UP | SIDEWAYS | DOWN | null
+            trendPct: toNum(r.trend_pct),
+            trendWindow: toNum(r.trend_window_days),
             marketCap: toNum(r.market_cap),
             dollarChange: toNum(r.dollar_change),      // real day-over-day change, or null if no baseline yet
             returnPct: toNum(r.return_pct),
@@ -950,10 +990,31 @@
         }
         window.filterUniverse = filterUniverse; // exposed for console debugging
 
+        // REBOUND / STABILIZING / FALLING came from comparing one run against
+        // the previous run, which on a day the job ran twice was a half-hour
+        // move. The old values are still mapped so a file written before this
+        // renders as something rather than nothing.
+        var TREND_ALIASES = { REBOUND: "UP", FALLING: "DOWN", STABILIZING: "SIDEWAYS" };
+
+        function trendOf(r) {
+          var t = String((r && r.trend) || "").toUpperCase();
+          t = TREND_ALIASES[t] || t;
+          return t === "UP" || t === "DOWN" || t === "SIDEWAYS" ? t : null;
+        }
+
         function formatMomentum(mom) {
-          if (mom === "REBOUND") return '<b class="up-t">&#9650; Rebounding</b>';
-          if (mom === "FALLING") return '<b class="down-t">&#9660; Falling</b>';
-          return '<b class="flat-t">&#9679; Stabilizing</b>';
+          if (mom === "UP") return '<b class="up-t">&#9650; Trending up</b>';
+          if (mom === "DOWN") return '<b class="down-t">&#9660; Trending down</b>';
+          if (mom === "SIDEWAYS") return '<b class="flat-t">&#9679; Sideways</b>';
+          return '<b class="flat-t">&mdash;</b>';
+        }
+
+        // The label alone is a claim. The figure beside it is the evidence,
+        // and it is the same figure the classifier used.
+        function trendDetail(r) {
+          if (!isNum(r.trendPct)) return "";
+          return (r.trendPct >= 0 ? "+" : "") + r.trendPct.toFixed(1) +
+            "% over " + (r.trendWindow || 10) + " sessions";
         }
 
         function formatChange(r) {
@@ -993,8 +1054,9 @@
                   "<span>Price <b>$" + price + "</b></span>" +
                   formatChange(r) +
                   "<span>Cash/share <b>$" + cps + "</b></span>" +
-                  "<span>5-day drop <b>" + drop + "%</b></span>" +
-                  "<span>Momentum " + formatMomentum(r.mom) + "</span>" +
+                  "<span>" + windowLabel() + " move <b>" + drop + "%</b></span>" +
+                  "<span>Trend " + formatMomentum(r.mom) +
+                    (trendDetail(r) ? " <b>" + trendDetail(r) + "</b>" : "") + "</span>" +
                 "</p>" +
                 thesis +
                 '<a class="chart" href="stock.html?symbol=' + encodeURIComponent(r.sym) + '">Company profile &rarr;</a>' +
@@ -1008,7 +1070,7 @@
         // pass or fail, so the rejections are visible rather than hidden.
         function thumbSvg(gate) {
           var cls = gate === "PASS" ? "thumb-pass" : (gate === "FAIL" ? "thumb-fail" : "thumb-neutral");
-          var label = gate === "PASS" ? "Pass" : (gate === "FAIL" ? "Fail" : "Neutral");
+          var label = gate === "PASS" ? "Worth a look" : (gate === "FAIL" ? "Held back" : "Not evaluated");
           return '<svg class="thumb ' + cls + '" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="' + label + '">' +
             '<path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg>';
         }
@@ -1025,11 +1087,13 @@
             '<td class="c">' + (isNum(r.cps) ? "$" + r.cps.toFixed(2) : "&mdash;") + "</td>" +
             '<td class="c"><span class="' + (cushionMet ? "scan-met" : "scan-miss") + '">' +
               (isNum(r.cushion) ? r.cushion.toFixed(1) + "%" : "&mdash;") + "</span>" +
-              '<span class="scan-sub">' + (cushionMet ? "gate met" : "below gate") + "</span></td>" +
+              '<span class="scan-sub">' + (cushionMet ? "test met" : "below floor") + "</span></td>" +
             '<td class="c"><span class="' + (dropMet ? "scan-met" : "scan-miss") + '">' +
               (isNum(r.drop) ? r.drop.toFixed(1) + "%" : "&mdash;") + "</span>" +
-              '<span class="scan-sub">' + (isNum(r.drop) ? (dropMet ? "gate met" : "not dislocated enough") : "no history") + "</span></td>" +
-            '<td class="c">' + formatMomentum(r.mom) + "</td>" +
+              '<span class="scan-sub">' + (isNum(r.drop) ? (dropMet ? "test met" : "not dislocated enough") : "no history") + "</span></td>" +
+            '<td class="c">' + formatMomentum(r.mom) +
+              (trendDetail(r) ? '<span class="scan-sub">' + trendDetail(r) + "</span>" : "") +
+              "</td>" +
             '<td class="c"><a class="scan-link" href="stock.html?symbol=' + encodeURIComponent(r.sym) + '">Charts &rarr;</a></td>' +
             "</tr>";
         }
@@ -1167,6 +1231,9 @@
             var criteria = (raw._meta && raw._meta.criteria) || {};
             if (typeof criteria.cash_gate === "number") CASH_GATE = criteria.cash_gate;
             if (typeof criteria.drop_threshold === "number") DROP_GATE = criteria.drop_threshold;
+            if (typeof criteria.drop_window_days === "number") DROP_WINDOW = criteria.drop_window_days;
+            if (typeof criteria.trend_window_days === "number") TREND_WINDOW = criteria.trend_window_days;
+            relabelForWindow();
 
             var rows = [], scan = [];
             Object.keys(raw).forEach(function (key) {
@@ -1179,8 +1246,10 @@
                 price: toNum(r.price),
                 cps: toNum(r.cps),
                 cushion: toNum(r.cash_cushion_pct),
-                drop: toNum(r.five_day_drop_pct),
-                mom: r.trend || "STABILIZING",
+                drop: dropOf(r),
+                mom: trendOf(r),
+                trendPct: toNum(r.trend_pct),
+                trendWindow: toNum(r.trend_window_days),
                 sector: r.sector || null,
                 gate: gateOf(r)
               });
@@ -1202,10 +1271,29 @@
           describeUniverse();
         }
 
+        // Every place the window is named, named from the data. The window
+        // was five days for a year because an API offered 5D and not 3D; the
+        // page should not be the reason it is hard to change again.
+        function relabelForWindow() {
+          var set = function (id, text) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = text;
+          };
+          set("th-scan-drop", windowLabel() + " vs " + DROP_GATE.toFixed(0) + "%");
+          if (TREND_WINDOW) set("th-trend", "Trend (" + TREND_WINDOW + " sessions)");
+          set("engDropLabel", windowLabel() + " drop minimum");
+          set("engDropAny", "Any " + windowLabel() + " move");
+          set("hero-cash-rule", CASH_GATE.toFixed(1) + "% cash-to-price");
+          set(
+            "hero-drop-rule",
+            "a " + windowLabel() + " drop of at least " + Math.abs(DROP_GATE).toFixed(0) + "%"
+          );
+        }
+
         // Derived from the figures rather than read from the stored field,
         // so the thumb on a row always agrees with the two numbers beside it.
         function gateOf(r) {
-          var cushion = toNum(r.cash_cushion_pct), drop = toNum(r.five_day_drop_pct);
+          var cushion = toNum(r.cash_cushion_pct), drop = dropOf(r);
           if (cushion == null || drop == null) return "UNKNOWN";
           return cushion >= CASH_GATE && drop <= DROP_GATE ? "PASS" : "FAIL";
         }
@@ -1233,13 +1321,16 @@
           var lo = withCash.reduce(function (m, r) { return Math.min(m, r.cash); }, Infinity);
           var hi = withCash.reduce(function (m, r) { return Math.max(m, r.cash); }, -Infinity);
           var moods = {};
-          state.universe.forEach(function (r) { moods[r.mom] = 1; });
+          state.universe.forEach(function (r) { if (r.mom) moods[r.mom] = 1; });
           var moodKeys = Object.keys(moods);
-          var moodNote =
-            moodKeys.length === 1 && state.universe.length > 1
-              ? " Every name is currently labelled " + formatMomentum(moodKeys[0]).replace(/<[^>]+>/g, "").replace(/^[^A-Za-z]+/, "").toLowerCase() +
-                ", so the momentum filter cannot narrow anything today."
-              : "";
+          var moodNote = "";
+          if (!moodKeys.length && state.universe.length) {
+            moodNote = " No trend reading in today\u2019s file, so the trend filter has nothing to work with.";
+          } else if (moodKeys.length === 1 && state.universe.length > 1) {
+            moodNote = " Every name reads " +
+              formatMomentum(moodKeys[0]).replace(/<[^>]+>/g, "").replace(/^[^A-Za-z]+/, "").toLowerCase() +
+              " today, so the trend filter cannot narrow anything.";
+          }
           el.textContent =
             state.universe.length + " names were evaluated in today\u2019s run, with cash cushions from " +
             lo.toFixed(1) + "% to " + hi.toFixed(1) + "%. A cash floor below " + lo.toFixed(1) +
@@ -1274,9 +1365,12 @@
             if (appliedEl) {
               appliedEl.textContent =
                 "Cash \u2265 " + p.cash.toFixed(1) + "% \u00b7 " +
-                (p.drop >= 999 ? "any 5-day move" : "5-day move \u2264 " + p.drop.toFixed(1) + "%") +
+                (p.drop >= 999 ? "any " + windowLabel() + " move" : windowLabel() + " move \u2264 " + p.drop.toFixed(1) + "%") +
                 " \u00b7 Cap \u2265 $" + p.cap + "M" +
-                (p.momentum ? " \u00b7 Momentum: " + p.momentum : "");
+                (p.momentum
+                  ? " \u00b7 Trend: " +
+                    formatMomentum(p.momentum).replace(/<[^>]+>/g, "").replace(/^[^A-Za-z]+/, "")
+                  : "");
             }
 
             resultsContainer.innerHTML = rows.length
@@ -1682,8 +1776,8 @@
   .scan-table td:nth-child(3)::before { content: "Price"; }
   .scan-table td:nth-child(4)::before { content: "Net cash / share"; }
   .scan-table td:nth-child(5)::before { content: "Cushion vs 30%"; }
-  .scan-table td:nth-child(6)::before { content: "5-day vs \2212 15%"; }
-  .scan-table td:nth-child(7)::before { content: "Momentum"; }
+  .scan-table td:nth-child(6)::before { content: "Price move"; }
+  .scan-table td:nth-child(7)::before { content: "Trend"; }
   .scan-table td .scan-sub { display: inline; margin-left: 8px; }
   .scan-table td:nth-child(2) .scan-sub { display: block; margin-left: 0; }
   .scan-table td:nth-child(8) { padding-top: 13px; }

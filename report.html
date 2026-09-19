@@ -262,6 +262,15 @@
         gap: 20px;
         margin-bottom: 24px;
       }
+      .framing {
+        margin: 18px 0 0;
+        padding: 14px 16px;
+        border-left: 2px solid var(--amber, #d6ac70);
+        background: rgba(214, 172, 112, 0.05);
+        color: var(--paper, #ada59d);
+        font-size: 14.5px;
+        line-height: 1.65;
+      }
       .criteria {
         text-align: right;
         color: var(--faint);
@@ -544,7 +553,7 @@
                 <small>Held back</small><strong class="fail" id="stat-fail">&mdash;</strong>
               </div>
               <div class="stat">
-                <small>Cash floor / 5-day floor</small
+                <small id="stat-floors-label">Cash floor / price floor</small
                 ><strong id="stat-floors">&mdash;</strong>
               </div>
             </div>
@@ -578,19 +587,27 @@
                     <th class="c">Prior session</th>
                     <th class="c">1-day change</th>
                     <th class="c">Cash cushion</th>
-                    <th class="c">5-day move</th>
+                    <th class="c" id="th-drop">Price move</th>
+                    <th class="c" id="th-trend">Trend</th>
                     <th class="c">Gatekeeper status</th>
                   </tr>
                 </thead>
                 <tbody id="screenRows">
                   <tr>
-                    <td class="catalyst" colspan="6">
+                    <td class="catalyst" colspan="7">
                       Loading today&rsquo;s snapshot&hellip;
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
+            <p class="framing">
+              A name that clears is a name to look at, not a name to buy. It has
+              passed two arithmetic tests and nothing else &mdash; not a judgement
+              on the business, the price, or whether the fall is finished. These
+              names are looked at on a three to six month view; nothing here is
+              intended for day trading or short-term trading of any kind.
+            </p>
             <p class="note">
               Cash-per-share figures reflect the most recently reported balance
               sheet.
@@ -638,7 +655,12 @@
         var rows = document.getElementById("screenRows"),
           meta = document.getElementById("screenMeta"),
           THRESHOLD = 30.0,
-          DROP_FLOOR = -15.0;
+          DROP_FLOOR = -15.0,
+          // Five, not three, because that is what a file written before the
+          // window changed actually contains. _meta.criteria overrides it the
+          // moment the screener has run once.
+          DROP_WINDOW = 5,
+          TREND_WINDOW = 10;
 
         function safe(v) {
           var e = document.createElement("span");
@@ -660,6 +682,24 @@
         function signedPct1(v) {
           return (v < 0 ? "-" : "+") + Math.abs(v).toFixed(1) + "%";
         }
+        // drop_pct is the move the verdict was made on and carries its own
+        // window. Files written before the window became configurable only
+        // have the five-day field, so fall back to it rather than showing a
+        // dash for a figure the file does contain.
+        function dropOf(r) {
+          // A file written before the window was configurable has no drop_pct
+          // key at all, and its move is the five-day figure. A newer file with
+          // drop_pct set to null means the move could not be measured -- and
+          // falling back there would print a five-day number under a three-day
+          // heading and clear a name on it.
+          if (r && Object.prototype.hasOwnProperty.call(r, "drop_pct")) {
+            return num(r.drop_pct) ? r.drop_pct : null;
+          }
+          return num(r.five_day_drop_pct) ? r.five_day_drop_pct : null;
+        }
+        function windowLabel() {
+          return DROP_WINDOW + "-day";
+        }
         function tone(v) {
           return v > 0 ? "pass" : v < 0 ? "fail" : "";
         }
@@ -675,7 +715,7 @@
         }
         function message(text) {
           rows.innerHTML =
-            '<tr><td class="catalyst" colspan="6">' + safe(text) + "</td></tr>";
+            '<tr><td class="catalyst" colspan="7">' + safe(text) + "</td></tr>";
         }
 
         function stockCell(ticker, r) {
@@ -752,7 +792,7 @@
         // Every reason below is worked out from the row's own figures.
         function gateTests(r) {
           var cash = num(r.cash_cushion_pct) ? r.cash_cushion_pct : null;
-          var drop = num(r.five_day_drop_pct) ? r.five_day_drop_pct : null;
+          var drop = dropOf(r);
           return [
             {
               known: cash !== null,
@@ -771,8 +811,8 @@
               met: drop !== null && drop <= DROP_FLOOR,
               miss:
                 drop === null
-                  ? "no five-day price history"
-                  : "5-day move " +
+                  ? "no " + windowLabel() + " price history"
+                  : windowLabel() + " move " +
                     signedPct1(drop) +
                     " is not a fall of " +
                     Math.abs(DROP_FLOOR).toFixed(1) +
@@ -789,17 +829,44 @@
           return tests[0].met && tests[1].met ? "PASS" : "FAIL";
         }
 
-        function dropCell(r) {
-          if (!num(r.five_day_drop_pct)) {
-            return '<td class="c">&mdash;<div class="sub">No 5-day history</div></td>';
+        // The shape of the chart over the run's trend window. The label is a
+        // claim; the figure under it is the evidence the classifier used, and
+        // neither is a forecast.
+        function trendCell(r) {
+          var shapes = {
+            UP: ["pass", "Trending up"],
+            DOWN: ["fail", "Trending down"],
+            SIDEWAYS: ["", "Sideways"],
+          };
+          var aliases = { REBOUND: "UP", FALLING: "DOWN", STABILIZING: "SIDEWAYS" };
+          var key = String(r.trend || "").toUpperCase();
+          key = aliases[key] || key;
+          var shape = shapes[key];
+          if (!shape) {
+            return '<td class="c">&mdash;<div class="sub">No reading</div></td>';
           }
-          var met = r.five_day_drop_pct <= DROP_FLOOR;
+          var detail = num(r.trend_pct)
+            ? signedPct1(r.trend_pct) + " over " + (r.trend_window_days || TREND_WINDOW) + " sessions"
+            : "";
+          return (
+            '<td class="c ' + shape[0] + '">' + shape[1] +
+            (detail ? '<div class="sub">' + safe(detail) + "</div>" : "") +
+            "</td>"
+          );
+        }
+
+        function dropCell(r) {
+          var drop = dropOf(r);
+          if (drop === null) {
+            return '<td class="c">&mdash;<div class="sub">No ' + windowLabel() + ' history</div></td>';
+          }
+          var met = drop <= DROP_FLOOR;
           return (
             '<td class="c">' +
             '<span class="ratio ' +
             (met ? "pass" : "fail") +
             '">' +
-            signedPct1(r.five_day_drop_pct) +
+            signedPct1(drop) +
             "</span>" +
             '<div class="sub">' +
             (met ? "at or past the floor" : "short of the floor") +
@@ -821,17 +888,21 @@
           }
           if (failed.length) {
             return (
-              '<td class="c fail">Fail<div class="sub">' +
+              '<td class="c fail">Held back<div class="sub">' +
               safe(failed.map(function (t) { return t.miss; }).join("; ")) +
               "</div></td>"
             );
           }
+          // Not "Pass". A word that reads as a verdict on the stock is a word
+          // a reader can mistake for a recommendation, and this screen does
+          // not make recommendations. It says which names have earned the
+          // next hour of someone's attention.
           return (
-            '<td class="c pass">Pass<div class="sub">Clears the ' +
+            '<td class="c pass">Worth a look<div class="sub">Clears the ' +
             THRESHOLD.toFixed(1) +
             "% cash floor and the " +
             DROP_FLOOR.toFixed(1) +
-            "% 5-day floor</div></td>"
+            "% " + windowLabel() + " floor</div></td>"
           );
         }
 
@@ -844,6 +915,17 @@
           var criteria = meta_.criteria || {};
           if (num(criteria.cash_gate)) THRESHOLD = criteria.cash_gate;
           if (num(criteria.drop_threshold)) DROP_FLOOR = criteria.drop_threshold;
+          if (num(criteria.drop_window_days)) DROP_WINDOW = criteria.drop_window_days;
+
+          if (num(criteria.trend_window_days)) TREND_WINDOW = criteria.trend_window_days;
+          var thTrend = document.getElementById("th-trend");
+          if (thTrend) thTrend.textContent = "Trend (" + TREND_WINDOW + " sessions)";
+          var thDrop = document.getElementById("th-drop");
+          if (thDrop) thDrop.textContent = windowLabel() + " move";
+          var floorsLabel = document.getElementById("stat-floors-label");
+          if (floorsLabel) {
+            floorsLabel.textContent = "Cash floor / " + windowLabel() + " floor";
+          }
 
           var today = fullDate(meta_.generated_at);
           var prior = fullDate(meta_.previous_generated_at);
@@ -859,8 +941,8 @@
           var critEl = document.getElementById("screenCriteria");
           if (critEl) {
             critEl.innerHTML =
-              "Cash / price &ge; " + safe(THRESHOLD.toFixed(1)) + "%<br />5-day move &le; " +
-              safe(DROP_FLOOR.toFixed(1)) + "%";
+              "Cash / price &ge; " + safe(THRESHOLD.toFixed(1)) + "%<br />" +
+              safe(windowLabel()) + " move &le; " + safe(DROP_FLOOR.toFixed(1)) + "%";
           }
 
           // Verdicts are derived from the figures on the page rather than
@@ -913,11 +995,12 @@
               " measured against today\u2019s two floors. " + cushionOK + " hold cash worth at least " +
               THRESHOLD.toFixed(1) + "% of the share price, and " + passCount + " of those " +
               (passCount === 1 ? "has" : "have") + " also fallen " +
-              Math.abs(DROP_FLOOR).toFixed(1) + "% or more over five days \u2014 the dislocation " +
-              "the screen is waiting for. Holding cash is common; being sold off while holding it is not.";
+              Math.abs(DROP_FLOOR).toFixed(1) + "% or more over " + DROP_WINDOW +
+              " sessions \u2014 the dislocation the screen is waiting for. Holding cash is " +
+              "common; being sold off while holding it is not.";
 
             var parts = [];
-            if (reasons.drop) parts.push(reasons.drop + " on the five-day move alone");
+            if (reasons.drop) parts.push(reasons.drop + " on the " + windowLabel() + " move alone");
             if (reasons.cash) parts.push(reasons.cash + " on cash alone");
             if (reasons.both) parts.push(reasons.both + " on both");
             if (pendingCount) parts.push(pendingCount + " still waiting on data");
@@ -929,10 +1012,16 @@
                 (num(lead[1].five_day_drop_pct) ? " after a " + signedPct1(lead[1].five_day_drop_pct) + " five-day move" : "") + "."
               : "No name cleared both floors today. That is the screen working, not failing.";
 
+            var p4 =
+              "Clearing is a reason to look, not a reason to buy. Two tests came back " +
+              "clean; nothing here says the price is right, the business is sound, or " +
+              "the fall is over. The screen finds candidates. The work after that is yours.";
+
             briefCopy.innerHTML =
               "<p>" + safe(p1) + "</p>" +
               (p2 ? "<p>" + safe(p2) + "</p>" : "") +
-              "<p>" + safe(p3) + "</p>";
+              "<p>" + safe(p3) + "</p>" +
+              '<p class="framing">' + safe(p4) + "</p>";
           }
 
           if (!entries.length) {
@@ -951,6 +1040,7 @@
                 changeCell(r) +
                 cushionCell(r) +
                 dropCell(r) +
+                trendCell(r) +
                 gateCell(r) +
                 "</tr>"
               );
@@ -1322,8 +1412,9 @@
   .results td:nth-child(2)::before { content: "Prior session"; }
   .results td:nth-child(3)::before { content: "1-day change"; }
   .results td:nth-child(4)::before { content: "Cash cushion"; }
-  .results td:nth-child(5)::before { content: "5-day move"; }
-  .results td:nth-child(6)::before { content: "Gatekeeper"; }
+  .results td:nth-child(5)::before { content: "Price move"; }
+  .results td:nth-child(6)::before { content: "Trend"; }
+  .results td:nth-child(7)::before { content: "Gatekeeper"; }
   .results td .sub { display: inline; margin-left: 8px; }
   .results td:nth-child(1) .sub { display: block; margin-left: 0; }
 
