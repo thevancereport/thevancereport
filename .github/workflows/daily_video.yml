@@ -68,35 +68,62 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install ffmpeg, Chromium and the site's typefaces
+      # The runner already ships Chrome, so do not apt-install a browser:
+      # on Ubuntu 24.04 `chromium-browser` is a snap shim that fails in CI.
+      # Only ffmpeg and the typefaces are actually needed, and a missing
+      # typeface is a cosmetic problem, not a reason to abandon the run.
+      - name: Install ffmpeg and the site's typefaces
+        id: deps
         run: |
+          set -eo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg chromium-browser fonts-ibm-plex \
-            || sudo apt-get install -y -qq ffmpeg chromium fonts-ibm-plex
-          fc-cache -f >/dev/null
+          sudo apt-get install -y -qq ffmpeg
+          sudo apt-get install -y -qq fonts-ibm-plex \
+            || echo "::warning::fonts-ibm-plex unavailable; slides fall back to DejaVu"
+          fc-cache -f >/dev/null 2>&1 || true
           pip install --quiet requests
+
+          BROWSER=""
+          for c in "$(command -v google-chrome || true)" \
+                   "$(command -v google-chrome-stable || true)" \
+                   "$(command -v chromium || true)" \
+                   "$(command -v chromium-browser || true)"; do
+            if [ -n "$c" ] && [ -x "$c" ]; then BROWSER="$c"; break; fi
+          done
+          if [ -z "$BROWSER" ]; then
+            sudo apt-get install -y -qq chromium
+            BROWSER="$(command -v chromium)"
+          fi
+          echo "using browser: $BROWSER"
+          "$BROWSER" --version || true
+          echo "browser=$BROWSER" >> "$GITHUB_OUTPUT"
 
       - name: Install piper and the narration voice
         run: |
-          set -euo pipefail
+          set -eo pipefail
           pip install --quiet piper-tts
           mkdir -p voice
           BASE=https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high
-          curl -fsSL -o voice/en_US-ryan-high.onnx      "$BASE/en_US-ryan-high.onnx"
-          curl -fsSL -o voice/en_US-ryan-high.onnx.json "$BASE/en_US-ryan-high.onnx.json"
+          curl -fsSL --retry 3 -o voice/en_US-ryan-high.onnx      "$BASE/en_US-ryan-high.onnx"
+          curl -fsSL --retry 3 -o voice/en_US-ryan-high.onnx.json "$BASE/en_US-ryan-high.onnx.json"
           ls -la voice
+          # A truncated model produces silence rather than an error, so check.
+          test "$(stat -c%s voice/en_US-ryan-high.onnx)" -gt 10000000
 
       - name: Build the video
         env:
           PIPER_VOICE: voice/en_US-ryan-high.onnx
-          CHROMIUM_PATH: /usr/bin/chromium-browser
+          CHROMIUM_PATH: ${{ steps.deps.outputs.browser }}
         run: |
-          which chromium-browser || export CHROMIUM_PATH=/usr/bin/chromium
+          set -eo pipefail
           python3 scripts/build_video.py --out build
-          python3 -c "
-          import json; m=json.load(open('build/meta.json'))
-          assert m['narrated'], 'built without narration - refusing to publish'
-          print(m)"
+          python3 - <<'PY'
+          import json
+          m = json.load(open("build/meta.json"))
+          print(m)
+          assert m["narrated"], "built without narration - refusing to publish"
+          assert m["duration_seconds"] > 30, "suspiciously short build"
+          PY
 
       - uses: actions/upload-artifact@v4
         with:
@@ -107,15 +134,28 @@ jobs:
             build/description.txt
           retention-days: 14
 
+      # Not-yet-configured and broken are different states and should look
+      # different. With no secrets at all the run stays green and says so --
+      # the video is still attached above. With secrets present, a failed
+      # upload fails the run.
       - name: Upload to YouTube
+        id: publish
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           YT_PRIVACY: ${{ inputs.privacy || vars.YT_PRIVACY || 'private' }}
-        run: python3 scripts/upload_youtube.py --build build --out video.json
+        run: |
+          if [ -z "${YT_REFRESH_TOKEN}" ]; then
+            echo "::warning::No YouTube credentials configured - built the video but did not publish it. Download it from this run's artifacts; see VIDEO_SETUP.md."
+            echo "published=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python3 scripts/upload_youtube.py --build build --out video.json
+          echo "published=yes" >> "$GITHUB_OUTPUT"
 
       - name: Commit video.json
+        if: steps.publish.outputs.published == 'yes'
         run: |
           set -euo pipefail
           git config user.name  "github-actions[bot]"
