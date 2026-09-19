@@ -1294,8 +1294,8 @@
       <div class="wrap disc-wrap">
         <div class="disc-text">
           <span class="disc-badge">Notice</span>
-          Educational research only — not investment advice. The Vance Report is not a registered investment adviser or broker-dealer.<br>
-          Screened securities are high-risk, volatile, and may involve total loss of principal. Data may be delayed or inaccurate — verify before relying on it.
+          Educational research only — not investment advice. The Vance Report is not a registered investment adviser or broker-dealer.<span class="disc-more"><br>
+          Screened securities are high-risk, volatile, and may involve total loss of principal. Data may be delayed or inaccurate — verify before relying on it.</span>
         </div>
         <div class="disc-actions">
           <a class="disc-link" href="disclaimer.html">Read full disclaimer &rarr;</a>
@@ -1421,5 +1421,227 @@
         });
       });
     </script>
-  </body>
+  
+<style id="vr-mobile">
+/* ============================================================
+   MOBILE PASS
+
+   Every rule lives inside a max-width query, so nothing here
+   changes the desktop layout. Loaded last on each page so it
+   wins on source order rather than through !important.
+
+   Breakpoints
+     860px  two-column layouts fold to one
+     640px  phone: spacing, type, tables as cards, notice bar
+     359px  the narrowest phones still in use
+   ============================================================ */
+
+/* ---------- 860px: fold the two-column layouts ---------- */
+@media (max-width: 860px) {
+  .wrap { padding-left: 22px; padding-right: 22px; }
+  .hero-grid, .mast-grid, .brief, .head-grid, .research-grid { grid-template-columns: 1fr !important; }
+  .hero-grid { gap: 42px; }
+  .eng-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metrics-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
+
+/* ============================================================
+   640px and below: the phone pass
+   ============================================================ */
+@media (max-width: 640px) {
+
+  /* ---- gutters and vertical rhythm (desktop spacing halved) ---- */
+  .wrap { padding-left: 18px; padding-right: 18px; }
+  .container, .header { padding-left: 0; padding-right: 0; }
+  .hero { padding: 44px 0 38px; }
+  section.block { padding: 44px 0; }
+  footer { padding: 34px 0 44px; }
+  .brief { padding: 30px 0 20px; }
+
+  /* ---- masthead ---- */
+  .ticker-in { height: 46px; gap: 12px !important; justify-content: space-between !important; }
+  .ticker-in > * { min-width: 0; }
+  .blog-link, .home, .mark { font-size: 12.5px; letter-spacing: 0.1em; }
+  .tick-stat, .tick-stat .live { white-space: nowrap; font-size: 11.5px; }
+  header.top .wrap { gap: 12px; }
+  .brand { font-size: 14px; white-space: nowrap; }
+  .back { font-size: 11.5px; letter-spacing: 0.08em; white-space: nowrap; text-align: right; }
+
+  /* ---- headlines fill the column instead of breaking one word per line ---- */
+  .hero h1 { font-size: clamp(36px, 11vw, 46px); line-height: 1.02; }
+  h1 { font-size: clamp(38px, 11vw, 54px) !important; line-height: 1; }
+  .sec-head h2, .result-head h2, .testi-head h2 { font-size: 23px; line-height: 1.12; }
+  section.clause h2 { font-size: 20px; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.22em; margin-bottom: 18px; }
+  .hero-lede, .dek, .subhead { font-size: 15.5px; margin-top: 20px; }
+
+  /* ---- section heads stop competing for one line ---- */
+  .sec-head, .result-head, .testi-head, .closing-in,
+  .criterion-head, .endmark, .foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .sec-head { margin-bottom: 22px; }
+  .sec-meta { font-size: 12.5px; text-align: left; }
+
+  /* ---- actions: full width, thumb-sized ---- */
+  .cta-row { flex-direction: column; align-items: stretch; gap: 14px; }
+  .btn-cta, .btn-run, .submit {
+    width: 100%;
+    justify-content: center;
+    padding: 16px 18px;
+    box-shadow: 3px 3px 0 0 var(--amber-deep);
+  }
+  .report-link { display: inline-block; padding: 12px 0 8px; }
+
+  /* ---- screen engine ---- */
+  .eng-grid { grid-template-columns: 1fr; gap: 14px; }
+  .console { padding: 20px 16px 18px; }
+  .engine-bar { padding: 11px 16px; gap: 10px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+
+  /* ============================================================
+     Tables become stacked cards.
+
+     A seven-column table on a 375px screen is a 994px sideways
+     scroll -- readable only by dragging, and easy to miss
+     entirely. Each row becomes a card and each figure carries
+     the column header it lost, through ::before.
+     ============================================================ */
+
+  /* --- today's scan (index) --- */
+  .scan-table, .scan-table tbody, .scan-table tr, .scan-table td { display: block; width: 100%; }
+  .scan-table { min-width: 0 !important; width: 100% !important; border-collapse: separate; border-spacing: 0; }
+  .scan-table thead { display: none; }
+  .scan-table tbody tr {
+    position: relative;
+    border: 1px solid var(--rule);
+    background: var(--ink-2);
+    padding: 16px 16px 12px;
+    margin-bottom: 14px;
+  }
+  .scan-table td { border: 0; padding: 0; text-align: left; }
+  .scan-table td:nth-child(1) { position: absolute; top: 14px; right: 14px; width: auto; }
+  .scan-table td:nth-child(2) { padding-right: 44px; margin-bottom: 4px; }
+  .scan-name { max-width: none; white-space: normal; }
+  .scan-table td:nth-child(n + 3):nth-child(-n + 7) {
+    padding: 9px 0;
+    border-top: 1px solid var(--rule-soft);
+    text-align: right;
+    overflow: hidden;
+  }
+  .scan-table td:nth-child(n + 3):nth-child(-n + 7)::before {
+    float: left;
+    color: var(--paper-faint);
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding-top: 2px;
+  }
+  .scan-table td:nth-child(3)::before { content: "Price"; }
+  .scan-table td:nth-child(4)::before { content: "Net cash / share"; }
+  .scan-table td:nth-child(5)::before { content: "Cushion vs 30%"; }
+  .scan-table td:nth-child(6)::before { content: "5-day vs \2212 15%"; }
+  .scan-table td:nth-child(7)::before { content: "Momentum"; }
+  .scan-table td .scan-sub { display: inline; margin-left: 8px; }
+  .scan-table td:nth-child(2) .scan-sub { display: block; margin-left: 0; }
+  .scan-table td:nth-child(8) { padding-top: 13px; }
+  .scan-table td:nth-child(8) .scan-link {
+    display: block;
+    text-align: center;
+    border: 1px solid var(--rule);
+    padding: 11px 0;
+  }
+  .scan-legend { gap: 10px 18px; font-size: 11.5px; }
+
+  /* --- gatekeeper results (report) --- */
+  .results .table-scroll { overflow-x: visible; border: 0; }
+  .results table, .results tbody, .results tr, .results td { display: block; width: 100%; }
+  .results table { min-width: 0 !important; border-collapse: separate; border-spacing: 0; }
+  .results thead { display: none; }
+  .results tbody tr {
+    border: 1px solid var(--rule);
+    background: var(--ink2);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .results td { border: 0; padding: 0; text-align: left !important; }
+  .results td:nth-child(1) { margin-bottom: 6px; }
+  .results td:nth-child(1) .chart { margin-top: 10px; margin-right: 18px; }
+  .results td:nth-child(n + 2) {
+    padding: 9px 0;
+    border-top: 1px solid var(--rule);
+    text-align: right !important;
+    overflow: hidden;
+  }
+  .results td:nth-child(n + 2)::before {
+    float: left;
+    color: var(--faint);
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding-top: 2px;
+  }
+  .results td:nth-child(2)::before { content: "Prior session"; }
+  .results td:nth-child(3)::before { content: "1-day change"; }
+  .results td:nth-child(4)::before { content: "Cash cushion"; }
+  .results td:nth-child(5)::before { content: "Gatekeeper"; }
+  .results td .sub { display: inline; margin-left: 8px; }
+  .results td:nth-child(1) .sub { display: block; margin-left: 0; }
+
+  /* ---- research entries and article body ---- */
+  .entry { grid-template-columns: 1fr; gap: 14px; padding: 22px 0; }
+  .metrics { gap: 6px 16px; font-size: 13.5px; }
+  .thesis { font-size: 15px; }
+  .article-grid { gap: 28px; }
+  .story-meta div { gap: 12px; }
+
+  /* ---- stock detail ---- */
+  .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .gate-row { grid-template-columns: 1fr auto; gap: 4px 12px; }
+  .gate-row .gate-mark { grid-column: 2; text-align: right; }
+  .lookup-form { flex-direction: column; align-items: stretch; gap: 10px; }
+  .lookup-form input, .lookup-form button { width: 100%; }
+
+  /* ---- review form ---- */
+  .choice-group { width: 100%; }
+  .choice-group > * { flex: 1; }
+  .submit-row { flex-direction: column; align-items: stretch; gap: 12px; }
+
+  /* ---- full disclaimer contents list ---- */
+  .toc ol { column-count: 1; }
+  .toc li { break-inside: avoid; }
+
+  /* ---- modals ---- */
+  .backdrop, .popup-backdrop { padding: 16px; align-items: start; }
+  .modal, .popup { padding: 28px 20px 24px; margin-top: 8vh; }
+
+  /* ============================================================
+     The notice bar.
+
+     At 375px the full two-sentence version stood 284px tall --
+     a third of the screen, on every page, above everything else.
+     The second sentence is hidden at this width and reached
+     through the link beside it, which is where the complete
+     disclaimer lives anyway. Nothing is hidden on desktop.
+     ============================================================ */
+  .disc-more { display: none; }
+  .disc-wrap { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 18px 12px; }
+  .disc-text { font-size: 11.5px; line-height: 1.45; }
+  .disc-badge { font-size: 10px; padding: 1px 5px; margin-right: 6px; }
+  .disc-actions { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; gap: 10px; }
+  .disc-link { font-size: 10.5px; letter-spacing: 0.06em; }
+  .disc-close { font-size: 16px; padding: 2px 4px; }
+}
+
+/* ---------- 359px and below ---------- */
+@media (max-width: 359px) {
+  .wrap { padding-left: 14px; padding-right: 14px; }
+  .metrics-grid, .stats { grid-template-columns: 1fr; }
+  .scan-table td:nth-child(n + 3):nth-child(-n + 7)::before { font-size: 11px; }
+}
+</style>
+</body>
 </html>
