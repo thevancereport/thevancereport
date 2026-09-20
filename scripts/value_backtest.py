@@ -134,6 +134,57 @@ def month_starts(first, last):
 # Statistics
 # --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
+# Conditional slices
+#
+# The headline run ranks every eligible company against every other, which
+# assumes the screen means the same thing for a $400m company as for a $40bn
+# one. That assumption is worth testing rather than believing: the value effect
+# is widely reported to be stronger in smaller companies, and if it is, a
+# single pooled number is an average of a real signal and no signal at all.
+#
+# This is EXPLORATORY. Slicing a result several ways and reporting the best
+# slice is how people fool themselves. Anything found here is a hypothesis for
+# a fresh pre-registration, not a finding, and the output says so.
+# --------------------------------------------------------------------------
+
+def size_bucket(cap):
+    if not isinstance(cap, (int, float)):
+        return None
+    if cap < 1_000_000_000:
+        return "300m-1bn"
+    if cap < 5_000_000_000:
+        return "1-5bn"
+    if cap < 20_000_000_000:
+        return "5-20bn"
+    return "20bn+"
+
+
+def profit_bucket(row):
+    ebit = row.get("ebit")
+    if not isinstance(ebit, (int, float)):
+        return None
+    return "profitable" if ebit > 0 else "loss-making"
+
+
+def asset_bucket(row):
+    """Asset-light or asset-heavy, by revenue per dollar of assets. Gross
+    profit over assets structurally favours the asset-light, so it is worth
+    knowing whether the whole score inherits that tilt."""
+    rev, assets = row.get("revenue"), row.get("assets")
+    if not isinstance(rev, (int, float)) or not isinstance(assets, (int, float)) or assets <= 0:
+        return None
+    return "asset-light" if rev / assets >= 0.7 else "asset-heavy"
+
+
+SLICES = {
+    "size": lambda r: size_bucket(r.get("market_cap")),
+    "profitability": profit_bucket,
+    "asset intensity": asset_bucket,
+    "sector": lambda r: r.get("sector"),
+}
+
+
 def describe(values):
     if not values:
         return None
@@ -310,6 +361,7 @@ def main():
     holdout = {d: {h: {c: {} for c in DELISTED_CASES} for h in HORIZONS}
                for d in range(1, DECILES + 1)}
     universe_sizes, unranked_counts, delisted_counts, top_names = [], [], [], []
+    slices = {}
 
     for when in dates:
         rows = []
@@ -372,6 +424,28 @@ def main():
             per_horizon[h] = outcomes
         delisted_counts.append(vanished_here / max(len(HORIZONS), 1))
 
+        # exploratory: same returns, cut by company type
+        if when < HOLDOUT_FROM:
+            live6 = per_horizon.get("6m") or []
+            if live6:
+                ok6 = [(r, v) for r, v, gone in live6 if not gone]
+                if ok6:
+                    bench6 = statistics.mean([v for _r, v in ok6])
+                    ranked6 = sorted(ok6, key=lambda rv: -rv[0]["score"])
+                    size6 = max(1, len(ranked6) // DECILES)
+                    for pos, (r, v) in enumerate(ranked6):
+                        d = min(DECILES, pos // size6 + 1)
+                        cost = COST_LARGE if (r.get("market_cap") or 0) >= LARGE_CAP else COST_SMALL
+                        for slice_name, fn in SLICES.items():
+                            try:
+                                key = fn(r)
+                            except Exception:            # noqa: BLE001
+                                key = None
+                            if not key:
+                                continue
+                            slices.setdefault(slice_name, {}).setdefault(key, {}).setdefault(
+                                d, []).append(v - bench6 - cost)
+
         target = holdout if when >= HOLDOUT_FROM else buckets
         for h, outcomes in per_horizon.items():
             if not outcomes:
@@ -395,11 +469,21 @@ def main():
                         )
 
         if scored:
+            # The ranked list itself, not just a sample. This is the thing a
+            # reader would actually be shown, so it is worth carrying out of
+            # the run rather than reconstructing it later.
             top_names.append({
                 "date": when.isoformat(),
                 "universe": len(scored),
-                "top": [{"symbol": r["symbol"], "score": r["score"],
-                         "pillars": r["pillars"]} for r in scored[:5]],
+                "top": [{"symbol": r["symbol"], "name": r.get("name"),
+                         "sector": r.get("sector"), "score": r["score"],
+                         "pillars": r["pillars"],
+                         "price": round(r["price"], 2),
+                         "market_cap_m": round((r.get("market_cap") or 0) / 1e6),
+                         "ev_ebit": (lambda v: round(v, 1) if isinstance(v, float) else None)(r["metrics"].get("ev_ebit")),
+                         "ev_fcf": (lambda v: round(v, 1) if isinstance(v, float) else None)(r["metrics"].get("ev_fcf")),
+                         "net_issuance_pct": (lambda v: round(v * 100, 1) if isinstance(v, float) else None)(r["metrics"].get("net_issuance")),
+                         } for r in scored[:25]],
             })
 
     if not universe_sizes:
@@ -435,6 +519,7 @@ def main():
         "headline_case": HEADLINE_CASE,
         "main": {}, "holdout": {}, "verdict": {},
         "sample_top_names": top_names[-12:],
+        "scan_note": "top 25 of the ranked list at each of the last rebalances",
     }
 
     def summarise(store, label):
@@ -476,6 +561,54 @@ def main():
     if any(holdout[1][h][HEADLINE_CASE] for h in HORIZONS):
         result["holdout"] = summarise(holdout, f"holdout {HOLDOUT_FROM} to {LAST_DATE}")
 
+    # ----------------------------------------------------------------------
+    # Exploratory: does the screen mean the same thing for every company?
+    # ----------------------------------------------------------------------
+    if slices:
+        log("\n" + "=" * 72)
+        log("EXPLORATORY -- 6 month excess by company type (main period only)")
+        log("Hypothesis generation, not a finding. Reported because slicing a")
+        log("result several ways and keeping the best slice is how people fool")
+        log("themselves; acting on any of this needs its own pre-registration.")
+        out = {}
+        for slice_name, groups in slices.items():
+            log(f"\n  {slice_name}")
+            out[slice_name] = {}
+            for key, by_decile in sorted(groups.items()):
+                n = sum(len(v) for v in by_decile.values())
+                if n < 500:
+                    log(f"    {key:<16} only {n:,} observations, not reported")
+                    continue
+                means = []
+                for d in range(1, DECILES + 1):
+                    vals = by_decile.get(d) or []
+                    means.append(statistics.mean(vals) if vals else 0.0)
+                spread = means[0] - means[-1]
+                rho = gradient_rho(means)
+                d1 = describe(by_decile.get(1) or [])
+                if d1 is None:
+                    # Enough observations overall, none of them in the top
+                    # decile -- a bucket that only ever appears low down the
+                    # ranking. Reporting a spread off an empty cell would be
+                    # inventing a number.
+                    log(f"    {key:<16} n={n:,} but nothing in decile 1, not reported")
+                    continue
+                out[slice_name][key] = {
+                    "n": n, "decile_means": [round(m, 2) for m in means],
+                    "spread_d1_minus_d10": round(spread, 2),
+                    "gradient_rho": rho, "decile_1": d1,
+                }
+                log(f"    {key:<16} n={n:>7,}  d1-d10 {spread:+7.2f}pp  rho {rho:+.3f}"
+                    f"  d1 median {d1['median']:+6.2f}  hit {d1['hit_rate_pct']:.0f}%")
+        result["exploratory"] = {
+            "note": "Post-hoc slices of the main period at six months. Hypothesis "
+                    "generation only: these cuts were chosen after the headline "
+                    "result was known, so their apparent significance is not "
+                    "honest significance. Any rule change arising from them needs "
+                    "a fresh pre-registration and an untouched holdout.",
+            "slices": out,
+        }
+
     # The falsification rules from section 5, applied mechanically so the run
     # cannot talk itself into a pass.
     log("\n" + "=" * 72)
@@ -510,7 +643,81 @@ def main():
     with open(OUT_FILE, "w") as fh:
         json.dump(result, fh, indent=2)
     log(f"\nWritten to {OUT_FILE}.")
+    write_summary(result)
     return 0
+
+
+def write_summary(result):
+    """Put the result on the run page itself, not only in the log.
+
+    A forty-minute run that ends with its answer buried in a log the browser
+    loads thirty lines at a time is a run you have to do again to read. The
+    step summary renders straight into the run page, so the numbers survive
+    the run without anyone having to download anything.
+    """
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not path:
+        return
+    L = []
+    w = L.append
+    w(f"## Value screen backtest\n")
+    w(f"{result['rebalances']} rebalances, {result['window'][0]} to {result['window'][1]}, "
+      f"median universe {result['median_universe']:,}. Holdout from {result['holdout_from']}.\n")
+    irr = result["irreducible"]
+    w(f"Filers in window {irr['filers_in_window']:,}; still listed today "
+      f"{irr['still_listed']:,} ({irr['pct_still_listed']}%).\n")
+
+    w("### Headline: excess vs the equal-weighted universe, after costs\n")
+    w("| horizon | d1-d10 | rho | d1 mean | d1 median | d1 hit | d1 95% CI | holdout d1-d10 | verdict |")
+    w("|---|---|---|---|---|---|---|---|---|")
+    for h in HORIZONS:
+        m = result["main"].get(h, {}).get(HEADLINE_CASE)
+        if not m:
+            continue
+        ho = (result["holdout"].get(h, {}) or {}).get(HEADLINE_CASE)
+        ci = m["decile_1_ci"]
+        d1 = m["decile_1"] or {}
+        cells = [
+            h,
+            f"{m['spread_d1_minus_d10']:+.2f}pp",
+            f"{m['gradient_rho']:+.3f}",
+            f"{d1['mean']:+.2f}" if d1 else "--",
+            f"{d1['median']:+.2f}" if d1 else "--",
+            f"{d1['hit_rate_pct']:.0f}%" if d1 else "--",
+            f"[{ci[0]:+.2f}, {ci[1]:+.2f}]" if ci else "--",
+            f"{ho['spread_d1_minus_d10']:+.2f}pp" if ho else "--",
+            "SUPPORTED" if result["verdict"].get(h, {}).get("passes") else "not supported",
+        ]
+        w("| " + " | ".join(cells) + " |")
+    w("")
+
+    exp = result.get("exploratory")
+    if exp:
+        w("### Exploratory: six-month excess by company type\n")
+        w("_Post-hoc slices chosen after the headline was known. Hypothesis "
+          "generation, not a finding._\n")
+        for slice_name, groups in exp["slices"].items():
+            if not groups:
+                continue
+            w(f"**{slice_name}**\n")
+            w("| bucket | n | d1-d10 | rho | d1 median | d1 hit |")
+            w("|---|---|---|---|---|---|")
+            for key, g in groups.items():
+                d1 = g["decile_1"] or {}
+                w(f"| {key} | {g['n']:,} | {g['spread_d1_minus_d10']:+.2f}pp | "
+                  f"{g['gradient_rho']:+.3f} | {d1.get('median', 0):+.2f} | "
+                  f"{d1.get('hit_rate_pct', 0):.0f}% |")
+            w("")
+
+    w("<details><summary>Full result JSON</summary>\n")
+    w("```json")
+    w(json.dumps(result, separators=(",", ":")))
+    w("```\n</details>")
+    try:
+        with open(path, "a") as fh:
+            fh.write("\n".join(L) + "\n")
+    except OSError as exc:                                  # noqa: BLE001
+        log(f"Could not write the step summary: {exc}")
 
 
 if __name__ == "__main__":
