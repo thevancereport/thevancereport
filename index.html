@@ -330,8 +330,17 @@
       .console { padding: 26px 20px 22px; border-bottom: 1px solid var(--rule); }
       .eng-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        /* Six controls. Three columns makes two full rows; four left the
+           market-cap control orphaned on a row of its own.
+
+           align-items: end is what actually straightens the console. The
+           labels are different lengths, so one wrapping to a second line
+           used to push its own select down while every other select stayed
+           put. Aligning on the bottom edge means the selects sit on one
+           line whatever the labels above them do. */
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 20px 22px;
+        align-items: end;
       }
       .eng-field label {
         font-size: 16.5px;
@@ -734,7 +743,10 @@
         margin-top: 2px;
       }
       #engResults .table-scroll { margin-top: 14px; }
-      .eng-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); gap: 16px; }
+      /* A second .eng-grid rule used to live on this line. It came later in the
+       sheet, so it won, and auto-fit at 178px laid the console out five across
+       with one control stranded underneath -- which is what made it look
+       untidy. The rule further up is the only one now. */
     </style>
   </head>
   <body>
@@ -1012,6 +1024,18 @@
           });
         }
         function isNum(v) { return typeof v === "number" && isFinite(v); }
+
+        // The file carries the date as 2026-09-20. Everything the reader
+        // sees says 09-20-2026.
+        //
+        // Split rather than new Date(iso): "2026-09-20" is parsed as
+        // midnight UTC, so west of Greenwich toLocaleDateString hands back
+        // the nineteenth. A date the screen never claimed, on every page,
+        // for every reader in the Americas.
+        function usDate(iso) {
+          var p = String(iso || "").split("-");
+          return p.length === 3 ? p[1] + "-" + p[2] + "-" + p[0] : (iso || "—");
+        }
         function money(v) {
           if (!isNum(v)) return "--";
           if (v >= 1e9) return "$" + (v / 1e9).toFixed(1) + "bn";
@@ -1138,8 +1162,8 @@
           var m = state.meta || {};
           var n = state.rows.length;
           put("hero-universe-count", n ? n.toLocaleString() : "—");
-          put("hero-run-date", m.as_of || "—");
-          put("summary-card-date", m.as_of || "—");
+          put("hero-run-date", m.as_of ? usDate(m.as_of) : "—");
+          put("summary-card-date", m.as_of ? usDate(m.as_of) : "—");
           put("summary-qualified-count", n ? n.toLocaleString() : "—");
           var topDecile = state.rows.filter(function (r) { return r.decile === 1; }).length;
           put("summary-avg-cushion", n ? topDecile.toLocaleString() : "—");
@@ -1147,7 +1171,7 @@
           var live = el("liveIndicator"), label = el("liveLabel");
           if (label) {
             label.textContent =
-              state.status === "ok" ? "Screen of " + (m.as_of || "") :
+              state.status === "ok" ? "Screen of " + usDate(m.as_of) :
               state.status === "error" ? "Data unavailable" : "Loading…";
           }
           if (live) live.classList.toggle("is-stale", state.status !== "ok");
@@ -1262,7 +1286,7 @@
             if (uni) {
               uni.textContent =
                 state.rows.length.toLocaleString() + " companies ranked as of " +
-                (m.as_of || "") + ", " + sectors().length + " sectors. " +
+                usDate(m.as_of) + ", " + sectors().length + " sectors. " +
                 (m.unranked ? m.unranked.toLocaleString() + " more were evaluated but could not be " +
                   "scored for want of data. " : "") +
                 "Banks, insurers and REITs are not ranked at all: enterprise-value measures do " +

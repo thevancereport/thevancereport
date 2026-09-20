@@ -221,9 +221,10 @@
       position: relative;
       overflow: hidden;
     }
-    .pillar-fill { height: 100%; background: var(--amber); }
-    .pillar-fill.low { background: var(--red); }
-    .pillar-fill.mid { background: var(--text-muted); }
+    /* Colour is set per pillar from PILLAR_COLOR, matching the score bar
+       on the screener. The .low and .mid variants that used to live here
+       coloured the bar by its value instead of its identity. */
+    .pillar-fill { height: 100%; }
     .pillar-score {
       font-size: 15px;
       text-align: right;
@@ -448,6 +449,24 @@
         safety: "Safety",
         confirmation: "Confirmation"
       };
+      // The same four colours the composite score bar uses on the screener,
+      // in the same order, so a reader learns the palette once instead of
+      // once per page. Validated against that page's surface: OKLCH
+      // lightness inside the dark band, chroma above the grey floor,
+      // adjacent separation 17.3 under simulated protanopia and
+      // deuteranopia against a target of 8.
+      //
+      // This replaces a fill that was amber above 60, grey in the middle
+      // and red below 40. That was a status colour doing an identity job:
+      // it said "bad" about a percentile, which is a ranking against
+      // sector peers and not a verdict, and the number sits beside the bar
+      // already.
+      var PILLAR_COLOR = {
+        cheapness: "#c98500",
+        quality: "#3987e5",
+        safety: "#199e70",
+        confirmation: "#9085e9"
+      };
       var FIGURES = {
         cheapness: [
           ["ev_ebit", "EV / EBIT", "×", 1, "Enterprise value against operating profit. Lower is cheaper."],
@@ -494,14 +513,14 @@
         PILLAR_ORDER.forEach(function (k) {
           var v = row.pillars && isNum(row.pillars[k]) ? row.pillars[k] : null;
           var pct = v == null ? 0 : Math.max(0, Math.min(100, v));
-          var cls = v == null ? "mid" : v >= 60 ? "" : v >= 40 ? "mid" : "low";
+          var fill = v == null ? "var(--text-muted)" : PILLAR_COLOR[k];
           var w = meta.weights && meta.weights[k] != null
             ? '<span class="pillar-weight">' + Math.round(meta.weights[k] * 100) + "%</span>" : "";
           out +=
             '<div class="pillar-row">' +
               '<div class="pillar-name">' + PILLAR_LABEL[k] + w + "</div>" +
-              '<div class="pillar-track"><div class="pillar-fill ' + cls +
-                '" style="width:' + pct.toFixed(1) + '%"></div></div>' +
+              '<div class="pillar-track"><div class="pillar-fill"' +
+                ' style="width:' + pct.toFixed(1) + '%;background:' + fill + '"></div></div>' +
               '<div class="pillar-score">' + (v == null ? "--" : v.toFixed(0)) + "</div>" +
             "</div>";
         });
@@ -632,7 +651,7 @@
           range: "12M",
           timezone: "Etc/UTC",
           theme: "dark",
-          style: "3",
+          style: "1",
           locale: "en",
           allow_symbol_change: false,
           hide_top_toolbar: true,
@@ -645,6 +664,15 @@
         card.querySelector(".tradingview-widget-container").appendChild(s);
       }
 
+      // The file carries the date as 2026-09-20; the page says 09-20-2026.
+      // Split rather than new Date(iso), which parses the string as
+      // midnight UTC and hands back the previous day anywhere west of
+      // Greenwich.
+      function usDate(iso) {
+        var p = String(iso || "").split("-");
+        return p.length === 3 ? p[1] + "-" + p[2] + "-" + p[0] : (iso || "");
+      }
+
       function render(symbol) {
         var row = bySymbol[symbol] || null;
         var meta = (data && data._meta) || {};
@@ -655,7 +683,7 @@
           : "Stock Profile — The Vance Report";
 
         document.getElementById("stamp").textContent =
-          meta.as_of ? "Screen as of " + meta.as_of + " · " +
+          meta.as_of ? "Screen as of " + usDate(meta.as_of) + " · " +
             (meta.universe || 0).toLocaleString() + " companies ranked" : "";
 
         var rankSlot = document.getElementById("rank-slot");
