@@ -1,0 +1,76 @@
+name: Pairs study
+
+# A study, not a pipeline. It writes nothing the site reads, is not on a
+# schedule, and answers one question: does cointegration-based pairs trading
+# have an edge after realistic costs?
+#
+# The rules are frozen in scripts/PAIRS_SPEC.md, committed before this could
+# produce a number. Section 0 of that file says the expected answer is no.
+
+on:
+  workflow_dispatch:
+    inputs:
+      first_date:
+        description: "First formation window (YYYY-MM-DD)"
+        default: "2016-01-01"
+      last_date:
+        description: "Last formation window (YYYY-MM-DD)"
+        default: "2025-03-01"
+      max_per_sector:
+        description: "Most liquid N names per sector (caps the pair count)"
+        default: "40"
+      entry_z:
+        description: "Entry threshold in standard deviations"
+        default: "2.0"
+      max_symbols:
+        description: "Cap the symbol count for a smoke run (0 = no cap)"
+        default: "0"
+
+permissions:
+  contents: read
+
+jobs:
+  study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install numpy and statsmodels
+        run: pip install --quiet numpy statsmodels
+
+      - name: Check the maths before spending an hour on it
+        working-directory: scripts
+        env:
+          # The offline suites write their synthetic results into the job
+          # summary otherwise, directly above the real one and in the same
+          # format. Blank means the writer sees no path and skips.
+          GITHUB_STEP_SUMMARY: ""
+        run: |
+          python test_value_core.py
+          python test_pairs_study.py
+
+      - name: Run the study
+        working-directory: scripts
+        env:
+          FIRST_DATE: ${{ inputs.first_date }}
+          LAST_DATE: ${{ inputs.last_date }}
+          MAX_PER_SECTOR: ${{ inputs.max_per_sector }}
+          ENTRY_Z: ${{ inputs.entry_z }}
+          MAX_SYMBOLS: ${{ inputs.max_symbols }}
+          OUT_FILE: ${{ github.workspace }}/pairs_study.json
+          SEC_UA: "TheVanceReport research contact@thevancereport.com"
+        run: python pairs_study.py
+
+      - name: Keep the result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pairs-study
+          path: pairs_study.json
+          if-no-files-found: warn
