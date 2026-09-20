@@ -529,16 +529,27 @@
         // Rank 8 of 234 is the top 4%, not the top 97%. The first live render
         // said "the top 97% of the screen", which reads as "worse than almost
         // everybody" for a company sitting eighth.
-        var topPct = Math.max(1, Math.ceil(row.rank / Math.max(meta.universe, 1) * 100));
+        //
+        // Past halfway "the top N%" stops being a compliment while still
+        // sounding like one. Bowman Consulting, 817th of 1,185, was described
+        // as "the top 69% of the screen" -- arithmetically true, and read as
+        // praise for a company in the bottom third. Above the median the
+        // sentence is turned around and says where the company actually sits.
+        var universe = Math.max(meta.universe, 1);
+        var topPct = Math.max(1, Math.ceil(row.rank / universe * 100));
+        var placing = topPct <= 50
+          ? "the top " + topPct + "% of the screen"
+          : "the bottom " + Math.max(1, Math.ceil((universe - row.rank + 1) / universe * 100)) +
+            "% of the screen";
         return '<div class="rank-strip">' +
           '<div class="rank-figure">' +
-            '<div class="rank-num">' + row.rank + "</div>" +
+            '<div class="rank-num">' + row.rank.toLocaleString() + "</div>" +
             '<div class="rank-of">of ' + meta.universe.toLocaleString() + "</div>" +
           "</div>" +
           '<div class="rank-read">' +
-            "<b>" + esc(row.symbol) + "</b> ranks <b>" + row.rank + "</b> of <b>" +
+            "<b>" + esc(row.symbol) + "</b> ranks <b>" + row.rank.toLocaleString() + "</b> of <b>" +
             meta.universe.toLocaleString() + "</b> eligible companies, which places it in " +
-            "<b>decile " + row.decile + "</b> — the top " + topPct + "% of the screen. " +
+            "<b>decile " + row.decile + "</b> — " + placing + ". " +
             "A high rank means the arithmetic is favourable and nothing more." +
           "</div>" +
         "</div>";
