@@ -225,6 +225,13 @@
        on the screener. The .low and .mid variants that used to live here
        coloured the bar by its value instead of its identity. */
     .pillar-fill { height: 100%; }
+    .quick-sym {
+      color: var(--amber);
+      text-decoration: none;
+      border-bottom: 1px solid currentColor;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
     .pillar-score {
       font-size: 15px;
       text-align: right;
@@ -333,9 +340,10 @@
   </style>
 </head>
 <body>
+    <!-- One menu for the whole site; see site-nav.js. -->
+    <script src="site-nav.js"></script>
 
   <div class="header">
-    <a href="index.html" class="back-btn">&larr; BACK TO SCREENER</a>
     <div class="header-title-group">
       <h1 id="ticker-title" class="header-title">-- PROFILE</h1>
       <div id="company-name" class="header-sub">Loading profile...</div>
@@ -673,9 +681,45 @@
         return p.length === 3 ? p[1] + "-" + p[2] + "-" + p[0] : (iso || "");
       }
 
+      // Arriving from the menu with no ticker is someone who wants to look a
+      // company up, not a company that failed the screen. It used to fall
+      // through to the not-ranked page and print " is not in the ranked
+      // universe" with nothing in front of it.
+      function renderLookup(meta) {
+        document.getElementById("ticker-title").textContent = "STOCK LOOKUP";
+        document.getElementById("company-name").textContent = "Any US-listed company";
+        document.getElementById("grade-slot").innerHTML = "";
+        document.title = "Stock Lookup — The Vance Report";
+        document.getElementById("stamp").textContent =
+          meta.as_of ? "Screen as of " + usDate(meta.as_of) + " · " +
+            (meta.universe || 0).toLocaleString() + " companies ranked" : "";
+        var top = (data && Array.isArray(data.ranked) ? data.ranked : []).slice(0, 5);
+        document.getElementById("rank-slot").innerHTML =
+          '<div class="card"><div class="section-title">Look up a company</div>' +
+          '<p class="notes-p">Type a ticker into the box below to see where it ranks, ' +
+          "its four pillar scores and the figures behind them." +
+          (top.length ? " Or start with today\u2019s five highest-ranked: " +
+            top.map(function (r) {
+              return '<a class="quick-sym" href="stock.html?symbol=' +
+                encodeURIComponent(r.symbol) + '">' + esc(r.symbol) + "</a>";
+            }).join(" &middot; ") + "." : "") +
+          "</p></div>";
+        document.getElementById("figures-slot").innerHTML = "";
+        chartBlock("", null);
+        document.getElementById("how-to-read").textContent = meta.how_to_read || "";
+        document.getElementById("excluded-note").textContent = meta.excluded || "";
+        var input = document.getElementById("lookupInput");
+        if (input) input.focus({ preventScroll: true });
+      }
+
       function render(symbol) {
         var row = bySymbol[symbol] || null;
         var meta = (data && data._meta) || {};
+
+        if (!symbol) {
+          renderLookup(meta);
+          return;
+        }
 
         setHeader(symbol, row);
         document.title = symbol
