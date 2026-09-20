@@ -1,0 +1,79 @@
+name: Daily value screen
+
+# Ranks the eligible universe with the rules frozen in scripts/VALUE_SPEC.md and
+# commits value_screen.json, which every page on the site reads.
+#
+# It runs the offline tests first. A broken percentile costs ten seconds to find
+# here and a day of wrong numbers on the site if it is not found at all.
+#
+# The job never commits a thin file: value_daily.py refuses to write anything if
+# fewer than 200 price histories or fewer than 50 eligible companies come back,
+# so a bad data day leaves yesterday's file in place rather than replacing it
+# with a short one.
+
+on:
+  schedule:
+    # 22:10 UTC on weekdays, well after the US close, so the last session is
+    # settled by the time the prices are read.
+    - cron: '10 22 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      as_of:
+        description: "Rank as of this date (YYYY-MM-DD, blank = today)"
+        default: ""
+      max_symbols:
+        description: "Cap the symbol count for a smoke run (0 = no cap)"
+        default: "0"
+      commit:
+        description: "true = commit value_screen.json, false = build it and stop"
+        default: "true"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: value-daily
+  cancel-in-progress: false
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check the maths before spending an hour on it
+        working-directory: scripts
+        run: |
+          python test_value_core.py
+          python test_value_data.py
+          python test_value_daily.py
+
+      - name: Rank today's universe
+        working-directory: scripts
+        env:
+          AS_OF: ${{ inputs.as_of }}
+          MAX_SYMBOLS: ${{ inputs.max_symbols || '0' }}
+          OUT_FILE: ${{ github.workspace }}/value_screen.json
+          SEC_UA: "TheVanceReport research contact@thevancereport.com"
+        run: python value_daily.py
+
+      - name: Keep a copy whatever happens
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: value-screen
+          path: value_screen.json
+          if-no-files-found: warn
+
+      - name: Commit it
+        if: ${{ inputs.commit != 'false' }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Daily value screen [skip ci]"
+          file_pattern: "value_screen.json"
