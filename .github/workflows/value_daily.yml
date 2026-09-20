@@ -75,5 +75,9 @@ jobs:
         if: ${{ inputs.commit != 'false' }}
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Daily value screen [skip ci]"
+          # No [skip ci]. Netlify honours that marker and will not build, so the
+          # new file would sit in the repository and never reach the site --
+          # which is exactly what happens to research.json on any day nobody
+          # merges anything else.
+          commit_message: "Daily value screen"
           file_pattern: "value_screen.json"
