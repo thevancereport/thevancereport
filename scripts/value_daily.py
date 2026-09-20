@@ -35,7 +35,7 @@ import value_prices as vp
 # How much filing history to read. Four quarters is the minimum the universe
 # gate asks for; six gives the year-on-year comparisons something to work with
 # and keeps the download under a couple of minutes.
-QUARTERS_BACK = int(os.environ.get("QUARTERS_BACK", "7"))
+QUARTERS_BACK = int(os.environ.get("QUARTERS_BACK", "8"))
 MAX_SYMBOLS = int(os.environ.get("MAX_SYMBOLS", "0"))
 PRICE_WORKERS = int(os.environ.get("PRICE_WORKERS", "6"))
 OUT_FILE = os.environ.get("OUT_FILE", "value_screen.json")
@@ -51,13 +51,24 @@ def log(*a):
 def recent_quarters(when, n):
     """The n most recent SEC data sets likely to exist at `when`.
 
-    The SEC publishes a quarter's file some weeks after it closes, so the
-    current quarter is never available and the one before it may not be.
-    Asking for a file that does not exist costs one failed request, which
-    load_quarter already survives, but there is no reason to ask.
+    Step back one quarter, not two. The current quarter is never published,
+    but the one before it usually is, and skipping it is not free: the
+    universe gate throws out any company whose newest filing is more than
+    MAX_FILING_AGE_DAYS old, so discarding a quarter ages every company by
+    three months and empties the screen.
+
+    The first run of this job made exactly that mistake. It read up to
+    2026q1 on 20 September 2026 and ranked 234 companies instead of the
+    thousand the backtest had led us to expect, because almost everything
+    failed the 200-day filing-age test. 2026q2 was published and sitting
+    there unread.
+
+    Asking for a quarter that does not exist yet costs one failed request,
+    which load_quarter survives and main() logs as skipped, so the caller
+    asks for one more quarter than it needs and tolerates losing the newest.
     """
     y, q = when.year, (when.month - 1) // 3 + 1
-    q -= 2                                   # step back off the unpublished edge
+    q -= 1                                   # the current quarter is never out
     while q < 1:
         y, q = y - 1, q + 4
     out = []

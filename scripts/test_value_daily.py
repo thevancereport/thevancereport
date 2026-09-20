@@ -32,11 +32,14 @@ print("\nrecent_quarters")
 # for must never be the current quarter.
 q = vdaily.recent_quarters(date(2026, 9, 19), 7)
 check("seven quarters", len(q), 7)
-check("newest is two quarters back", q[-1], "2026q1")
-check("oldest follows from that", q[0], "2024q3")
+# One quarter back, not two. Two was the bug that emptied the first live
+# run: the filing-age gate throws out anything older than 200 days, so a
+# discarded quarter ages every company by three months.
+check("newest is one quarter back", q[-1], "2026q2")
+check("oldest follows from that", q[0], "2024q4")
 check("ascending order", q, sorted(q))
 check("start of a year steps back cleanly",
-      vdaily.recent_quarters(date(2026, 1, 5), 3), ["2025q1", "2025q2", "2025q3"])
+      vdaily.recent_quarters(date(2026, 1, 5), 3), ["2025q2", "2025q3", "2025q4"])
 check("no quarter zero or five",
       all(1 <= int(x[-1]) <= 4 for x in vdaily.recent_quarters(date(2026, 4, 1), 12)), True)
 

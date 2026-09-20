@@ -150,7 +150,17 @@ _SECTOR_RANGES = [
     ((7380, 7999), "Business Services"),
     ((8000, 8099), "Healthcare Services"),
     ((8200, 8399), "Consumer Services"),
-    ((8700, 8799), "Biotech & Pharma"),
+    # 87xx is "Engineering, Accounting, Research and Management Services".
+    # Treating the whole block as Biotech & Pharma put engineering firms,
+    # accountants and management consultancies in with the drug developers --
+    # Bowman Consulting Group, an engineering services business on 8711, came
+    # second on the first live run while being scored against biotech peers.
+    # Percentiles are computed within sector, so a wrong bucket is not a
+    # cosmetic problem: it is the wrong comparison. Only 8731, commercial
+    # physical and biological research, is where development-stage drug
+    # companies actually file.
+    ((8731, 8731), "Biotech & Pharma"),
+    ((8700, 8799), "Business Services"),
     ((8800, 8999), "Business Services"),
 ]
 
