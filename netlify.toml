@@ -19,3 +19,8 @@
   for = "/screen_snapshot.json"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/value_screen.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
