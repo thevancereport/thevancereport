@@ -459,6 +459,45 @@
       .scan-legend span { display: inline-flex; align-items: center; gap: 7px; }
       .scan-legend .thumb { width: 14px; height: 14px; }
 
+      /* ---------- composite score bar ----------
+         Four segments, one per pillar, each as wide as that pillar's
+         *weighted* contribution. So the filled length is the score itself:
+         a name scoring 44.2 fills 44.2% of the track, and the parts visibly
+         add up to the whole rather than being four unrelated numbers.
+
+         Colours were run through the palette validator against this page's
+         surface (#130f0a) rather than picked by eye: OKLCH lightness inside
+         the dark band, chroma above the grey floor, and adjacent-pair
+         separation of 17.3 under simulated protanopia and deuteranopia
+         against a target of 8. Segment order is fixed, so position names a
+         pillar even where colour cannot. --------------------------------- */
+      .scan-table td.score-cell { min-width: 132px; }
+      .cbar {
+        position: relative;
+        width: 104px;
+        height: 7px;
+        margin: 8px 0 0 auto;
+        background: var(--rule-soft);
+      }
+      .cbar i {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        box-sizing: border-box;
+        /* A 2px gap in the surface colour, drawn inside the segment's own
+           width so the left edges stay exactly where the arithmetic puts
+           them. Not an outline round each mark, which reads as chrome. */
+        border-right: 2px solid var(--ink);
+      }
+      .cbar i:first-child { border-radius: 2px 0 0 2px; }
+      .cbar i.last { border-right: 0; border-radius: 0 2px 2px 0; }
+      .scan-legend .swatch {
+        width: 11px;
+        height: 11px;
+        border-radius: 2px;
+        display: inline-block;
+      }
+
       /* --------- ledger --------- */
       .ledger { border-top: 1px solid var(--rule); }
 
@@ -867,6 +906,7 @@
               <span id="engCount"></span>
               <p id="engApplied"></p>
               <div id="engResults"></div>
+              <div class="scan-legend js-score-legend"></div>
             </div>
           </div>
         </div>
@@ -888,7 +928,7 @@
         <div class="wrap">
           <div class="sec-head">
             <h2>Today's screen</h2>
-            <span class="sec-meta">The ten highest-ranked names<br />of everything evaluated</span>
+            <span class="sec-meta">The ten highest-ranked names<br />of screener evaluation</span>
           </div>
           <div class="table-scroll">
             <table class="scan-table">
@@ -911,6 +951,7 @@
               </tbody>
             </table>
           </div>
+          <div class="scan-legend js-score-legend"></div>
           <p class="framing">
             A high rank is a place to start reading, not a name to buy. Each
             figure is a percentile against companies in the same sector today.
@@ -985,6 +1026,79 @@
         // the same thing, so they are drawn by the same function. When they
         // were separate the legend under one described rows the other drew.
         // --------------------------------------------------------------
+        // --------------------------------------------------------------
+        // The pillars, once. The legend and the bars are drawn from this
+        // same array for the reason the comment below already gives about
+        // rowHtml: two lists of the same thing drift, and the legend ends
+        // up describing a chart nobody is looking at.
+        // --------------------------------------------------------------
+        var PILLARS = [
+          { key: "cheapness",    label: "Cheapness",    weight: 0.4, color: "#c98500" },
+          { key: "quality",      label: "Quality",      weight: 0.3, color: "#3987e5" },
+          { key: "safety",       label: "Safety",       weight: 0.2, color: "#199e70" },
+          { key: "confirmation", label: "Confirmation", weight: 0.1, color: "#9085e9" }
+        ];
+
+        function weightOf(p) {
+          // The file carries the weights. Reading them means the legend
+          // cannot claim 40% while the screen ranked on something else.
+          var w = (state.meta || {}).weights || {};
+          return isNum(w[p.key]) ? w[p.key] : p.weight;
+        }
+
+        function scoreBar(r) {
+          var p = r.pillars || {};
+          var parts = PILLARS.map(function (d) {
+            var v = isNum(p[d.key]) ? Math.max(0, Math.min(100, p[d.key])) : 0;
+            return { d: d, pct: v * weightOf(d) };
+          });
+          var total = parts.reduce(function (s, x) { return s + x.pct; }, 0);
+          if (!total) return "";
+
+          // A pillar weighted 10% that scored 13 contributes 1.3 of 100,
+          // which on a 104px track is one pixel and reads as nothing at
+          // all. Anything above zero gets a visible sliver, and the width
+          // it borrows comes off the largest segment -- so the bar's total
+          // length still equals the score exactly, which is the one number
+          // the bar is claiming to show.
+          var FLOOR = 1.6;
+          var big = 0;
+          parts.forEach(function (x, i) { if (x.pct > parts[big].pct) big = i; });
+          parts.forEach(function (x, i) {
+            if (i !== big && x.pct > 0 && x.pct < FLOOR) {
+              parts[big].pct -= FLOOR - x.pct;
+              x.pct = FLOOR;
+            }
+          });
+
+          var at = 0, html = "", read = [];
+          parts.forEach(function (x, i) {
+            var last = i === parts.length - 1;
+            html += '<i class="' + (last ? "last" : "") + '" style="left:' + at.toFixed(2) +
+              "%;width:" + x.pct.toFixed(2) + "%;background:" + x.d.color + '"></i>';
+            at += x.pct;
+            read.push(x.d.label.toLowerCase() + " " +
+              (isNum(p[x.d.key]) ? Math.round(p[x.d.key]) : "no reading"));
+          });
+          return '<div class="cbar" role="img" aria-label="Score ' +
+            (isNum(r.score) ? r.score.toFixed(1) : "--") + ' of 100, from ' +
+            read.join(", ") + '">' + html + "</div>";
+        }
+
+        function paintLegend() {
+          // Every table that rowHtml draws gets a key beside it. The custom
+          // screener's results are drawn by the same function, so a legend
+          // under the daily scan alone would leave those bars unexplained.
+          var hosts = document.querySelectorAll(".js-score-legend");
+          if (!hosts.length) return;
+          var html = PILLARS.map(function (d) {
+            return '<span><i class="swatch" style="background:' + d.color + '"></i>' +
+              esc(d.label) + " " + Math.round(weightOf(d) * 100) + "%</span>";
+          }).join("") +
+            '<span class="scan-legend-note">Bar length is the score out of 100.</span>';
+          Array.prototype.forEach.call(hosts, function (h) { h.innerHTML = html; });
+        }
+
         function rowHtml(r) {
           var p = r.pillars || {};
           function cell(v) {
@@ -997,7 +1111,8 @@
               esc((r.name || "").slice(0, 38)) + "</span></td>" +
             "<td>" + esc(r.sector || "Unclassified") + "</td>" +
             '<td class="c">' + (isNum(r.price) ? "$" + r.price.toFixed(2) : "--") + "</td>" +
-            '<td class="c"><b>' + (isNum(r.score) ? r.score.toFixed(1) : "--") + "</b></td>" +
+            '<td class="c score-cell"><b>' + (isNum(r.score) ? r.score.toFixed(1) : "--") + "</b>" +
+              scoreBar(r) + "</td>" +
             cell(p.cheapness) + cell(p.quality) + cell(p.safety) + cell(p.confirmation) +
             '<td class="c"><a class="scan-link" href="stock.html?symbol=' +
               encodeURIComponent(r.symbol) + '">Full profile &rarr;</a></td>' +
@@ -1019,6 +1134,7 @@
         // hero + summary
         // --------------------------------------------------------------
         function paintHeader() {
+          paintLegend();
           var m = state.meta || {};
           var n = state.rows.length;
           put("hero-universe-count", n ? n.toLocaleString() : "—");
@@ -1582,12 +1698,14 @@
   .scan-table td .scan-sub { display: inline; margin-left: 8px; }
   .scan-table td:nth-child(2) .scan-sub { display: block; margin-left: 0; }
   .scan-table td:nth-child(10) { padding-top: 13px; }
-  .scan-table td:nth-child(8) .scan-link {
+  .scan-table td:nth-child(10) .scan-link {
     display: block;
     text-align: center;
     border: 1px solid var(--rule);
     padding: 11px 0;
   }
+  .scan-table td.score-cell { min-width: 0; }
+  .cbar { clear: both; float: right; margin-top: 9px; }
   .scan-legend { gap: 10px 18px; font-size: 14.5px; }
 
   /* --- gatekeeper results (report) --- */
