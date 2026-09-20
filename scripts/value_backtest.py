@@ -395,11 +395,21 @@ def main():
                         )
 
         if scored:
+            # The ranked list itself, not just a sample. This is the thing a
+            # reader would actually be shown, so it is worth carrying out of
+            # the run rather than reconstructing it later.
             top_names.append({
                 "date": when.isoformat(),
                 "universe": len(scored),
-                "top": [{"symbol": r["symbol"], "score": r["score"],
-                         "pillars": r["pillars"]} for r in scored[:5]],
+                "top": [{"symbol": r["symbol"], "name": r.get("name"),
+                         "sector": r.get("sector"), "score": r["score"],
+                         "pillars": r["pillars"],
+                         "price": round(r["price"], 2),
+                         "market_cap_m": round((r.get("market_cap") or 0) / 1e6),
+                         "ev_ebit": (lambda v: round(v, 1) if isinstance(v, float) else None)(r["metrics"].get("ev_ebit")),
+                         "ev_fcf": (lambda v: round(v, 1) if isinstance(v, float) else None)(r["metrics"].get("ev_fcf")),
+                         "net_issuance_pct": (lambda v: round(v * 100, 1) if isinstance(v, float) else None)(r["metrics"].get("net_issuance")),
+                         } for r in scored[:25]],
             })
 
     if not universe_sizes:
@@ -435,6 +445,7 @@ def main():
         "headline_case": HEADLINE_CASE,
         "main": {}, "holdout": {}, "verdict": {},
         "sample_top_names": top_names[-12:],
+        "scan_note": "top 25 of the ranked list at each of the last rebalances",
     }
 
     def summarise(store, label):
