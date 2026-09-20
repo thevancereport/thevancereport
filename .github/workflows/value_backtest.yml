@@ -43,6 +43,13 @@ jobs:
 
       - name: Check the maths before spending an hour on it
         working-directory: scripts
+        env:
+          # test_end_to_end.py runs a full synthetic backtest, and the summary
+          # writer fires inside it. Left alone it prints 54 rebalances over an
+          # invented 240-company universe into the job summary, directly above
+          # the real result, where it reads exactly like a real result. Blank
+          # here means the writer sees no path and skips.
+          GITHUB_STEP_SUMMARY: ""
         run: |
           python test_value_core.py
           python test_value_data.py
