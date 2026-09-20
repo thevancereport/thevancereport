@@ -526,7 +526,10 @@
       }
 
       function rankBlock(row, meta) {
-        var pctile = Math.round((1 - (row.rank - 1) / Math.max(meta.universe, 1)) * 100);
+        // Rank 8 of 234 is the top 4%, not the top 97%. The first live render
+        // said "the top 97% of the screen", which reads as "worse than almost
+        // everybody" for a company sitting eighth.
+        var topPct = Math.max(1, Math.ceil(row.rank / Math.max(meta.universe, 1) * 100));
         return '<div class="rank-strip">' +
           '<div class="rank-figure">' +
             '<div class="rank-num">' + row.rank + "</div>" +
@@ -535,7 +538,7 @@
           '<div class="rank-read">' +
             "<b>" + esc(row.symbol) + "</b> ranks <b>" + row.rank + "</b> of <b>" +
             meta.universe.toLocaleString() + "</b> eligible companies, which places it in " +
-            "<b>decile " + row.decile + "</b> — the top " + pctile + "% of the screen. " +
+            "<b>decile " + row.decile + "</b> — the top " + topPct + "% of the screen. " +
             "A high rank means the arithmetic is favourable and nothing more." +
           "</div>" +
         "</div>";
