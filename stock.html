@@ -105,6 +105,22 @@
       margin-bottom: 24px;
     }
 
+    /* The chart is rebuilt by render() on every symbol change, so it can
+       never be showing one company while the rest of the page shows
+       another -- which is exactly what the old embed did. */
+    .chart-card { padding: 0; overflow: hidden; }
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .chart-note { font-size: 13px; color: var(--muted); }
+    .chart-frame { height: 380px; }
+    @media (max-width: 640px) { .chart-frame { height: 300px; } }
+
     /* Two-Column Research Layout */
     .research-grid {
       display: grid;
@@ -336,6 +352,8 @@
          never re-read anything. -->
 
     <div id="rank-slot"></div>
+
+    <div id="chart-slot"></div>
 
     <div id="figures-slot"></div>
 
@@ -575,6 +593,58 @@
         "</div>";
       }
 
+      // ----------------------------------------------------------------
+      // Price chart
+      //
+      // The embed this replaces carried allow_symbol_change: true, so a
+      // reader could change the symbol inside the chart and end up with
+      // one company's chart beside another company's figures. It is off
+      // here, and the widget is torn down and rebuilt from render() like
+      // every other part of the page, so there is no path by which the
+      // two can disagree.
+      //
+      // Only drawn for a symbol that is in the ranked universe. For
+      // anything else the page's job is to explain why there is no score,
+      // and a chart of an unrecognised ticker is not an explanation.
+      // ----------------------------------------------------------------
+      function chartBlock(symbol, row) {
+        var host = document.getElementById("chart-slot");
+        if (!host) return;
+        host.innerHTML = "";
+        if (!row) return;
+
+        var card = document.createElement("div");
+        card.className = "card chart-card";
+        card.innerHTML =
+          '<div class="chart-head"><div class="section-title" style="margin:0">Price</div>' +
+          '<div class="chart-note">Chart by TradingView. Price is context, not part of the score.</div></div>' +
+          '<div class="chart-frame"><div class="tradingview-widget-container" style="height:100%">' +
+          '<div class="tradingview-widget-container__widget" style="height:100%"></div></div></div>';
+        host.appendChild(card);
+
+        var s = document.createElement("script");
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+        s.text = JSON.stringify({
+          symbol: symbol,
+          interval: "D",
+          range: "12M",
+          timezone: "Etc/UTC",
+          theme: "dark",
+          style: "3",
+          locale: "en",
+          allow_symbol_change: false,
+          hide_top_toolbar: true,
+          hide_side_toolbar: true,
+          hide_volume: false,
+          save_image: false,
+          withdateranges: false,
+          autosize: true
+        });
+        card.querySelector(".tradingview-widget-container").appendChild(s);
+      }
+
       function render(symbol) {
         var row = bySymbol[symbol] || null;
         var meta = (data && data._meta) || {};
@@ -598,6 +668,8 @@
           rankSlot.innerHTML = notRankedBlock(symbol, meta);
           figSlot.innerHTML = "";
         }
+
+        chartBlock(symbol, row);
 
         document.getElementById("how-to-read").textContent = meta.how_to_read || "";
         document.getElementById("excluded-note").textContent = meta.excluded || "";
