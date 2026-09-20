@@ -672,12 +672,16 @@
         function el(id) { return document.getElementById(id); }
         function put(id, t) { var e = el(id); if (e) e.textContent = t; }
         function score(v) { return isNum(v) ? String(Math.round(v)) : "--"; }
-        function longDate(iso) {
-          if (!iso) return "—";
-          var d = new Date(iso + "T00:00:00Z");
-          if (isNaN(d)) return iso;
-          return d.toLocaleDateString("en-US",
-            { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+        // Was "Sunday, September 20, 2026" here while the other two pages
+        // said 2026-09-20 -- three pages, two formats, neither the one we
+        // wanted. All of them now say 09-20-2026.
+        //
+        // Split rather than new Date(iso): parsing "2026-09-20" gives
+        // midnight UTC, so west of Greenwich the formatter hands back the
+        // nineteenth.
+        function usDate(iso) {
+          var p = String(iso || "").split("-");
+          return p.length === 3 ? p[1] + "-" + p[2] + "-" + p[0] : (iso || "—");
         }
 
         function rowsHtml(rows) {
@@ -744,7 +748,7 @@
         }
 
         function paint(meta, rows, ok) {
-          put("issue-date", longDate(meta.as_of));
+          put("issue-date", usDate(meta.as_of));
           put("issue-status", ok ? "Published" : "Unavailable");
           var st = el("issue-status");
           if (st) st.className = ok ? "pass" : "fail";
