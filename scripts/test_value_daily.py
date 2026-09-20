@@ -58,8 +58,28 @@ while d <= date(2026, 9, 1):
     d += timedelta(days=1)
 
 rng = random.Random(9)
-COMPANIES = [{"cik": 2000 + k, "sym": f"Y{k:03d}", "good": rng.random(),
-              "sic": rng.choice([2836, 7372, 3674, 5651, 2810])} for k in range(300)]
+
+# 1,100 companies across thirteen sectors, because the production sanity
+# checks refuse to publish a universe under 300 names or one covering fewer
+# than eight sectors -- and a fixture that cannot satisfy the real thresholds
+# is a fixture that stops testing them. The first version of this file had
+# 300 companies in 5 sectors and failed both, which is the check working.
+_SICS = [2836,   # Biotech & Pharma
+         7372,   # Technology
+         3674,   # Technology
+         5651,   # Retail
+         2810,   # Chemicals
+         1311,   # Energy
+         3312,   # Industrials
+         2011,   # Food & Beverage
+         4911,   # Utilities
+         1531,   # Construction
+         5122,   # Wholesale
+         3841,   # Medical Devices
+         8711,   # Business Services
+         4213]   # Transport
+COMPANIES = [{"cik": 2000 + k, "sym": f"Y{k:04d}", "good": rng.random(),
+              "sic": _SICS[k % len(_SICS)]} for k in range(1100)]
 
 
 def fake_prices(symbol, start, end, order=None):
@@ -133,7 +153,7 @@ check("the file says a rank is not a recommendation",
       "not a recommendation" in meta["how_to_read"], True)
 check("and says why banks are missing", "REIT" in meta["excluded"], True)
 
-check("something got ranked", len(ranked) > 200, True)
+check("something got ranked", len(ranked) > 900, True)
 check("ranks start at one", ranked[0]["rank"], 1)
 check("ranks are contiguous", [r["rank"] for r in ranked] == list(range(1, len(ranked) + 1)), True)
 check("sorted by score, best first",
@@ -160,6 +180,76 @@ size = os.path.getsize("/tmp/value_screen_test.json")
 per = size / max(len(ranked), 1)
 print(f"\n  {len(ranked)} names, {size/1024:.0f} KB, {per:.0f} bytes each")
 check("each row stays compact", per < 700, True)
+
+
+print("\nthe sanity checks actually fire")
+# A check that never fires is a check nobody has tested. Each case below
+# breaks the payload in one specific way and asserts the right FAIL comes
+# back -- including the two real bugs that reached the live site.
+import copy                                              # noqa: E402
+
+BASE = json.load(open("/tmp/value_screen_test.json"))
+QS = vdaily.recent_quarters(date(2026, 9, 20), 8)
+
+
+_UNSET = object()
+
+
+def fires(payload, quarters=None, loaded=_UNSET, level="FAIL"):
+    # `loaded or QS` would turn the empty list -- the case that matters --
+    # back into a full one, so the no-data test could never fail. Sentinel,
+    # not falsiness.
+    out = vdaily.sanity_check(payload, quarters or QS,
+                              QS if loaded is _UNSET else loaded)
+    return [m for lvl, m in out if lvl == level]
+
+
+check("a clean payload raises nothing", fires(BASE), [])
+
+# The 20 September bug: a discarded quarter shrank the universe to 234.
+small = copy.deepcopy(BASE)
+small["ranked"] = small["ranked"][:234]
+check("a 234-name universe fails", bool(fires(small)), True)
+
+# The other 20 September bug: 87xx mapped wholesale to Biotech & Pharma.
+lumped = copy.deepcopy(BASE)
+for r in lumped["ranked"][: int(len(lumped["ranked"]) * 0.45)]:
+    r["sector"] = "Biotech & Pharma"
+check("45% in one sector fails", bool(fires(lumped)), True)
+
+collapsed = copy.deepcopy(BASE)
+for r in collapsed["ranked"]:
+    r["sector"] = "Technology"
+check("one sector for everything fails", bool(fires(collapsed)), True)
+
+unsorted_p = copy.deepcopy(BASE)
+unsorted_p["ranked"][5], unsorted_p["ranked"][500] = (
+    unsorted_p["ranked"][500], unsorted_p["ranked"][5])
+check("rows out of score order fail", bool(fires(unsorted_p)), True)
+
+tiny_cap = copy.deepcopy(BASE)
+tiny_cap["ranked"][3]["market_cap"] = 1_000_000
+check("a name under the cap floor fails", bool(fires(tiny_cap)), True)
+
+cheap = copy.deepcopy(BASE)
+cheap["ranked"][7]["price"] = 0.40
+check("a name under the price floor fails", bool(fires(cheap)), True)
+
+nopillar = copy.deepcopy(BASE)
+del nopillar["ranked"][2]["pillars"]["safety"]
+check("a missing pillar fails", bool(fires(nopillar)), True)
+
+dupe = copy.deepcopy(BASE)
+dupe["ranked"][9]["symbol"] = dupe["ranked"][8]["symbol"]
+check("a duplicate symbol fails", bool(fires(dupe)), True)
+
+check("losing both newest quarters fails",
+      bool(fires(BASE, quarters=QS, loaded=QS[:-2])), True)
+check("losing only the newest quarter warns, not fails",
+      fires(BASE, quarters=QS, loaded=QS[:-1]), [])
+check("and it does warn",
+      bool(fires(BASE, quarters=QS, loaded=QS[:-1], level="WARN")), True)
+check("no data at all fails", bool(fires(BASE, quarters=QS, loaded=[])), True)
 
 print("\n" + "=" * 60)
 if fails:

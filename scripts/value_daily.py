@@ -91,10 +91,11 @@ def main():
 
     quarters = recent_quarters(as_of, QUARTERS_BACK)
     log(f"Reading {len(quarters)} SEC data sets, {quarters[0]} to {quarters[-1]}.")
-    facts, subs = {}, {}
+    facts, subs, loaded = {}, {}, []
     for q in quarters:
         try:
             vd.load_quarter(q, facts, subs)
+            loaded.append(q)
             log(f"  {q}: {len(subs):,} filers")
         except Exception as exc:                          # noqa: BLE001
             log(f"  {q}: skipped ({exc})")
@@ -249,6 +250,18 @@ def main():
         "ranked": ranked,
     }
 
+    problems = sanity_check(payload, quarters, loaded)
+    fatal = [m for lvl, m in problems if lvl == "FAIL"]
+    for lvl, m in problems:
+        log(f"  {lvl}: {m}")
+    if fatal:
+        log(f"\n{len(fatal)} sanity check(s) failed. Nothing written -- "
+            "the site keeps yesterday's file.")
+        write_summary(payload, problems)
+        return 1
+    if not problems:
+        log("  all sanity checks pass")
+
     with open(OUT_FILE, "w") as fh:
         json.dump(payload, fh, separators=(",", ":"))
     size = os.path.getsize(OUT_FILE)
@@ -261,11 +274,132 @@ def main():
             f"cheap {p['cheapness']:>5.1f}  qual {p['quality']:>5.1f}  "
             f"safe {p['safety']:>5.1f}  conf {p['confirmation']:>5.1f}   "
             f"{(r['name'] or '')[:38]}")
-    write_summary(payload)
+    write_summary(payload, problems)
     return 0
 
 
-def write_summary(payload):
+def sanity_check(payload, quarters, loaded):
+    """Ask whether the answer is sane, not whether the arithmetic ran.
+
+    Every bug that reached the live site on 20 September 2026 was in code
+    whose tests passed. The tests checked that percentiles compute, that
+    quarters step, that the payload has the right keys -- all true, and all
+    beside the point, because the run still produced 234 companies instead
+    of a thousand and filed an engineering firm under Biotech & Pharma.
+
+    What was missing was anything that looked at the output and asked
+    whether it was plausible. These checks do that, and they are
+    deliberately loose: they are not trying to catch a screen that is
+    slightly off, they are trying to catch one that is obviously broken.
+
+    FAIL refuses to write, so the site keeps yesterday's file. A wrong
+    screen is worse than a stale one.
+    """
+    out = []
+    meta, ranked = payload["_meta"], payload["ranked"]
+    n = len(ranked)
+
+    # Size. The backtest's median eligible universe over 90 rebalances was
+    # about a thousand. A tenth of that or triple it means something upstream
+    # changed, not that the market did.
+    if n < 300:
+        out.append(("FAIL", f"only {n:,} companies ranked; expected roughly 1,000. "
+                            "Check the newest SEC quarter actually loaded."))
+    elif n > 3000:
+        out.append(("FAIL", f"{n:,} companies ranked; expected roughly 1,000. "
+                            "A universe rule may not be applying."))
+    elif n < 600 or n > 1800:
+        out.append(("WARN", f"{n:,} companies ranked, outside the usual 600-1,800."))
+
+    # Sector concentration. Biotech is genuinely the biggest bucket in this
+    # market, but a third of the universe in one sector means a mapping bug,
+    # which is exactly how 87xx landed in Biotech & Pharma.
+    by_sector = {}
+    for r in ranked:
+        by_sector[r.get("sector") or "Unclassified"] = by_sector.get(r.get("sector") or "Unclassified", 0) + 1
+    if by_sector:
+        worst, count = max(by_sector.items(), key=lambda kv: kv[1])
+        share = 100.0 * count / max(n, 1)
+        if share > 40:
+            out.append(("FAIL", f"{share:.0f}% of the universe is in one sector ({worst}); "
+                                "that is a classification bug, not a market."))
+        elif share > 28:
+            out.append(("WARN", f"{share:.0f}% of the universe is in {worst}."))
+        if len(by_sector) < 8:
+            out.append(("FAIL", f"only {len(by_sector)} sectors represented; "
+                                "the SIC mapping is probably collapsing codes."))
+
+    # Scores and deciles.
+    scores = [r["score"] for r in ranked if isinstance(r.get("score"), (int, float))]
+    if len(scores) != n:
+        out.append(("FAIL", f"{n - len(scores)} rows carry no numeric score."))
+    elif scores != sorted(scores, reverse=True):
+        out.append(("FAIL", "rows are not in descending score order."))
+    elif scores and (min(scores) < 0 or max(scores) > 100):
+        out.append(("FAIL", f"scores out of range: {min(scores):.1f} to {max(scores):.1f}."))
+    elif scores and max(scores) - min(scores) < 10:
+        out.append(("WARN", f"scores span only {max(scores) - min(scores):.1f} points; "
+                            "the ranking is barely separating anything."))
+
+    deciles = {}
+    for r in ranked:
+        deciles[r.get("decile")] = deciles.get(r.get("decile"), 0) + 1
+    if sorted(k for k in deciles if k is not None) != list(range(1, 11)):
+        out.append(("FAIL", f"deciles present: {sorted(deciles)}; expected 1 through 10."))
+    else:
+        expect = n / 10.0
+        lop = [d for d, c in deciles.items() if c < expect * 0.5 or c > expect * 1.6]
+        if lop:
+            out.append(("WARN", f"deciles {sorted(lop)} are not close to even."))
+
+    # Floors the universe gate is supposed to have enforced. If one of these
+    # fires, a row got through a rule rather than the rule being wrong.
+    under_cap = [r["symbol"] for r in ranked
+                 if not isinstance(r.get("market_cap"), (int, float))
+                 or r["market_cap"] < vc.MIN_MARKET_CAP]
+    if under_cap:
+        out.append(("FAIL", f"{len(under_cap)} names below the market-cap floor, "
+                            f"e.g. {', '.join(under_cap[:4])}."))
+    under_price = [r["symbol"] for r in ranked
+                   if not isinstance(r.get("price"), (int, float)) or r["price"] < vc.MIN_PRICE]
+    if under_price:
+        out.append(("FAIL", f"{len(under_price)} names below the price floor, "
+                            f"e.g. {', '.join(under_price[:4])}."))
+
+    # Pillar coverage. A name missing a pillar is scored on less than the
+    # rules say it should be.
+    missing = sum(1 for r in ranked
+                  if sorted(r.get("pillars") or {}) !=
+                  ["cheapness", "confirmation", "quality", "safety"])
+    if missing:
+        out.append(("FAIL", f"{missing} rows do not carry all four pillars."))
+
+    # Freshness. This is the check that would have caught the run that
+    # ranked 234 companies: the job asked for 2026q2 and 2026q1, got only
+    # 2026q1, and carried on quietly with data three months older than it
+    # believed. One missing quarter at the newest end is survivable -- the
+    # SEC may not have published it yet -- but two is not.
+    if quarters and loaded:
+        missing_new = [q for q in quarters[-2:] if q not in loaded]
+        if len(missing_new) >= 2:
+            out.append(("FAIL", "neither of the two newest SEC data sets loaded "
+                                f"({', '.join(quarters[-2:])}); every figure here is stale."))
+        elif missing_new:
+            out.append(("WARN", f"newest SEC data set {missing_new[0]} did not load; "
+                                f"running on {loaded[-1]}."))
+    elif quarters and not loaded:
+        out.append(("FAIL", "no SEC data set loaded at all."))
+
+    # Duplicates.
+    syms = [r["symbol"] for r in ranked]
+    if len(set(syms)) != len(syms):
+        dup = sorted({x for x in syms if syms.count(x) > 1})[:4]
+        out.append(("FAIL", f"duplicate symbols in the ranking, e.g. {', '.join(dup)}."))
+
+    return out
+
+
+def write_summary(payload, problems=()):
     """Put today's top of the list on the run page.
 
     Cheap insurance: if the committed file ever looks wrong, the run page says
@@ -286,6 +420,11 @@ def write_summary(payload):
                  f"{p['quality']:.0f} | {p['safety']:.0f} | {p['confirmation']:.0f} | "
                  f"{r['price']:.2f} | {r['metrics']['ev_ebit'] if r['metrics']['ev_ebit'] is not None else '--'} |")
     L.append("")
+    if problems:
+        L.append("### Sanity checks\n")
+        for lvl, m in problems:
+            L.append(("- **FAIL** " if lvl == "FAIL" else "- warn ") + m)
+        L.append("")
     L.append("_A rank is not a recommendation. " + meta["how_to_read"] + "_")
     try:
         with open(path, "a") as fh:
