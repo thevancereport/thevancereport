@@ -6,7 +6,7 @@
     <title>Daily Inbox Report — The Vance Report</title>
     <meta
       name="description"
-      content="The Vance Report daily deep-value and cash-cushion screen delivered to subscribers before the opening bell."
+      content="The Vance Report daily deep-value screen — every eligible US company ranked on cheapness, quality, safety and confirmation, before the opening bell."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -529,13 +529,13 @@
               <p class="eyebrow">Before the opening bell</p>
               <h1>Daily Inbox <em>Report.</em></h1>
               <p class="dek">
-                Severe drawdowns, tested against a hard cash-to-price
-                gatekeeper. Balance-sheet evidence first; narrative second.
+                Every eligible US company, ranked on cheapness, quality, safety
+                and confirmation. Balance-sheet evidence first; narrative second.
               </p>
             </div>
             <div class="issue">
               <span>Run date</span><b id="issue-date">&mdash;</b><span>Universe</span
-              ><b>US equities &gt; $50M</b><span>Screen status</span
+              ><b>US equities &gt; $300M</b><span>Screen status</span
               ><b class="pass" id="issue-status">&mdash;</b>
             </div>
           </div>
@@ -544,16 +544,16 @@
           <div class="wrap">
             <div class="stats">
               <div class="stat">
-                <small>Names evaluated</small><strong id="stat-screened">&mdash;</strong>
+                <small>Companies ranked</small><strong id="stat-screened">&mdash;</strong>
               </div>
               <div class="stat">
-                <small>Cleared both tests</small><strong class="pass" id="stat-pass">&mdash;</strong>
+                <small>In the top decile</small><strong class="pass" id="stat-pass">&mdash;</strong>
               </div>
               <div class="stat">
-                <small>Held back</small><strong class="fail" id="stat-fail">&mdash;</strong>
+                <small>Unranked for want of data</small><strong class="fail" id="stat-fail">&mdash;</strong>
               </div>
               <div class="stat">
-                <small id="stat-floors-label">Cash floor / price floor</small
+                <small id="stat-floors-label">Sectors covered</small
                 ><strong id="stat-floors">&mdash;</strong>
               </div>
             </div>
@@ -573,10 +573,10 @@
             <div class="result-head">
               <div>
                 <span class="label">Screen output / 02</span>
-                <h2>Gatekeeper results</h2>
+                <h2>The top of the ranking</h2>
               </div>
               <div class="criteria" id="screenCriteria">
-                Two tests &mdash; both must clear
+                Four pillars &mdash; weighted, scored within sector
               </div>
             </div>
             <div class="table-scroll">
@@ -584,36 +584,38 @@
                 <thead>
                   <tr>
                     <th>Stock &amp; price</th>
-                    <th class="c">Prior session</th>
-                    <th class="c">1-day change</th>
-                    <th class="c">Cash cushion</th>
-                    <th class="c" id="th-drop">Price move</th>
-                    <th class="c" id="th-trend">Trend</th>
-                    <th class="c">Gatekeeper status</th>
+                    <th class="c">Sector</th>
+                    <th class="c">Score</th>
+                    <th class="c" id="th-drop">Cheap</th>
+                    <th class="c" id="th-trend">Quality</th>
+                    <th class="c">Safety</th>
+                    <th class="c">Confirmation</th>
                   </tr>
                 </thead>
                 <tbody id="screenRows">
                   <tr>
                     <td class="catalyst" colspan="7">
-                      Loading today&rsquo;s snapshot&hellip;
+                      Loading today&rsquo;s screen&hellip;
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <p class="framing">
-              A name that clears is a name to look at, not a name to buy. It has
-              passed two arithmetic tests and nothing else &mdash; not a judgement
-              on the business, the price, or whether the fall is finished. These
-              names are looked at on a three to six month view; nothing here is
-              intended for day trading or short-term trading of any kind.
+              A high rank is a place to start reading, not a name to buy. Each
+              figure is a percentile against companies in the same sector today.
+              Testing found the ranking ordered but the top of it performed about
+              in line with the market &mdash; the consistent signal was at the
+              bottom, not the top. These names are looked at on a three to six
+              month view; nothing here is intended for day trading or short-term
+              trading of any kind.
             </p>
             <p class="note">
-              Cash-per-share figures reflect the most recently reported balance
-              sheet.
+              Figures come from each company&rsquo;s own SEC filings and daily
+              closing prices, not live quotes.
               <span id="screenMeta"
-                >1-day change is measured against the previously stored
-                snapshot.</span
+                >Banks, insurers and REITs are not ranked: enterprise-value
+                measures do not describe those balance sheets.</span
               >
             </p>
           </div>
@@ -648,429 +650,150 @@
       </footer>
     </div>
     <script>
+      /* The Daily Inbox Report, from value_screen.json.
+       *
+       * Same file, same numbers and same framing as the home page and the
+       * per-stock profiles. When this page had its own data source and its
+       * own vocabulary it was possible for the site to say two different
+       * things on the same morning.
+       */
       (function () {
-        // Defaults only. The thresholds the screen actually ran with travel
-        // with the data in _meta.criteria, so this page cannot quietly drift
-        // out of step with the script that produced the file.
-        var rows = document.getElementById("screenRows"),
-          meta = document.getElementById("screenMeta"),
-          THRESHOLD = 30.0,
-          DROP_FLOOR = -15.0,
-          // Five, not three, because that is what a file written before the
-          // window changed actually contains. _meta.criteria overrides it the
-          // moment the screener has run once.
-          DROP_WINDOW = 5,
-          TREND_WINDOW = 10;
+        "use strict";
 
-        function safe(v) {
-          var e = document.createElement("span");
-          e.textContent = v;
-          return e.innerHTML;
-        }
-        function num(v) {
-          return typeof v === "number" && isFinite(v);
-        }
-        function money(v) {
-          return "$" + Math.abs(v).toFixed(2);
-        }
-        function signedMoney(v) {
-          return (v < 0 ? "-" : "+") + money(v);
-        }
-        function signedPct(v) {
-          return (v < 0 ? "-" : "+") + Math.abs(v).toFixed(2) + "%";
-        }
-        function signedPct1(v) {
-          return (v < 0 ? "-" : "+") + Math.abs(v).toFixed(1) + "%";
-        }
-        // drop_pct is the move the verdict was made on and carries its own
-        // window. Files written before the window became configurable only
-        // have the five-day field, so fall back to it rather than showing a
-        // dash for a figure the file does contain.
-        function dropOf(r) {
-          // A file written before the window was configurable has no drop_pct
-          // key at all, and its move is the five-day figure. A newer file with
-          // drop_pct set to null means the move could not be measured -- and
-          // falling back there would print a five-day number under a three-day
-          // heading and clear a name on it.
-          if (r && Object.prototype.hasOwnProperty.call(r, "drop_pct")) {
-            return num(r.drop_pct) ? r.drop_pct : null;
-          }
-          return num(r.five_day_drop_pct) ? r.five_day_drop_pct : null;
-        }
-        function windowLabel() {
-          return DROP_WINDOW + "-day";
-        }
-        function tone(v) {
-          return v > 0 ? "pass" : v < 0 ? "fail" : "";
-        }
-        function fullDate(iso) {
-          if (!iso) return null;
-          var d = new Date(iso);
-          if (isNaN(d.getTime())) return null;
-          return d.toLocaleDateString(undefined, {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
+        var DATA_URL = "value_screen.json";
+        var TOP_N = 15;
+
+        function esc(s) {
+          return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
           });
         }
-        function message(text) {
-          rows.innerHTML =
-            '<tr><td class="catalyst" colspan="7">' + safe(text) + "</td></tr>";
+        function isNum(v) { return typeof v === "number" && isFinite(v); }
+        function el(id) { return document.getElementById(id); }
+        function put(id, t) { var e = el(id); if (e) e.textContent = t; }
+        function score(v) { return isNum(v) ? String(Math.round(v)) : "--"; }
+        function longDate(iso) {
+          if (!iso) return "—";
+          var d = new Date(iso + "T00:00:00Z");
+          if (isNaN(d)) return iso;
+          return d.toLocaleDateString("en-US",
+            { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
         }
 
-        function stockCell(ticker, r) {
-          var url =
-            "https://www.tradingview.com/chart/?symbol=" +
-            encodeURIComponent(r.exchange || "NASDAQ") +
-            ":" +
-            encodeURIComponent(ticker);
-          return (
-            "<td>" +
-            '<div class="sym">' +
-            safe(ticker) +
-            "</div>" +
-            '<div class="sub">' +
-            safe(r.name || ticker) +
-            " \u00b7 " +
-            (num(r.price) ? money(r.price) : "\u2014") +
-            "</div>" +
-            '<a class="chart" href="' +
-            safe(url) +
-            '" target="_blank" rel="noopener">View chart</a>' +
-            '<a class="chart" href="stock.html?symbol=' + encodeURIComponent(ticker) + '" style="margin-left:10px;">Full profile</a>' +
-            "</td>"
-          );
-        }
-
-        function priorCell(r) {
-          if (!num(r.previous_price)) {
-            return '<td class="c">&mdash;<div class="sub">No prior snapshot</div></td>';
-          }
-          return '<td class="c">' + money(r.previous_price) + "</td>";
-        }
-
-        function changeCell(r) {
-          if (!num(r.dollar_change) || !num(r.return_pct)) {
-            return '<td class="c">&mdash;<div class="sub">Baseline pending</div></td>';
-          }
-          return (
-            '<td class="c ' +
-            tone(r.dollar_change) +
-            '">' +
-            signedMoney(r.dollar_change) +
-            '<div class="sub">' +
-            signedPct(r.return_pct) +
-            "</div></td>"
-          );
-        }
-
-        function cushionCell(r) {
-          if (!num(r.cash_cushion_pct)) {
-            return '<td class="c">&mdash;<div class="sub">Balance sheet pending</div></td>';
-          }
-          // Judge the cushion on the cushion, not on the row's overall
-          // verdict. A name holding cash worth 183% of its price that was
-          // held back by the five-day test did not fail on cash, and
-          // colouring that figure red said that it had.
-          var state = r.cash_cushion_pct >= THRESHOLD ? "pass" : "fail";
-          return (
-            '<td class="c">' +
-            '<span class="ratio ' +
-            state +
-            '">' +
-            r.cash_cushion_pct.toFixed(1) +
-            "%</span>" +
-            '<div class="sub">' +
-            (num(r.cps) ? "CPS " + money(r.cps) : "CPS &mdash;") +
-            "</div></td>"
-          );
-        }
-
-        // The screen has two tests and they are failed for different
-        // reasons. Printing one fixed sentence under every rejection told
-        // readers that names with 180% cash cushions had failed on cash.
-        // Every reason below is worked out from the row's own figures.
-        function gateTests(r) {
-          var cash = num(r.cash_cushion_pct) ? r.cash_cushion_pct : null;
-          var drop = dropOf(r);
-          return [
-            {
-              known: cash !== null,
-              met: cash !== null && cash >= THRESHOLD,
-              miss:
-                cash === null
-                  ? "cash per share unavailable"
-                  : "cash cushion " +
-                    cash.toFixed(1) +
-                    "% is under the " +
-                    THRESHOLD.toFixed(1) +
-                    "% floor",
-            },
-            {
-              known: drop !== null,
-              met: drop !== null && drop <= DROP_FLOOR,
-              miss:
-                drop === null
-                  ? "no " + windowLabel() + " price history"
-                  : windowLabel() + " move " +
-                    signedPct1(drop) +
-                    " is not a fall of " +
-                    Math.abs(DROP_FLOOR).toFixed(1) +
-                    "% or more",
-            },
-          ];
-        }
-
-        function verdict(r) {
-          var tests = gateTests(r);
-          for (var i = 0; i < tests.length; i++) {
-            if (!tests[i].known) return "PENDING";
-          }
-          return tests[0].met && tests[1].met ? "PASS" : "FAIL";
-        }
-
-        // The shape of the chart over the run's trend window. The label is a
-        // claim; the figure under it is the evidence the classifier used, and
-        // neither is a forecast.
-        function trendCell(r) {
-          var shapes = {
-            UP: ["pass", "Trending up"],
-            DOWN: ["fail", "Trending down"],
-            SIDEWAYS: ["", "Sideways"],
-          };
-          // STABILIZING was the old code's value for "no baseline", not for a
-          // flat chart, so it reads as no reading rather than as Sideways.
-          var aliases = { REBOUND: "UP", FALLING: "DOWN" };
-          var key = String(r.trend || "").toUpperCase();
-          key = aliases[key] || key;
-          var shape = shapes[key];
-          if (!shape) {
-            return '<td class="c">&mdash;<div class="sub">No reading</div></td>';
-          }
-          var detail = num(r.trend_pct)
-            ? signedPct1(r.trend_pct) + " over " + (r.trend_window_days || TREND_WINDOW) + " sessions"
-            : "";
-          return (
-            '<td class="c ' + shape[0] + '">' + shape[1] +
-            (detail ? '<div class="sub">' + safe(detail) + "</div>" : "") +
-            "</td>"
-          );
-        }
-
-        function dropCell(r) {
-          var drop = dropOf(r);
-          if (drop === null) {
-            return '<td class="c">&mdash;<div class="sub">No ' + windowLabel() + ' history</div></td>';
-          }
-          var met = drop <= DROP_FLOOR;
-          return (
-            '<td class="c">' +
-            '<span class="ratio ' +
-            (met ? "pass" : "fail") +
-            '">' +
-            signedPct1(drop) +
-            "</span>" +
-            '<div class="sub">' +
-            (met ? "at or past the floor" : "short of the floor") +
-            "</div></td>"
-          );
-        }
-
-        function gateCell(r) {
-          var tests = gateTests(r);
-          var pending = tests.filter(function (t) { return !t.known; });
-          var failed = tests.filter(function (t) { return t.known && !t.met; });
-
-          if (pending.length) {
+        function rowsHtml(rows) {
+          return rows.map(function (r) {
+            var p = r.pillars || {};
             return (
-              '<td class="c">Pending<div class="sub">' +
-              safe(pending.map(function (t) { return t.miss; }).join("; ")) +
-              "</div></td>"
+              "<tr>" +
+              '<td><a class="sym" href="stock.html?symbol=' + encodeURIComponent(r.symbol) + '">' +
+                esc(r.symbol) + "</a>" +
+                '<span class="sub">' + esc((r.name || "").slice(0, 40)) +
+                (isNum(r.price) ? " · $" + r.price.toFixed(2) : "") + "</span></td>" +
+              '<td class="c">' + esc(r.sector || "Unclassified") + "</td>" +
+              '<td class="c"><b>' + (isNum(r.score) ? r.score.toFixed(1) : "--") + "</b></td>" +
+              '<td class="c">' + score(p.cheapness) + "</td>" +
+              '<td class="c">' + score(p.quality) + "</td>" +
+              '<td class="c">' + score(p.safety) + "</td>" +
+              '<td class="c">' + score(p.confirmation) + "</td>" +
+              "</tr>"
             );
-          }
-          if (failed.length) {
-            return (
-              '<td class="c fail">Held back<div class="sub">' +
-              safe(failed.map(function (t) { return t.miss; }).join("; ")) +
-              "</div></td>"
-            );
-          }
-          // Not "Pass". A word that reads as a verdict on the stock is a word
-          // a reader can mistake for a recommendation, and this screen does
-          // not make recommendations. It says which names have earned the
-          // next hour of someone's attention.
-          return (
-            '<td class="c pass">Worth a look<div class="sub">Clears the ' +
-            THRESHOLD.toFixed(1) +
-            "% cash floor and the " +
-            DROP_FLOOR.toFixed(1) +
-            "% " + windowLabel() + " floor</div></td>"
-          );
+          }).join("");
         }
 
-        function draw(snapshot) {
-          var entries = Object.keys(snapshot)
-            .filter(function (k) { return k.indexOf("_") !== 0; })
-            .map(function (ticker) { return [ticker, snapshot[ticker]]; });
-
-          var meta_ = snapshot._meta || {};
-          var criteria = meta_.criteria || {};
-          if (num(criteria.cash_gate)) THRESHOLD = criteria.cash_gate;
-          if (num(criteria.drop_threshold)) DROP_FLOOR = criteria.drop_threshold;
-          if (num(criteria.drop_window_days)) DROP_WINDOW = criteria.drop_window_days;
-
-          if (num(criteria.trend_window_days)) TREND_WINDOW = criteria.trend_window_days;
-          var thTrend = document.getElementById("th-trend");
-          if (thTrend) thTrend.textContent = "Trend (" + TREND_WINDOW + " sessions)";
-          var thDrop = document.getElementById("th-drop");
-          if (thDrop) thDrop.textContent = windowLabel() + " move";
-          var floorsLabel = document.getElementById("stat-floors-label");
-          if (floorsLabel) {
-            floorsLabel.textContent = "Cash floor / " + windowLabel() + " floor";
+        /* The morning brief. Written from the data rather than stored, so it
+         * can never describe a different day's screen than the table below
+         * it -- which is the failure mode worth designing out here. */
+        function brief(meta, rows) {
+          if (!rows.length) {
+            return "<p>No screen was published for this date.</p>";
           }
-
-          var today = fullDate(meta_.generated_at);
-          var prior = fullDate(meta_.previous_generated_at);
-
-          document.getElementById("issue-date").textContent = today || "unknown";
-          document.getElementById("issue-status").textContent = entries.length ? "Complete" : "No data";
-
-          var floorsEl = document.getElementById("stat-floors");
-          if (floorsEl) {
-            floorsEl.textContent =
-              THRESHOLD.toFixed(1) + "% / " + DROP_FLOOR.toFixed(1) + "%";
-          }
-          var critEl = document.getElementById("screenCriteria");
-          if (critEl) {
-            critEl.innerHTML =
-              "Cash / price &ge; " + safe(THRESHOLD.toFixed(1)) + "%<br />" +
-              safe(windowLabel()) + " move &le; " + safe(DROP_FLOOR.toFixed(1)) + "%";
-          }
-
-          // Verdicts are derived from the figures on the page rather than
-          // read from the stored gate field, so what a reader is told and
-          // what they can check always agree. If the two ever disagree the
-          // pipeline has drifted, and that is worth knowing about.
-          var drift = entries.filter(function (e) {
-            var stored = String(e[1].gate || "").toUpperCase();
-            return stored && stored !== "UNKNOWN" && stored !== verdict(e[1]);
+          var top = rows[0];
+          var bySector = {};
+          rows.slice(0, 50).forEach(function (r) {
+            bySector[r.sector] = (bySector[r.sector] || 0) + 1;
           });
-          if (drift.length) {
-            console.warn(
-              "Stored gate disagrees with the figures for: " +
-                drift.map(function (e) { return e[0]; }).join(", ")
-            );
-          }
+          var lead = Object.keys(bySector).sort(function (a, b) {
+            return bySector[b] - bySector[a];
+          })[0];
 
-          var passCount = entries.filter(function (e) { return verdict(e[1]) === "PASS"; }).length;
-          var pendingCount = entries.filter(function (e) { return verdict(e[1]) === "PENDING"; }).length;
-          var failCount = entries.length - passCount - pendingCount;
-          document.getElementById("stat-screened").textContent = entries.length;
-          document.getElementById("stat-pass").textContent = passCount;
-          // "Held back" means everything that did not clear, which includes
-          // the rows still waiting on data. The paragraph below itemises the
-          // same total, so the two have to agree.
-          document.getElementById("stat-fail").textContent = failCount + pendingCount;
+          var p = top.pillars || {};
+          var best = ["cheapness", "quality", "safety", "confirmation"].sort(function (a, b) {
+            return (p[b] || 0) - (p[a] || 0);
+          })[0];
 
-          var briefCopy = document.getElementById("briefCopy");
-          if (!entries.length) {
-            briefCopy.innerHTML = "<p>No candidates were evaluated in the latest run.</p>";
-          } else {
-            var passing = entries.filter(function (e) { return verdict(e[1]) === "PASS"; })
-              .sort(function (a, b) { return (b[1].cash_cushion_pct || 0) - (a[1].cash_cushion_pct || 0); });
-            var lead = passing[0];
-
-            var reasons = { cash: 0, drop: 0, both: 0 };
-            entries.forEach(function (e) {
-              if (verdict(e[1]) !== "FAIL") return;
-              var t = gateTests(e[1]);
-              if (!t[0].met && !t[1].met) reasons.both++;
-              else if (!t[0].met) reasons.cash++;
-              else reasons.drop++;
-            });
-
-            var cushionOK = entries.filter(function (e) {
-              return num(e[1].cash_cushion_pct) && e[1].cash_cushion_pct >= THRESHOLD;
-            }).length;
-
-            var p1 = entries.length + " name" + (entries.length === 1 ? " was" : "s were") +
-              " measured against today\u2019s two floors. " + cushionOK + " hold cash worth at least " +
-              THRESHOLD.toFixed(1) + "% of the share price, and " + passCount + " of those " +
-              (passCount === 1 ? "has" : "have") + " also fallen " +
-              Math.abs(DROP_FLOOR).toFixed(1) + "% or more over " + DROP_WINDOW +
-              " sessions \u2014 the dislocation the screen is waiting for. Holding cash is " +
-              "common; being sold off while holding it is not.";
-
-            var parts = [];
-            if (reasons.drop) parts.push(reasons.drop + " on the " + windowLabel() + " move alone");
-            if (reasons.cash) parts.push(reasons.cash + " on cash alone");
-            if (reasons.both) parts.push(reasons.both + " on both");
-            if (pendingCount) parts.push(pendingCount + " still waiting on data");
-            var p2 = parts.length ? "Held back: " + parts.join(", ") + "." : "";
-
-            var p3 = lead
-              ? lead[0] + " leads the names that cleared, with a " + lead[1].cash_cushion_pct.toFixed(1) +
-                "% cash cushion" +
-                (num(lead[1].five_day_drop_pct) ? " after a " + signedPct1(lead[1].five_day_drop_pct) + " five-day move" : "") + "."
-              : "No name cleared both floors today. That is the screen working, not failing.";
-
-            var p4 =
-              "Clearing is a reason to look, not a reason to buy. Two tests came back " +
-              "clean; nothing here says the price is right, the business is sound, or " +
-              "the fall is over. The screen finds candidates. The work after that is yours.";
-
-            briefCopy.innerHTML =
-              "<p>" + safe(p1) + "</p>" +
-              (p2 ? "<p>" + safe(p2) + "</p>" : "") +
-              "<p>" + safe(p3) + "</p>" +
-              '<p class="framing">' + safe(p4) + "</p>";
-          }
-
-          if (!entries.length) {
-            message("No candidates were evaluated in the latest screen.");
-            return;
-          }
-
-          rows.innerHTML = entries
-            .sort(function (a, b) { return (b[1].cash_cushion_pct || -1) - (a[1].cash_cushion_pct || -1); })
-            .map(function (pair) {
-              var ticker = pair[0], r = pair[1];
-              return (
-                "<tr>" +
-                stockCell(ticker, r) +
-                priorCell(r) +
-                changeCell(r) +
-                cushionCell(r) +
-                dropCell(r) +
-                trendCell(r) +
-                gateCell(r) +
-                "</tr>"
-              );
-            })
-            .join("");
-
-          if (!meta) return;
-          // When the screener runs twice in one day the stored baseline is
-          // hours old, not a day. Saying "1-day change" anyway would be a
-          // small lie told every morning.
-          var sameDay = today && prior && today === prior;
-          meta.textContent = !prior
-            ? "1-day change will be available once a second run has been recorded."
-            : sameDay
-              ? "The change column compares this run against an earlier run on the same day, so it is a within-day move rather than a full session."
-              : "1-day change compares the " + (today || "latest") +
-                " run against the stored " + prior + " run.";
+          return (
+            "<p>" + rows.length.toLocaleString() + " companies cleared the universe rules " +
+            "this morning and were scored against their own sector. " +
+            (meta.unranked
+              ? meta.unranked.toLocaleString() + " more were evaluated but could not be " +
+                "scored for want of data. "
+              : "") +
+            "</p>" +
+            "<p><b>" + esc(top.symbol) + "</b> &mdash; " + esc(top.name || "") +
+            " &mdash; sits at the top, carrying its strongest reading in <b>" + best +
+            "</b> at " + score(p[best]) + ". " +
+            "Of the fifty highest-ranked names, the largest single group is <b>" +
+            esc(lead) + "</b> with " + bySector[lead] + ".</p>" +
+            "<p>None of that is a forecast. The ranking says where the arithmetic is " +
+            "favourable today; what it cannot say is whether the market has already " +
+            "priced the reason. Testing put the top decile roughly level with the " +
+            "market over six months, and the bottom decile well below it &mdash; so " +
+            "this list is most reliable read as somewhere to begin, and the other " +
+            "end of it as somewhere to be careful.</p>"
+          );
         }
 
-        fetch("screen_snapshot.json", { cache: "no-store" })
+        function paint(meta, rows, ok) {
+          put("issue-date", longDate(meta.as_of));
+          put("issue-status", ok ? "Published" : "Unavailable");
+          var st = el("issue-status");
+          if (st) st.className = ok ? "pass" : "fail";
+
+          put("stat-screened", rows.length ? rows.length.toLocaleString() : "—");
+          put("stat-pass", rows.length
+            ? rows.filter(function (r) { return r.decile === 1; }).length.toLocaleString()
+            : "—");
+          put("stat-fail", isNum(meta.unranked) ? meta.unranked.toLocaleString() : "—");
+          var secs = {};
+          rows.forEach(function (r) { if (r.sector) secs[r.sector] = 1; });
+          put("stat-floors", rows.length ? String(Object.keys(secs).length) : "—");
+
+          var bc = el("briefCopy");
+          if (bc) {
+            bc.innerHTML = ok
+              ? brief(meta, rows)
+              : "<p>Today&rsquo;s screen could not be read. It may still be building.</p>";
+          }
+
+          var body = el("screenRows");
+          if (body) {
+            body.innerHTML = rows.length
+              ? rowsHtml(rows.slice(0, TOP_N))
+              : '<tr><td class="catalyst" colspan="7">Nothing to show for this date.</td></tr>';
+          }
+
+          var crit = el("screenCriteria");
+          if (crit && meta.weights) {
+            crit.textContent =
+              "Cheapness " + Math.round(meta.weights.cheapness * 100) + "% · " +
+              "Quality " + Math.round(meta.weights.quality * 100) + "% · " +
+              "Safety " + Math.round(meta.weights.safety * 100) + "% · " +
+              "Confirmation " + Math.round(meta.weights.confirmation * 100) + "%";
+          }
+        }
+
+        fetch(DATA_URL, { cache: "no-store", headers: { accept: "application/json" } })
           .then(function (r) {
-            if (!r.ok) throw Error();
+            if (!r.ok) throw new Error("HTTP " + r.status);
             return r.json();
           })
-          .then(draw)
-          .catch(function () {
-            message("Today\u2019s snapshot is temporarily unavailable.");
-            document.getElementById("briefCopy").innerHTML = "<p>Today\u2019s summary is temporarily unavailable.</p>";
+          .then(function (j) {
+            if (!j || !Array.isArray(j.ranked)) throw new Error("Malformed " + DATA_URL);
+            paint(j._meta || {}, j.ranked, true);
+          })
+          .catch(function (err) {
+            console.error("Failed to load " + DATA_URL + ":", err);
+            paint({}, [], false);
           });
       })();
     </script>
@@ -1411,12 +1134,12 @@
     text-transform: uppercase;
     padding-top: 2px;
   }
-  .results td:nth-child(2)::before { content: "Prior session"; }
-  .results td:nth-child(3)::before { content: "1-day change"; }
-  .results td:nth-child(4)::before { content: "Cash cushion"; }
-  .results td:nth-child(5)::before { content: "Price move"; }
-  .results td:nth-child(6)::before { content: "Trend"; }
-  .results td:nth-child(7)::before { content: "Gatekeeper"; }
+  .results td:nth-child(2)::before { content: "Sector"; }
+  .results td:nth-child(3)::before { content: "Score"; }
+  .results td:nth-child(4)::before { content: "Cheapness"; }
+  .results td:nth-child(5)::before { content: "Quality"; }
+  .results td:nth-child(6)::before { content: "Safety"; }
+  .results td:nth-child(7)::before { content: "Confirmation"; }
   .results td .sub { display: inline; margin-left: 8px; }
   .results td:nth-child(1) .sub { display: block; margin-left: 0; }
 
