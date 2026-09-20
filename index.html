@@ -3,28 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>The Vance Report | Daily Cash Cushion Stock Screener</title>
-    <meta name="description" content="Daily cash-cushion stock screener and value research — find high-conviction signals inside market selloffs, backed by balance-sheet data.">
-    <meta name="keywords" content="Daily Cash Cushion Stock Screener, Fundamental Value Metrics Report, stock screening, market metrics, value investing, financial report">
+    <title>The Vance Report | Daily Deep Value Stock Screener</title>
+    <meta name="description" content="A daily deep-value screen of every eligible US company, ranked on cheapness, quality, safety and confirmation, from their own SEC filings. A rank is not a recommendation.">
+    <meta name="keywords" content="deep value stock screener, value investing screen, EV/EBIT screener, quality and safety scores, SEC filings screen, daily stock ranking">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://thevancereport.com/">
 
-    <meta property="og:title" content="The Vance Report | Daily Cash Cushion Stock Screener">
-    <meta property="og:description" content="Find high-conviction financial signals and fundamental value metrics inside market selloffs.">
+    <meta property="og:title" content="The Vance Report | Daily Deep Value Stock Screener">
+    <meta property="og:description" content="Every eligible US company ranked on cheapness, quality, safety and confirmation — scored against its own sector, from its own filings.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://thevancereport.com/">
     <meta property="og:site_name" content="The Vance Report">
     <meta property="og:image" content="https://thevancereport.com/og-card.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="The Vance Report — a daily screen for US stocks trading below net cash">
+    <meta property="og:image:alt" content="The Vance Report — a daily deep-value ranking of US listed companies">
     <meta property="og:locale" content="en_US">
     <meta name="google-site-verification" content="JH0CxvwbRv7hBx1LE-Ctkx3YgaKefbEw0rieD4_JcLY" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="The Vance Report | Daily Cash Cushion Screener">
-    <meta name="twitter:description" content="Find high-conviction financial signals and fundamental value metrics inside market selloffs.">
+    <meta name="twitter:title" content="The Vance Report | Daily Deep Value Screener">
+    <meta name="twitter:description" content="Every eligible US company ranked on cheapness, quality, safety and confirmation — scored against its own sector, from its own filings.">
     <meta name="twitter:image" content="https://thevancereport.com/og-card.png">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,7 +38,7 @@
       "@type": "WebSite",
       "name": "The Vance Report",
       "url": "https://thevancereport.com/",
-      "description": "Daily cash-cushion stock screener and value research, surfacing balance-sheet-backed signals inside market selloffs.",
+      "description": "A daily deep-value screen ranking every eligible US company on cheapness, quality, safety and confirmation, scored against its own sector from its own SEC filings.",
       "publisher": {
         "@type": "Organization",
         "name": "Dharma Vani LLC"
@@ -675,6 +675,28 @@
     .briefing-links { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
     .briefing-link { display: inline-block; color: var(--amber); text-decoration: none; font-size: 14.5px; letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--amber-deep); }
   </style>
+      <style id="vr-screen">
+      /* .scan-link is new; .scan-sub already exists but is restated so the
+         table is never unstyled if that block moves. */
+      .scan-link {
+        color: var(--amber);
+        text-decoration: none;
+        white-space: nowrap;
+        font-size: 14px;
+        border-bottom: 1px solid transparent;
+      }
+      .scan-link:hover { border-color: var(--amber); }
+      .scan-sub {
+        display: block;
+        color: var(--paper-faint);
+        font-size: 13.5px;
+        white-space: normal;
+        line-height: 1.3;
+        margin-top: 2px;
+      }
+      #engResults .table-scroll { margin-top: 14px; }
+      .eng-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); gap: 16px; }
+    </style>
   </head>
   <body>
     <div class="grid-field" aria-hidden="true"></div>
@@ -684,7 +706,7 @@
       <header class="ticker">
         <div class="wrap ticker-in" style="justify-content: center; gap: 24px;">
           <a class="blog-link" href="blog.html">Field Notes <span aria-hidden="true">↗</span></a>
-          <span class="tick-stat hide-sm">Universe <b>US equities &gt; $50M</b></span>
+          <span class="tick-stat hide-sm">Universe <b>US equities &gt; $300M</b></span>
           <span class="tick-stat"><span class="live" id="liveIndicator"><i aria-hidden="true"></i><span id="liveLabel">Loading&hellip;</span></span></span>
         </div>
       </header>
@@ -696,14 +718,16 @@
             <div style="font-family: var(--serif); font-size: 34px; color: var(--paper); letter-spacing: 0.02em; margin-bottom: 12px;">
               <span style="border: 1px solid var(--amber); color: var(--amber); font-family: var(--mono); font-size: 17.5px; padding: 2px 8px; margin-right: 12px; vertical-align: middle;">VR</span>The Vance Report
             </div>
-            <p class="eyebrow">Deep-value &amp; cash cushion screen</p>
+            <p class="eyebrow">Deep value &amp; balance-sheet screen</p>
             <h1>Find The Signal Inside the Selloff</h1>
             <p class="hero-lede">
-              <span id="hero-universe-count">&mdash;</span> US names currently clear the daily screen's
-              <b id="hero-cash-rule">30.0% cash-to-price</b> gatekeeper after
-              <span id="hero-drop-rule">a 5-day drop of at least 15%</span> &mdash;
-              the balance sheet is doing the arguing, not the narrative.
-              Clearing is a reason to look, not a reason to buy.
+              Every eligible US company, ranked on
+              <b>cheapness, quality, safety and confirmation</b> &mdash;
+              <span id="hero-universe-count">&mdash;</span> of them today,
+              scored against their own sector from their own SEC filings.
+              A high rank means the arithmetic is favourable and nothing more:
+              testing found the top of this ranking performed about in line
+              with the market, so treat it as a reading order, not a buy list.
               Data as of <b id="hero-run-date">&mdash;</b>.
             </p>
             <div class="cta-row">
@@ -721,11 +745,11 @@
               </div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                 <div>
-                  <div style="font-size: 14.5px; color: var(--paper-faint); text-transform: uppercase;">Names Clearing Gate</div>
+                  <div style="font-size: 14.5px; color: var(--paper-faint); text-transform: uppercase;">Companies ranked</div>
                   <div style="font-size: 23px; font-weight: 600; color: var(--pass);" id="summary-qualified-count">&mdash;</div>
                 </div>
                 <div>
-                  <div style="font-size: 14.5px; color: var(--paper-faint); text-transform: uppercase;">Avg. Cash Cushion</div>
+                  <div style="font-size: 14.5px; color: var(--paper-faint); text-transform: uppercase;">In the top decile</div>
                   <div style="font-size: 23px; font-weight: 600; color: var(--paper);" id="summary-avg-cushion">&mdash;</div>
                 </div>
               </div>
@@ -750,7 +774,7 @@
         <div class="wrap">
           <div class="sec-head">
             <h2>Custom screen engine</h2>
-            <p class="sec-meta">Re-run today's screen over every name it evaluated</p>
+            <p class="sec-meta">Set your own floors across the whole ranked universe</p>
           </div>
 
           <div class="engine">
@@ -769,48 +793,68 @@
                 line-height: 1.6;
               "
             >
-              Loading today&rsquo;s evaluated set&hellip;
+              Loading today&rsquo;s ranked universe&hellip;
             </p>
 
             <form class="console" id="engForm" novalidate>
               <div class="eng-grid">
                 <div class="eng-field">
-                  <label for="engCash">Cash-to-price minimum</label>
-                  <select id="engCash" name="cash">
-                    <option value="15.0">15.0%</option>
-                    <option value="20.0">20.0%</option>
-                    <option value="25.0">25.0%</option>
-                    <option value="30.0" selected>30.0%</option>
-                    <option value="40.0">40.0%</option>
-                    <option value="50.0">50.0%</option>
+                  <label for="engCheap">Minimum cheapness</label>
+                  <select id="engCheap" name="cheapness">
+                    <option value="0" selected>Any</option>
+                    <option value="50">50 or better</option>
+                    <option value="60">60 or better</option>
+                    <option value="70">70 or better</option>
+                    <option value="80">80 or better</option>
+                    <option value="90">90 or better</option>
                   </select>
                 </div>
                 <div class="eng-field">
-                  <label for="engDrop" id="engDropLabel">Price drop minimum</label>
-                  <select id="engDrop" name="drop">
-                    <option value="999" id="engDropAny">Any move</option>
-                    <option value="-5.0">-5.0%</option>
-                    <option value="-10.0">-10.0%</option>
-                    <option value="-15.0" selected>-15.0%</option>
-                    <option value="-20.0">-20.0%</option>
-                    <option value="-30.0">-30.0%</option>
+                  <label for="engQual">Minimum quality</label>
+                  <select id="engQual" name="quality">
+                    <option value="0" selected>Any</option>
+                    <option value="50">50 or better</option>
+                    <option value="60">60 or better</option>
+                    <option value="70">70 or better</option>
+                    <option value="80">80 or better</option>
+                    <option value="90">90 or better</option>
+                  </select>
+                </div>
+                <div class="eng-field">
+                  <label for="engSafe">Minimum safety</label>
+                  <select id="engSafe" name="safety">
+                    <option value="0" selected>Any</option>
+                    <option value="50">50 or better</option>
+                    <option value="60">60 or better</option>
+                    <option value="70">70 or better</option>
+                    <option value="80">80 or better</option>
+                    <option value="90">90 or better</option>
+                  </select>
+                </div>
+                <div class="eng-field">
+                  <label for="engConf">Minimum confirmation</label>
+                  <select id="engConf" name="confirmation">
+                    <option value="0" selected>Any</option>
+                    <option value="50">50 or better</option>
+                    <option value="60">60 or better</option>
+                    <option value="70">70 or better</option>
+                    <option value="80">80 or better</option>
+                    <option value="90">90 or better</option>
+                  </select>
+                </div>
+                <div class="eng-field">
+                  <label for="engSector">Sector</label>
+                  <select id="engSector" name="sector">
+                    <option value="" selected>All sectors</option>
                   </select>
                 </div>
                 <div class="eng-field">
                   <label for="engCap">Minimum market cap</label>
                   <select id="engCap" name="cap">
-                    <option value="50" selected>$50M</option>
-                    <option value="200">$200M</option>
-                    <option value="500">$500M</option>
-                  </select>
-                </div>
-                <div class="eng-field">
-                  <label for="engMom">Trend filter</label>
-                  <select id="engMom" name="momentum">
-                    <option value="">Any trend</option>
-                    <option value="UP">Trending up</option>
-                    <option value="SIDEWAYS">Sideways</option>
-                    <option value="DOWN">Trending down</option>
+                    <option value="0" selected>Any</option>
+                    <option value="1000">$1bn</option>
+                    <option value="5000">$5bn</option>
+                    <option value="20000">$20bn</option>
                   </select>
                 </div>
               </div>
@@ -843,39 +887,38 @@
       <section class="block">
         <div class="wrap">
           <div class="sec-head">
-            <h2>Today's scan</h2>
-            <span class="sec-meta">The ten largest cash cushions<br />the screen evaluated, pass or fail</span>
+            <h2>Today's screen</h2>
+            <span class="sec-meta">The ten highest-ranked names<br />of everything evaluated</span>
           </div>
           <div class="table-scroll">
             <table class="scan-table">
               <thead>
                 <tr>
-                  <th scope="col">Verdict</th>
+                  <th scope="col">Rank</th>
                   <th scope="col">Symbol</th>
+                  <th scope="col">Sector</th>
                   <th scope="col" class="c">Price</th>
-                  <th scope="col" class="c">Net cash / share</th>
-                  <th scope="col" class="c">Cushion vs 30%</th>
-                  <th scope="col" class="c" id="th-scan-drop">Price move</th>
-                  <th scope="col" class="c" id="th-trend">Trend</th>
+                  <th scope="col" class="c">Score</th>
+                  <th scope="col" class="c">Cheap</th>
+                  <th scope="col" class="c">Qual</th>
+                  <th scope="col" class="c">Safe</th>
+                  <th scope="col" class="c">Conf</th>
                   <th scope="col"></th>
                 </tr>
               </thead>
               <tbody id="scanResults">
-                <tr><td colspan="8"><div class="state-msg">Loading today's scan&hellip;</div></td></tr>
+                <tr><td colspan="10"><div class="state-msg">Loading today's screen&hellip;</div></td></tr>
               </tbody>
             </table>
           </div>
           <p class="framing">
-            A name that clears is a name to look at, not a name to buy. It has
-            passed two arithmetic tests and nothing else &mdash; not a judgement
-            on the business, the price, or whether the fall is finished. These
-            names are looked at on a three to six month view; nothing here is
-            intended for day trading or short-term trading of any kind.
-          </p>
-          <p class="scan-legend">
-            <span><svg class="thumb thumb-pass" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Worth a look &mdash; cleared both tests</span>
-            <span><svg class="thumb thumb-neutral" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Price history unavailable</span>
-            <span><svg class="thumb thumb-fail" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg> Held back &mdash; cash held, the fall was not steep enough</span>
+            A high rank is a place to start reading, not a name to buy. Each
+            figure is a percentile against companies in the same sector today.
+            Testing found the ranking ordered but the top of it performed about
+            in line with the market &mdash; the consistent signal was at the
+            bottom, not the top. These names are looked at on a three to six
+            month view; nothing here is intended for day trading or short-term
+            trading of any kind.
           </p>
         </div>
       </section>
@@ -909,491 +952,238 @@
 
     <!-- ============ DATA + RENDER SCRIPT ============ -->
     <script>
+      /* The main page, from value_screen.json.
+       *
+       * One file feeds everything here: the hero counts, the summary card,
+       * the top of the ranking, and the custom engine. The engine filters an
+       * array already in memory, so moving a floor is instant -- there is no
+       * request behind it.
+       */
       (function () {
-        // research.json is produced daily by .github/workflows/daily_update.yml
-        // running scripts/update_research.py. It's an object keyed by ticker
-        // (winners only — tickers currently clearing the gate), plus a
-        // reserved "_meta" key holding { generated_at }.
-        var DATA_URL = "research.json";
+        "use strict";
 
-        // research.json holds only the names that already cleared both gates.
-        // Screening that file could only ever subtract: the controls looked
-        // like a screen and behaved like a delete key. screen_snapshot.json
-        // is the full evaluated set, rejections included, and it is what the
-        // engine and the scan table read.
-        var UNIVERSE_URL = "screen_snapshot.json";
+        var DATA_URL = "value_screen.json";
+        var state = { meta: null, rows: [], status: "loading" };
 
-        // Defaults only; the run's real thresholds arrive in _meta.criteria.
-        // The window defaults to five because that is what a file written
-        // before the window became configurable actually contains.
-        var CASH_GATE = 30.0;
-        var DROP_GATE = -15.0;
-        var DROP_WINDOW = 5;
-        var TREND_WINDOW = 0;   // 0 until a file says otherwise
-
-        function windowLabel() {
-          return DROP_WINDOW + "-day";
-        }
-        // drop_pct is the move the verdict was made on. Older files only have
-        // the five-day field; read it rather than showing a dash for a figure
-        // the file does contain.
-        function dropOf(r) {
-          // drop_pct present but null means the move could not be measured.
-          // Only a file old enough to lack the key entirely falls back.
-          if (r && Object.prototype.hasOwnProperty.call(r, "drop_pct")) {
-            return toNum(r.drop_pct);
-          }
-          return toNum(r.five_day_drop_pct);
-        }
-
-        var state = { rows: [], scan: [], universe: [], generatedAt: null, status: "loading", scanStatus: "loading", universeStatus: "loading" }; // loading | ok | error
-
-        function toNum(v) {
-          if (typeof v === "number") return isFinite(v) ? v : null;
-          if (typeof v === "string") {
-            var parsed = parseFloat(v.replace(/[$,%\s,]/g, ""));
-            return isFinite(parsed) ? parsed : null;
-          }
-          return null;
-        }
-
-        function normalizeRecord(sym, r) {
-          r = r && typeof r === "object" ? r : {};
-          return {
-            sym: sym,
-            name: r.name || sym,
-            exch: r.exchange || "NASDAQ",
-            price: toNum(r.price),
-            cps: toNum(r.cps),
-            cash: toNum(r.cash_cushion_pct),
-            drop: dropOf(r),
-            mom: trendOf(r),                          // UP | SIDEWAYS | DOWN | null
-            trendPct: toNum(r.trend_pct),
-            trendWindow: toNum(r.trend_window_days),
-            marketCap: toNum(r.market_cap),
-            dollarChange: toNum(r.dollar_change),      // real day-over-day change, or null if no baseline yet
-            returnPct: toNum(r.return_pct),
-            thesis: r.thesis || "Asset-backed balance sheet meeting minimum cash cushion threshold.",
-          };
-        }
-
-        function filterUniverse(p, source) {
-          var universe = source || state.universe;
-          return universe.filter(function (r) {
-            return (
-              r.cash != null && r.cash >= p.cash &&
-              r.drop != null && r.drop <= p.drop &&
-              (r.marketCap == null || r.marketCap >= p.cap * 1000000) &&
-              (!p.momentum || r.mom === p.momentum)
-            );
-          }).sort(function (a, b) { return (b.cash || 0) - (a.cash || 0); });
-        }
-        window.filterUniverse = filterUniverse; // exposed for console debugging
-
-        // REBOUND / STABILIZING / FALLING came from comparing one run against
-        // the previous run, which on a day the job ran twice was a half-hour
-        // move. The old values are still mapped so a file written before this
-        // renders as something rather than nothing.
-        // REBOUND and FALLING recorded an actual price move, short as it was,
-        // so they still map. STABILIZING did not: the old code returned it both
-        // for a small move and for "no baseline at all", and on the file this
-        // page was serving it meant the second. Mapping it to Sideways put a
-        // reading on all 23 rows that nothing had measured.
-        var TREND_ALIASES = { REBOUND: "UP", FALLING: "DOWN" };
-
-        function trendOf(r) {
-          var t = String((r && r.trend) || "").toUpperCase();
-          t = TREND_ALIASES[t] || t;
-          return t === "UP" || t === "DOWN" || t === "SIDEWAYS" ? t : null;
-        }
-
-        function formatMomentum(mom) {
-          if (mom === "UP") return '<b class="up-t">&#9650; Trending up</b>';
-          if (mom === "DOWN") return '<b class="down-t">&#9660; Trending down</b>';
-          if (mom === "SIDEWAYS") return '<b class="flat-t">&#9679; Sideways</b>';
-          return '<b class="flat-t">&mdash;</b>';
-        }
-
-        // The label alone is a claim. The figure beside it is the evidence,
-        // and it is the same figure the classifier used.
-        function trendDetail(r) {
-          if (!isNum(r.trendPct)) return "";
-          return (r.trendPct >= 0 ? "+" : "") + r.trendPct.toFixed(1) +
-            "% over " + (r.trendWindow || 10) + " sessions";
-        }
-
-        function formatChange(r) {
-          if (r.dollarChange == null || r.returnPct == null) {
-            return '<span>1-day change <b style="color: var(--paper-faint);">pending baseline</b></span>';
-          }
-          var cls = r.dollarChange > 0 ? "up-t" : r.dollarChange < 0 ? "down-t" : "flat-t";
-          var sign = r.dollarChange > 0 ? "+" : "";
-          return '<span>1-day change <b class="' + cls + '">' + sign + r.dollarChange.toFixed(2) + " (" + sign + r.returnPct.toFixed(1) + "%)</b></span>";
-        }
-
-        function escapeHtml(s) {
+        function esc(s) {
           return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
             return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
           });
         }
-
-        function isNum(v) {
-          return typeof v === "number" && isFinite(v);
+        function isNum(v) { return typeof v === "number" && isFinite(v); }
+        function money(v) {
+          if (!isNum(v)) return "--";
+          if (v >= 1e9) return "$" + (v / 1e9).toFixed(1) + "bn";
+          if (v >= 1e6) return "$" + Math.round(v / 1e6) + "m";
+          return "$" + Math.round(v).toLocaleString();
         }
+        function el(id) { return document.getElementById(id); }
+        function put(id, text) { var e = el(id); if (e) e.textContent = text; }
 
-        function rowCard(r, opts) {
-          opts = opts || {};
-          var price = isNum(r.price) ? r.price.toFixed(2) : "—";
-          var cps = isNum(r.cps) ? r.cps.toFixed(2) : "—";
-          var drop = isNum(r.drop) ? r.drop.toFixed(1) : "—";
-          var cash = isNum(r.cash) ? r.cash.toFixed(1) : "—";
-          var thesis = opts.showThesis === false ? "" :
-            '<p class="thesis">' + escapeHtml(r.thesis) + "</p>";
-
+        // --------------------------------------------------------------
+        // shared row renderer -- the scan table and the engine results are
+        // the same thing, so they are drawn by the same function. When they
+        // were separate the legend under one described rows the other drew.
+        // --------------------------------------------------------------
+        function rowHtml(r) {
+          var p = r.pillars || {};
+          function cell(v) {
+            return '<td class="c">' + (isNum(v) ? Math.round(v) : "--") + "</td>";
+          }
           return (
-            '<article class="entry">' +
-              '<div class="ratio">' + cash + '%<span>Cash / price</span></div>' +
-              '<div class="entry-body">' +
-                "<h3>" + escapeHtml(r.sym) + " &mdash; <span>" + escapeHtml(r.name) + ", " + escapeHtml(r.exch) + "</span></h3>" +
-                '<p class="metrics">' +
-                  "<span>Price <b>$" + price + "</b></span>" +
-                  formatChange(r) +
-                  "<span>Cash/share <b>$" + cps + "</b></span>" +
-                  "<span>" + windowLabel() + " move <b>" + drop + "%</b></span>" +
-                  "<span>Trend " + formatMomentum(r.mom) +
-                    (trendDetail(r) ? " <b>" + trendDetail(r) + "</b>" : "") + "</span>" +
-                "</p>" +
-                thesis +
-                '<a class="chart" href="stock.html?symbol=' + encodeURIComponent(r.sym) + '">Company profile &rarr;</a>' +
-              "</div>" +
-            "</article>"
+            "<tr>" +
+            '<td class="c">' + r.rank + "</td>" +
+            "<td><b>" + esc(r.symbol) + "</b><span class=\"scan-sub\">" +
+              esc((r.name || "").slice(0, 38)) + "</span></td>" +
+            "<td>" + esc(r.sector || "Unclassified") + "</td>" +
+            '<td class="c">' + (isNum(r.price) ? "$" + r.price.toFixed(2) : "--") + "</td>" +
+            '<td class="c"><b>' + (isNum(r.score) ? r.score.toFixed(1) : "--") + "</b></td>" +
+            cell(p.cheapness) + cell(p.quality) + cell(p.safety) + cell(p.confirmation) +
+            '<td class="c"><a class="scan-link" href="stock.html?symbol=' +
+              encodeURIComponent(r.symbol) + '">Full profile &rarr;</a></td>' +
+            "</tr>"
           );
         }
 
-        // The per-stock cards moved to report.html. This renders the daily scan
-        // table instead: the ten highest net-cash cushions the screen evaluated,
-        // pass or fail, so the rejections are visible rather than hidden.
-        function thumbSvg(gate) {
-          var cls = gate === "PASS" ? "thumb-pass" : (gate === "FAIL" ? "thumb-fail" : "thumb-neutral");
-          var label = gate === "PASS" ? "Worth a look" : (gate === "FAIL" ? "Held back" : "Not evaluated");
-          return '<svg class="thumb ' + cls + '" viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="' + label + '">' +
-            '<path d="M2 21h3V9H2v12zM22 10c0-1.1-.9-2-2-2h-5.6l.9-4.3v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h8.5c.8 0 1.5-.5 1.8-1.2l2.6-6.1c.1-.2.1-.5.1-.7v-2z"/></svg>';
-        }
-
-        function scanRow(r) {
-          var cushionMet = isNum(r.cushion) && r.cushion >= CASH_GATE;
-          var dropMet = isNum(r.drop) && r.drop <= DROP_GATE;
-          return "<tr>" +
-            "<td>" + thumbSvg(r.gate) + "</td>" +
-            '<td><span class="scan-sym">' + escapeHtml(r.sym) + "</span>" +
-              '<span class="scan-name">' + escapeHtml(r.name) + "</span>" +
-              (r.sector ? '<span class="scan-sub">' + escapeHtml(r.sector) + "</span>" : "") + "</td>" +
-            '<td class="c">' + (isNum(r.price) ? "$" + r.price.toFixed(2) : "&mdash;") + "</td>" +
-            '<td class="c">' + (isNum(r.cps) ? "$" + r.cps.toFixed(2) : "&mdash;") + "</td>" +
-            '<td class="c"><span class="' + (cushionMet ? "scan-met" : "scan-miss") + '">' +
-              (isNum(r.cushion) ? r.cushion.toFixed(1) + "%" : "&mdash;") + "</span>" +
-              '<span class="scan-sub">' + (cushionMet ? "test met" : "below floor") + "</span></td>" +
-            '<td class="c"><span class="' + (dropMet ? "scan-met" : "scan-miss") + '">' +
-              (isNum(r.drop) ? r.drop.toFixed(1) + "%" : "&mdash;") + "</span>" +
-              '<span class="scan-sub">' + (isNum(r.drop) ? (dropMet ? "test met" : "not dislocated enough") : "no history") + "</span></td>" +
-            '<td class="c">' + formatMomentum(r.mom) +
-              (trendDetail(r) ? '<span class="scan-sub">' + trendDetail(r) + "</span>" : "") +
-              "</td>" +
-            '<td class="c"><a class="scan-link" href="stock.html?symbol=' + encodeURIComponent(r.sym) + '">Charts &rarr;</a></td>' +
-            "</tr>";
-        }
-
-        function renderScan() {
-          var body = document.getElementById("scanResults");
-          if (!body) return;
-          if (state.scanStatus === "loading") {
-            body.innerHTML = '<tr><td colspan="8"><div class="state-msg">Loading today&rsquo;s scan&hellip;</div></td></tr>';
+        function tableInto(host, rows, colspan, emptyMsg) {
+          if (!host) return;
+          if (!rows.length) {
+            host.innerHTML = '<tr><td colspan="' + colspan + '"><div class="state-msg">' +
+              esc(emptyMsg) + "</div></td></tr>";
             return;
           }
-          if (state.scanStatus === "error") {
-            body.innerHTML = '<tr><td colspan="8"><div class="state-msg is-error">Today&rsquo;s scan is temporarily unavailable. We do not show stale prices as if they were current.</div></td></tr>';
-            return;
-          }
-          if (!state.scan.length) {
-            body.innerHTML = '<tr><td colspan="8"><div class="state-msg">Nothing was evaluated in today&rsquo;s run. Some days the screen finds nothing &mdash; that is the screen working, not failing.</div></td></tr>';
-            return;
-          }
-          body.innerHTML = state.scan.map(scanRow).join("");
+          host.innerHTML = rows.map(rowHtml).join("");
         }
 
-        function renderLedger() {
-          var total = state.rows.length;
-          var withCash = state.rows.filter(function (r) { return r.cash != null; });
-          var avgCushion = withCash.length ? (withCash.reduce(function (sum, r) { return sum + r.cash; }, 0) / withCash.length) : 0;
-          var uEl = document.getElementById("hero-universe-count");
-          var qEl = document.getElementById("summary-qualified-count");
-          var aEl = document.getElementById("summary-avg-cushion");
-          if (uEl) uEl.textContent = total;
-          if (qEl) {
-            qEl.textContent = state.universe.length
-              ? total + " of " + state.universe.length
-              : total + " Qualified";
+        // --------------------------------------------------------------
+        // hero + summary
+        // --------------------------------------------------------------
+        function paintHeader() {
+          var m = state.meta || {};
+          var n = state.rows.length;
+          put("hero-universe-count", n ? n.toLocaleString() : "—");
+          put("hero-run-date", m.as_of || "—");
+          put("summary-card-date", m.as_of || "—");
+          put("summary-qualified-count", n ? n.toLocaleString() : "—");
+          var topDecile = state.rows.filter(function (r) { return r.decile === 1; }).length;
+          put("summary-avg-cushion", n ? topDecile.toLocaleString() : "—");
+
+          var live = el("liveIndicator"), label = el("liveLabel");
+          if (label) {
+            label.textContent =
+              state.status === "ok" ? "Screen of " + (m.as_of || "") :
+              state.status === "error" ? "Data unavailable" : "Loading…";
           }
-          if (aEl) aEl.textContent = withCash.length ? avgCushion.toFixed(1) + "%" : "\u2014";
+          if (live) live.classList.toggle("is-stale", state.status !== "ok");
         }
 
-        function updateLiveIndicator() {
-          var el = document.getElementById("liveIndicator");
-          var label = document.getElementById("liveLabel");
-          var engStatus = document.getElementById("engStatus");
-          var engSubmit = document.getElementById("engSubmit");
-          if (!el) return;
-
-          el.classList.remove("is-stale", "is-error");
-          if (state.status === "loading") {
-            label.textContent = "Loading\u2026";
-            el.classList.add("is-stale");
-          } else if (state.status === "error") {
-            label.textContent = "Data unavailable";
-            el.classList.add("is-error");
-          } else {
-            label.textContent = "Screen updated daily";
-          }
-
-          if (engStatus) {
-            if (state.universeStatus === "loading") {
-              engStatus.textContent = "Loading data\u2026";
-              engStatus.className = "on is-loading";
-            } else if (state.universeStatus === "error") {
-              engStatus.textContent = "Unavailable";
-              engStatus.className = "on is-error";
-            } else {
-              engStatus.textContent = "Ready \u00b7 " + state.universe.length + " names";
-              engStatus.className = "on";
-            }
-          }
-          if (engSubmit) engSubmit.disabled = state.universeStatus !== "ok";
+        // --------------------------------------------------------------
+        // engine
+        // --------------------------------------------------------------
+        function sectors() {
+          var seen = {};
+          state.rows.forEach(function (r) { if (r.sector) seen[r.sector] = (seen[r.sector] || 0) + 1; });
+          return Object.keys(seen).sort().map(function (k) { return [k, seen[k]]; });
         }
 
-        function updateDates() {
-          var runEl = document.getElementById("hero-run-date");
-          var cardEl = document.getElementById("summary-card-date");
-          if (!state.generatedAt) {
-            if (runEl) runEl.textContent = "unknown (pipeline hasn't run since this fix shipped)";
-            if (cardEl) cardEl.textContent = "unknown";
-            return;
-          }
-          var d = new Date(state.generatedAt);
-          if (isNaN(d.getTime())) {
-            if (runEl) runEl.textContent = "unknown";
-            if (cardEl) cardEl.textContent = "unknown";
-            return;
-          }
-          var fullDate = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) +
-            " " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
-          var shortDate = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-          if (runEl) runEl.textContent = fullDate;
-          if (cardEl) cardEl.textContent = shortDate;
-        }
-
-        async function loadData() {
-          state.status = "loading";
-          renderLedger();
-          updateLiveIndicator();
-
-          try {
-            var res = await fetch(DATA_URL, { cache: "no-store", headers: { accept: "application/json" } });
-            if (!res.ok) throw new Error("HTTP " + res.status);
-            var raw = await res.json();
-            if (!raw || typeof raw !== "object") throw new Error("Malformed research.json");
-
-            var rows = [];
-            Object.keys(raw).forEach(function (key) {
-              if (key.indexOf("_") === 0) return; // skip reserved keys like _meta
-              rows.push(normalizeRecord(key, raw[key]));
-            });
-
-            state.rows = rows;
-            state.generatedAt = raw._meta && raw._meta.generated_at ? raw._meta.generated_at : null;
-            state.status = "ok";
-          } catch (err) {
-            console.error("Failed to load research.json:", err);
-            state.status = "error";
-          }
-
-          renderLedger();
-          updateLiveIndicator();
-          updateDates();
-        }
-
-        // Both the scan table and the engine read the full evaluated set.
-        // The legend under the scan table has always promised that the
-        // rejections are visible; reading research.json meant only winners
-        // were ever drawn, and the fail markers in the legend described rows
-        // that could not appear.
-        async function loadUniverse() {
-          try {
-            var res = await fetch(UNIVERSE_URL, { cache: "no-store", headers: { accept: "application/json" } });
-            if (!res.ok) throw new Error("HTTP " + res.status);
-            var raw = await res.json();
-            if (!raw || typeof raw !== "object") throw new Error("Malformed " + UNIVERSE_URL);
-
-            var criteria = (raw._meta && raw._meta.criteria) || {};
-            if (typeof criteria.cash_gate === "number") CASH_GATE = criteria.cash_gate;
-            if (typeof criteria.drop_threshold === "number") DROP_GATE = criteria.drop_threshold;
-            if (typeof criteria.drop_window_days === "number") DROP_WINDOW = criteria.drop_window_days;
-            if (typeof criteria.trend_window_days === "number") TREND_WINDOW = criteria.trend_window_days;
-            relabelForWindow();
-
-            var rows = [], scan = [];
-            Object.keys(raw).forEach(function (key) {
-              if (key.indexOf("_") === 0) return;
-              var r = raw[key] || {};
-              rows.push(normalizeRecord(key, r));
-              scan.push({
-                sym: key,
-                name: r.name || key,
-                price: toNum(r.price),
-                cps: toNum(r.cps),
-                cushion: toNum(r.cash_cushion_pct),
-                drop: dropOf(r),
-                mom: trendOf(r),
-                trendPct: toNum(r.trend_pct),
-                trendWindow: toNum(r.trend_window_days),
-                sector: r.sector || null,
-                gate: gateOf(r)
-              });
-            });
-            scan.sort(function (a, b) { return (b.cushion || 0) - (a.cushion || 0); });
-
-            state.universe = rows;
-            state.scan = scan.slice(0, 10);
-            state.universeStatus = "ok";
-            state.scanStatus = "ok";
-          } catch (err) {
-            console.error("Failed to load " + UNIVERSE_URL + ":", err);
-            state.universeStatus = "error";
-            state.scanStatus = "error";
-          }
-          renderScan();
-          renderLedger();
-          updateLiveIndicator();
-          describeUniverse();
-        }
-
-        // Every place the window is named, named from the data. The window
-        // was five days for a year because an API offered 5D and not 3D; the
-        // page should not be the reason it is hard to change again.
-        function relabelForWindow() {
-          var set = function (id, text) {
-            var el = document.getElementById(id);
-            if (el) el.textContent = text;
-          };
-          set("th-scan-drop", windowLabel() + " vs " + DROP_GATE.toFixed(0) + "%");
-          if (TREND_WINDOW) set("th-trend", "Trend (" + TREND_WINDOW + " sessions)");
-          set("engDropLabel", windowLabel() + " drop minimum");
-          set("engDropAny", "Any " + windowLabel() + " move");
-          set("hero-cash-rule", CASH_GATE.toFixed(1) + "% cash-to-price");
-          set(
-            "hero-drop-rule",
-            "a " + windowLabel() + " drop of at least " + Math.abs(DROP_GATE).toFixed(0) + "%"
-          );
-        }
-
-        // Derived from the figures rather than read from the stored field,
-        // so the thumb on a row always agrees with the two numbers beside it.
-        function gateOf(r) {
-          var cushion = toNum(r.cash_cushion_pct), drop = dropOf(r);
-          if (cushion == null || drop == null) return "UNKNOWN";
-          return cushion >= CASH_GATE && drop <= DROP_GATE ? "PASS" : "FAIL";
-        }
-
-        // The lowest cushion in the file is the lowest the engine can ever
-        // reach, so a cash rung below it is worth nothing. Saying so is
-        // cheaper than letting someone work it out by getting no result.
-        function describeUniverse() {
-          var el = document.getElementById("engUniverse");
-          if (!el) return;
-          if (state.universeStatus === "loading") {
-            el.textContent = "Loading today\u2019s evaluated set\u2026";
-            return;
-          }
-          if (state.universeStatus === "error") {
-            el.textContent =
-              "Today\u2019s evaluated set is unavailable, so the engine has nothing to screen. We do not fall back to older data.";
-            return;
-          }
-          var withCash = state.universe.filter(function (r) { return r.cash != null; });
-          if (!withCash.length) {
-            el.textContent = state.universe.length + " names were evaluated in today\u2019s run.";
-            return;
-          }
-          var lo = withCash.reduce(function (m, r) { return Math.min(m, r.cash); }, Infinity);
-          var hi = withCash.reduce(function (m, r) { return Math.max(m, r.cash); }, -Infinity);
-          var moods = {};
-          state.universe.forEach(function (r) { if (r.mom) moods[r.mom] = 1; });
-          var moodKeys = Object.keys(moods);
-          var moodNote = "";
-          if (!moodKeys.length && state.universe.length) {
-            moodNote = " No trend reading in today\u2019s file, so the trend filter has nothing to work with.";
-          } else if (moodKeys.length === 1 && state.universe.length > 1) {
-            moodNote = " Every name reads " +
-              formatMomentum(moodKeys[0]).replace(/<[^>]+>/g, "").replace(/^[^A-Za-z]+/, "").toLowerCase() +
-              " today, so the trend filter cannot narrow anything.";
-          }
-          el.textContent =
-            state.universe.length + " names were evaluated in today\u2019s run, with cash cushions from " +
-            lo.toFixed(1) + "% to " + hi.toFixed(1) + "%. A cash floor below " + lo.toFixed(1) +
-            "% cannot widen the result any further today." + moodNote;
-        }
-
-        // Custom screener submission
-        var form = document.getElementById("engForm");
-        if (form) {
-          form.addEventListener("submit", function (e) {
-            e.preventDefault();
-            if (state.universeStatus !== "ok") return;
-
-            var p = {
-              cash: parseFloat(document.getElementById("engCash").value),
-              drop: parseFloat(document.getElementById("engDrop").value),
-              cap: parseFloat(document.getElementById("engCap").value),
-              momentum: document.getElementById("engMom").value,
-            };
-
-            var rows = filterUniverse(p);
-            var resultsContainer = document.getElementById("engResults");
-            var outputSection = document.getElementById("engOutput");
-
-            if (outputSection) outputSection.removeAttribute("hidden");
-            var countEl = document.getElementById("engCount");
-            if (countEl) {
-              countEl.textContent =
-                rows.length + " of " + state.universe.length + " evaluated names match";
-            }
-            var appliedEl = document.getElementById("engApplied");
-            if (appliedEl) {
-              appliedEl.textContent =
-                "Cash \u2265 " + p.cash.toFixed(1) + "% \u00b7 " +
-                (p.drop >= 999 ? "any " + windowLabel() + " move" : windowLabel() + " move \u2264 " + p.drop.toFixed(1) + "%") +
-                " \u00b7 Cap \u2265 $" + p.cap + "M" +
-                (p.momentum
-                  ? " \u00b7 Trend: " +
-                    formatMomentum(p.momentum).replace(/<[^>]+>/g, "").replace(/^[^A-Za-z]+/, "")
-                  : "");
-            }
-
-            resultsContainer.innerHTML = rows.length
-              ? '<div class="ledger">' + rows.map(function (r) { return rowCard(r, { showThesis: false }); }).join("") + "</div>"
-              : '<div class="state-msg">No tickers match these criteria.</div>';
+        function fillSectors() {
+          var sel = el("engSector");
+          if (!sel) return;
+          sectors().forEach(function (pair) {
+            var o = document.createElement("option");
+            o.value = pair[0];
+            o.textContent = pair[0] + " (" + pair[1] + ")";
+            sel.appendChild(o);
           });
         }
 
-        function init() {
-          loadData();
-          loadUniverse();
+        function readFloors() {
+          function num(id) { var e = el(id); return e ? parseFloat(e.value) || 0 : 0; }
+          return {
+            cheapness: num("engCheap"),
+            quality: num("engQual"),
+            safety: num("engSafe"),
+            confirmation: num("engConf"),
+            sector: (el("engSector") || {}).value || "",
+            capM: num("engCap")
+          };
         }
 
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", init);
-        } else {
-          init();
+        function applyFloors(f) {
+          return state.rows.filter(function (r) {
+            var p = r.pillars || {};
+            if (f.sector && r.sector !== f.sector) return false;
+            if (f.capM && !(isNum(r.market_cap) && r.market_cap >= f.capM * 1e6)) return false;
+            var keys = ["cheapness", "quality", "safety", "confirmation"];
+            for (var i = 0; i < keys.length; i++) {
+              var floor = f[keys[i]];
+              if (floor > 0 && !(isNum(p[keys[i]]) && p[keys[i]] >= floor)) return false;
+            }
+            return true;
+          });
         }
+
+        function describe(f) {
+          var bits = [];
+          [["cheapness", "cheapness"], ["quality", "quality"], ["safety", "safety"],
+           ["confirmation", "confirmation"]].forEach(function (k) {
+            if (f[k[0]] > 0) bits.push(k[1] + " " + f[k[0]] + "+");
+          });
+          if (f.sector) bits.push(f.sector);
+          if (f.capM) bits.push("market cap " + money(f.capM * 1e6) + "+");
+          return bits.length ? bits.join(" · ") : "no floors set — the whole ranked universe";
+        }
+
+        function runEngine(e) {
+          if (e) e.preventDefault();
+          if (state.status !== "ok") return;
+          var f = readFloors();
+          var hits = applyFloors(f);
+          var out = el("engOutput");
+          if (out) out.hidden = false;
+          put("engCount", hits.length.toLocaleString() + " of " +
+            state.rows.length.toLocaleString() + " names clear these floors");
+          put("engApplied", describe(f));
+          var host = el("engResults");
+          if (host) {
+            if (!hits.length) {
+              host.innerHTML = '<div class="state-msg">Nothing clears every floor at once. ' +
+                "Loosen one and run it again — an empty screen is a statement about the " +
+                "floors, not about the market.</div>";
+            } else {
+              host.innerHTML =
+                '<div class="table-scroll"><table class="scan-table"><thead><tr>' +
+                '<th scope="col">Rank</th><th scope="col">Symbol</th><th scope="col">Sector</th>' +
+                '<th scope="col" class="c">Price</th><th scope="col" class="c">Score</th>' +
+                '<th scope="col" class="c">Cheap</th><th scope="col" class="c">Qual</th>' +
+                '<th scope="col" class="c">Safe</th><th scope="col" class="c">Conf</th>' +
+                '<th scope="col"></th></tr></thead><tbody>' +
+                hits.slice(0, 50).map(rowHtml).join("") +
+                "</tbody></table></div>" +
+                (hits.length > 50
+                  ? '<p class="framing">Showing the 50 highest-ranked of ' +
+                    hits.length.toLocaleString() + " matches.</p>"
+                  : "");
+            }
+          }
+        }
+
+        // --------------------------------------------------------------
+        // boot
+        // --------------------------------------------------------------
+        function paintAll() {
+          paintHeader();
+          tableInto(el("scanResults"), state.rows.slice(0, 10), 10,
+            state.status === "error"
+              ? "Today's screen could not be loaded."
+              : "No names to show.");
+
+          var status = el("engStatus"), submit = el("engSubmit"), uni = el("engUniverse");
+          if (state.status === "ok") {
+            if (status) { status.textContent = "Ready"; }
+            if (submit) submit.disabled = false;
+            var m = state.meta || {};
+            if (uni) {
+              uni.textContent =
+                state.rows.length.toLocaleString() + " companies ranked as of " +
+                (m.as_of || "") + ", " + sectors().length + " sectors. " +
+                (m.unranked ? m.unranked.toLocaleString() + " more were evaluated but could not be " +
+                  "scored for want of data. " : "") +
+                "Banks, insurers and REITs are not ranked at all: enterprise-value measures do " +
+                "not describe those balance sheets.";
+            }
+          } else {
+            if (status) status.textContent = state.status === "error" ? "Data unavailable" : "Loading…";
+            if (submit) submit.disabled = true;
+            if (uni) uni.textContent =
+              state.status === "error"
+                ? "The daily file could not be read. It may still be building."
+                : "Loading today’s ranked universe…";
+          }
+        }
+
+        fetch(DATA_URL, { cache: "no-store", headers: { accept: "application/json" } })
+          .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            return r.json();
+          })
+          .then(function (json) {
+            if (!json || !Array.isArray(json.ranked)) throw new Error("Malformed " + DATA_URL);
+            state.meta = json._meta || {};
+            state.rows = json.ranked;
+            state.status = "ok";
+            fillSectors();
+            paintAll();
+          })
+          .catch(function (err) {
+            console.error("Failed to load " + DATA_URL + ":", err);
+            state.status = "error";
+            paintAll();
+          });
+
+        document.addEventListener("submit", function (e) {
+          if (e.target && e.target.id === "engForm") runEngine(e);
+        });
       })();
     </script>
 
@@ -1764,13 +1554,13 @@
   .scan-table td:nth-child(1) { position: absolute; top: 14px; right: 14px; width: auto; }
   .scan-table td:nth-child(2) { padding-right: 44px; margin-bottom: 4px; }
   .scan-name { max-width: none; white-space: normal; }
-  .scan-table td:nth-child(n + 3):nth-child(-n + 7) {
+  .scan-table td:nth-child(n + 3):nth-child(-n + 9) {
     padding: 9px 0;
     border-top: 1px solid var(--rule-soft);
     text-align: right;
     overflow: hidden;
   }
-  .scan-table td:nth-child(n + 3):nth-child(-n + 7)::before {
+  .scan-table td:nth-child(n + 3):nth-child(-n + 9)::before {
     float: left;
     color: var(--paper-faint);
     font-size: 14.5px;
@@ -1778,14 +1568,20 @@
     text-transform: uppercase;
     padding-top: 2px;
   }
-  .scan-table td:nth-child(3)::before { content: "Price"; }
-  .scan-table td:nth-child(4)::before { content: "Net cash / share"; }
-  .scan-table td:nth-child(5)::before { content: "Cushion vs 30%"; }
-  .scan-table td:nth-child(6)::before { content: "Price move"; }
-  .scan-table td:nth-child(7)::before { content: "Trend"; }
+  /* These must track the column order in the table above. They still named
+     the cash-cushion screen’s columns, so on a phone "Sector" was labelled
+     "Price" and "Price" was labelled "Net cash / share" — wrong only on
+     mobile, which is where it would have gone unnoticed. */
+  .scan-table td:nth-child(3)::before { content: "Sector"; }
+  .scan-table td:nth-child(4)::before { content: "Price"; }
+  .scan-table td:nth-child(5)::before { content: "Score"; }
+  .scan-table td:nth-child(6)::before { content: "Cheapness"; }
+  .scan-table td:nth-child(7)::before { content: "Quality"; }
+  .scan-table td:nth-child(8)::before { content: "Safety"; }
+  .scan-table td:nth-child(9)::before { content: "Confirmation"; }
   .scan-table td .scan-sub { display: inline; margin-left: 8px; }
   .scan-table td:nth-child(2) .scan-sub { display: block; margin-left: 0; }
-  .scan-table td:nth-child(8) { padding-top: 13px; }
+  .scan-table td:nth-child(10) { padding-top: 13px; }
   .scan-table td:nth-child(8) .scan-link {
     display: block;
     text-align: center;
