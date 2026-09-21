@@ -44,7 +44,14 @@
             "name": "Arden K. Vance",
             "url": "https://thevancereport.com/arden-k-vance.html",
             "description": "Author of the No-Code AI Workforce Series and publisher of The Vance Report.",
-            "sameAs": ["https://www.amazon.com/author/akvance", "https://www.facebook.com/profile.php?id=61586267844039"]
+            "sameAs": [
+              "https://www.amazon.com/author/akvance",
+              "https://substack.com/@thevancereport",
+              "https://www.youtube.com/@VanceTechnology",
+              "https://x.com/VanceReport",
+              "https://www.instagram.com/ardenkvance/",
+              "https://www.facebook.com/profile.php?id=61586267844039"
+            ]
           },
           {
             "@type": "Book",
@@ -663,11 +670,16 @@
         </div>
 
         <div class="wrap">
+          <p class="eyebrow sec-label">Elsewhere</p>
+          <ul class="link-row">
+            <li><a href="https://www.amazon.com/author/akvance" target="_blank" rel="noopener me">Amazon <span aria-hidden="true">&#8599;</span></a></li>
+            <li><a href="https://substack.com/@thevancereport" target="_blank" rel="noopener me">Substack <span aria-hidden="true">&#8599;</span></a></li>
+            <li><a href="https://www.youtube.com/@VanceTechnology" target="_blank" rel="noopener me">YouTube <span aria-hidden="true">&#8599;</span></a></li>
+            <li><a href="https://x.com/VanceReport" target="_blank" rel="noopener me">X <span aria-hidden="true">&#8599;</span></a></li>
+            <li><a href="https://www.instagram.com/ardenkvance/" target="_blank" rel="noopener me">Instagram <span aria-hidden="true">&#8599;</span></a></li>
+            <li><a href="https://www.facebook.com/profile.php?id=61586267844039" target="_blank" rel="noopener me">Facebook <span aria-hidden="true">&#8599;</span></a></li>
+          </ul>
           <p class="index-outro">
-            Elsewhere:
-            <a href="https://www.amazon.com/author/akvance" target="_blank" rel="noopener">Amazon author page &#8599;</a>
-            &middot;
-            <a href="https://www.facebook.com/profile.php?id=61586267844039" target="_blank" rel="noopener">Facebook &#8599;</a>.
             On this site: <a href="index.html">today&rsquo;s screen</a> and
             <a href="blog.html">field notes</a>.
           </p>
@@ -1161,6 +1173,28 @@
          margins and max-width on them above did nothing and all three ran
          together on one line. They are meant to stack. */
       .post-title, .post-dek, .post-tags { display: block; }
+    
+      /* ---------- elsewhere ---------- */
+      .link-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .link-row a {
+        display: block;
+        border: 1px solid var(--rule);
+        padding: 9px 14px;
+        color: var(--paper-dim);
+        text-decoration: none;
+        font-size: 14px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .link-row a:hover { border-color: var(--amber); color: var(--amber); }
+      .link-row a:focus-visible { outline: 1px solid var(--amber); outline-offset: 2px; }
     </style>
 </body>
 </html>
