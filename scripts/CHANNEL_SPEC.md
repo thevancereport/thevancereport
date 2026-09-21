@@ -110,6 +110,30 @@ rejection and is why `coint` and MacKinnon's critical values were used
 instead. Here the series is the observed log price itself. Nothing has been
 estimated out of it, so the standard critical values are the correct ones.
 
+**(c) A cap on the fitted slope.** Added 20 September 2026, before any run,
+because (b) as first written let back in exactly what §0 says is the error.
+
+`regression="ct"` tests the unit root against a *trend-stationary*
+alternative. A stock climbing in a clean, tight line is trend stationary.
+It rejects the unit root, it passes (b), and it is the high-R² trending
+stock this whole document exists to exclude. The variance ratio catches the
+strong cases — a deterministic trend plus noise has its long-horizon
+variance dominated by the trend, so VR comes out above 1 — but a mild trend
+with mean-reverting residuals passes both tests and is not a range.
+
+So the fitted centre line must also be close to flat:
+
+> |slope| × 252 ≤ 1.0 × the residual standard deviation
+
+In words: over the whole formation window the centre line may not move by
+more than one band half-width. A series that drifts further than that is
+trending, whatever the ADF says about its residuals.
+
+The distribution of |slope| × 252 / σ is reported across all candidates, so
+the cut can be seen rather than taken on faith, and the count that (b)
+passes but (c) rejects is reported separately — that number is the size of
+the loophole.
+
 **Not used: the Hurst exponent.** It is the obvious third candidate and it
 is left out deliberately. Rescaled-range estimates on 252 observations carry
 severe small-sample bias and no usable sampling distribution at that length;
@@ -121,12 +145,28 @@ it would add the appearance of rigour and none of the substance.
 Fitted on the formation window, applied to the trading window, never
 refitted on data a trade can see.
 
-- Centre line: OLS of log price on session index over the formation window.
+- Centre line: OLS of log price on session index over the formation window,
+  giving intercept α and slope β.
 - Half-width: k × the standard deviation of the residuals, k = 2.
+- **Through the trading window the line is projected, not refitted.** The
+  session index keeps counting, so the centre on trading day t is
+  α + β·(252 + t) and the bands stay at ±2σ around it, with α, β and σ all
+  frozen at formation. Refitting on the trading window would be look-ahead;
+  holding the line flat instead would be a different and unstated model.
+  §4(c) is what keeps this extrapolation honest: with the slope capped, the
+  centre can move at most about half a band-width across the 126 sessions,
+  so the projection is bounded by construction rather than by hope.
+- Everything above is in log space, including the ±2σ bands, so an entry
+  test compares ln(close) against the band and never a raw price against a
+  log-space bound.
 - ADX(14), **Wilder smoothing** — the recursive
   `prev - prev/n + current` form, not `.rolling(n).mean()`, which is a
   different and shorter-memoried filter that will not agree with any chart
-  the reader compares it against. Pre-registered as a *filter*, not a test:
+  the reader compares it against. Wilder's form is recursive, so it needs a
+  warm-up before it means anything: prices are pulled from **60 sessions
+  before** the formation window starts and the ADX reading used is the one
+  at the formation window's end, by which point the recursion has long
+  since forgotten its seed. Pre-registered as a *filter*, not a test:
   a candidate is dropped if ADX at the end of the formation window exceeds
   25. No p-value is claimed for it, because it does not have one.
 
@@ -215,7 +255,38 @@ Closing prices also cannot say whether an entry was fillable. A close below
 the lower band is assumed to be tradeable at that close; in a fast move it
 would not have been.
 
+## 10. What passing every check would and would not establish
+
+Worth stating plainly, because the natural reading of §7 is "seven hurdles,
+clear them all and the thing is proven", and that is not what this can do.
+
+Clearing §7 would mean: on companies that still carry a ticker today,
+priced at the close, over this sample, the range test added return beyond a
+matched dip-buying control after the costs assumed in §6.
+
+It would not mean the strategy works. §9 gives two reasons standing in the
+way, and neither is fixed by adding more checks. The universe cannot include
+a company that broke down and was delisted, and those are disproportionately
+the trades that would have hurt, so a positive number is an upper bound, not
+an estimate. And a close below the band is assumed fillable at that close,
+which in a fast move it was not.
+
+A pass here earns a second study on better data. It does not earn money.
+
 ## Change log
 
-Nothing yet. Any change made after the first run against real data must be
-recorded here with the reason, the date, and the run that prompted it.
+**20 September 2026 — before the first run.** Three changes, all prompted by
+reading the spec again rather than by any result, since none exists yet.
+
+1. Added §4(c), the slope cap. `regression="ct"` admits trend-stationary
+   series, and a clean uptrend is trend stationary — so the ADF test as
+   first written let through the exact failure §0 was written about. The
+   variance ratio catches the strong cases but not mild ones.
+2. §5 now says the centre line is *projected* through the trading window as
+   α + β·t rather than leaving it ambiguous between projecting and holding
+   flat, and states that the bands live in log space.
+3. §5 now records the 60-session warm-up ADX needs before Wilder's
+   recursion means anything.
+
+Any change made after the first run against real data must be recorded here
+with the reason, the date, and the run that prompted it.
