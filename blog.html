@@ -1046,6 +1046,11 @@
 
   .back { white-space: normal; letter-spacing: 0.04em; line-height: 1.25; }
 }
-</style>
+
+      /* The title, description and tags inside each card are <span>s, so the
+         margins and max-width on them above did nothing and all three ran
+         together on one line. They are meant to stack. */
+      .post-title, .post-dek, .post-tags { display: block; }
+    </style>
 </body>
 </html>
