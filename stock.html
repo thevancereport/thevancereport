@@ -366,6 +366,9 @@
 
     <div id="figures-slot"></div>
 
+    <!-- Filled from specials.json when this company has a video. -->
+    <div id="video-slot"></div>
+
     <div class="card">
       <div class="section-title">Check another stock</div>
       <p class="notes-p">
@@ -1248,6 +1251,88 @@
   .scan-table td:nth-child(n + 3):nth-child(-n + 7)::before { font-size: 14px; }
 }
 </style>
+<script id="vr-stock-video">
+  /* Specials: videos about one company, listed in specials.json.
+   *
+   * A special is made from one day's screen, and the ranking moves every day,
+   * so the card always says which screen the video was made from and that
+   * the figures above are today's. The player is a thumbnail until clicked;
+   * nothing loads from YouTube unless the visitor asks for it.
+   */
+  (function () {
+    var slot = document.getElementById("video-slot");
+    if (!slot) return;
+    var list = null;
+
+    function sym() {
+      return (new URLSearchParams(location.search).get("symbol") || "")
+        .toUpperCase().replace(/[^A-Z.\-]/g, "").slice(0, 8);
+    }
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+      });
+    }
+    function day(iso) {
+      var d = new Date(iso + "T12:00:00Z");
+      return isNaN(d) ? iso : d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+    }
+
+    function show() {
+      var s = sym();
+      var v = list && s ? list.filter(function (x) { return x.symbol === s; }).pop() : null;
+      if (!v || !/^[A-Za-z0-9_-]{11}$/.test(v.video_id)) { slot.innerHTML = ""; return; }
+      var id = v.video_id;
+      slot.innerHTML =
+        '<div class="card">' +
+          '<div class="section-title">Video</div>' +
+          '<button type="button" class="vid-thumb" aria-label="Play: ' + esc(v.title) + '">' +
+            '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt="" loading="lazy" />' +
+            '<span class="vid-play" aria-hidden="true"></span>' +
+          "</button>" +
+          '<p class="notes-p vid-note"><b>' + esc(v.title) + "</b>" + (v.duration ? " &middot; " + esc(v.duration) : "") +
+          "<br>Made from the screen of " + esc(day(v.screen_date)) + ", when " + esc(s) + " ranked #" +
+          esc(v.rank_then) + " of " + Number(v.universe_then).toLocaleString() +
+          ". The figures above are today\u2019s. " +
+          '<a href="https://www.youtube.com/watch?v=' + id + '">Watch on YouTube</a></p>' +
+        "</div>";
+      slot.querySelector(".vid-thumb").addEventListener("click", function () {
+        var f = document.createElement("iframe");
+        f.src = "https://www.youtube-nocookie.com/embed/" + id + "?autoplay=1&rel=0";
+        f.title = v.title;
+        f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        f.allowFullscreen = true;
+        f.className = "vid-frame";
+        this.replaceWith(f);
+      });
+    }
+
+    // The page changes company without reloading (lookup form, back button),
+    // so follow the URL rather than reading it once.
+    var push = history.pushState;
+    history.pushState = function () { var r = push.apply(this, arguments); show(); return r; };
+    window.addEventListener("popstate", show);
+
+    fetch("specials.json", { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : { videos: [] }; })
+      .then(function (j) { list = Array.isArray(j.videos) ? j.videos : []; show(); })
+      .catch(function () { list = []; });
+  })();
+</script>
+<style id="vr-stock-video-css">
+  .vid-thumb, .vid-frame { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 4px; margin: 0 0 14px; }
+  .vid-thumb { position: relative; padding: 0; cursor: pointer; background: #000; overflow: hidden; }
+  .vid-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .92; }
+  .vid-thumb:hover img, .vid-thumb:focus-visible img { opacity: 1; }
+  .vid-play { position: absolute; left: 50%; top: 50%; width: 76px; height: 54px; transform: translate(-50%, -50%);
+    background: rgba(19, 15, 10, .82); border: 1px solid var(--amber); border-radius: 10px; }
+  .vid-play::after { content: ""; position: absolute; left: 31px; top: 16px; border-style: solid;
+    border-width: 11px 0 11px 18px; border-color: transparent transparent transparent var(--amber); }
+  .vid-note { margin-bottom: 0; color: var(--text-muted); }
+  .vid-note b { color: var(--text); font-weight: 600; }
+  .vid-note a { color: var(--amber); }
+</style>
+
 <script id="vr-stock-seo">
   /* Per-ticker metadata.
 
