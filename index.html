@@ -948,6 +948,93 @@
         </div>
       </section>
 
+      <!-- The newest company special, from specials.json (the same list
+           stock.html reads). Hidden until there is one. -->
+      <section class="block" id="special" hidden>
+        <div class="wrap">
+          <div class="sec-head">
+            <h2>Special</h2>
+            <span class="sec-meta">One company,<br>measure by measure</span>
+          </div>
+          <div id="specialSlot"></div>
+        </div>
+      </section>
+      <style id="vr-special-css">
+        .special-thumb { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; cursor: pointer; background: #000; }
+        .special-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .9; }
+        .special-thumb:hover img, .special-thumb:focus-visible img { opacity: 1; }
+        .special-play { position: absolute; left: 50%; top: 50%; width: 76px; height: 54px; transform: translate(-50%, -50%);
+          background: rgba(19, 15, 10, .82); border: 1px solid var(--amber); border-radius: 10px; }
+        .special-play::after { content: ""; position: absolute; left: 31px; top: 16px; border-style: solid;
+          border-width: 11px 0 11px 18px; border-color: transparent transparent transparent var(--amber); }
+      </style>
+      <script id="vr-special">
+        /* A special is made from one day's screen; the ranking moves every
+         * day. So the card shows the rank the video describes and, beside it,
+         * the rank in today's file -- the reader never has to guess which
+         * figure is current. Nothing loads from YouTube until Play is pressed.
+         */
+        (function () {
+          var section = document.getElementById("special");
+          var slot = document.getElementById("specialSlot");
+          if (!section || !slot) return;
+          function esc(s) {
+            return String(s).replace(/[&<>"]/g, function (c) {
+              return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+            });
+          }
+          function day(iso) {
+            var d = new Date(iso + "T12:00:00Z");
+            return isNaN(d) ? iso : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+          }
+          Promise.all([
+            fetch("specials.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }),
+            fetch("value_screen.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+          ]).then(function (res) {
+            var list = res[0] && Array.isArray(res[0].videos) ? res[0].videos : [];
+            var v = list.filter(function (x) { return /^[A-Za-z0-9_-]{11}$/.test(x.video_id); }).pop();
+            if (!v) return;
+            var screen = res[1];
+            var row = screen && Array.isArray(screen.ranked)
+              ? screen.ranked.filter(function (r) { return r.symbol === v.symbol; })[0] : null;
+            var total = screen && screen.ranked ? screen.ranked.length : 0;
+            var today = row ? "#" + row.rank + " of " + total.toLocaleString() : (screen ? "Not ranked" : "&mdash;");
+            var id = v.video_id;
+            slot.innerHTML =
+              '<div class="briefing">' +
+                '<div class="briefing-player">' +
+                  '<button type="button" class="special-thumb" aria-label="Play: ' + esc(v.title) + '">' +
+                    '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt="" loading="lazy" />' +
+                    '<span class="special-play" aria-hidden="true"></span>' +
+                  "</button>" +
+                "</div>" +
+                '<div class="briefing-side">' +
+                  "<h3>" + esc(v.title) + "</h3>" +
+                  '<div class="briefing-meta">' +
+                    "<div><span>Made from the screen of</span><b>" + esc(day(v.screen_date)) + "</b></div>" +
+                    "<div><span>" + esc(v.symbol) + " rank then</span><b>#" + esc(v.rank_then) + " of " + Number(v.universe_then).toLocaleString() + "</b></div>" +
+                    "<div><span>" + esc(v.symbol) + " rank today</span><b>" + today + "</b></div>" +
+                    (v.duration ? "<div><span>Runtime</span><b>" + esc(v.duration) + "</b></div>" : "") +
+                  "</div>" +
+                  '<div class="briefing-links">' +
+                    '<a class="briefing-link" href="stock.html?symbol=' + encodeURIComponent(v.symbol) + '">' + esc(v.symbol) + "\u2019s figures today</a>" +
+                    '<a class="briefing-link" href="https://www.youtube.com/watch?v=' + id + '">Watch on YouTube</a>' +
+                  "</div>" +
+                "</div>" +
+              "</div>";
+            slot.querySelector(".special-thumb").addEventListener("click", function () {
+              var f = document.createElement("iframe");
+              f.src = "https://www.youtube-nocookie.com/embed/" + id + "?autoplay=1&rel=0";
+              f.title = v.title;
+              f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+              f.allowFullscreen = true;
+              this.replaceWith(f);
+            });
+            section.hidden = false;
+          }).catch(function () {});
+        })();
+      </script>
+
       <section class="block">
         <div class="wrap">
           <div class="sec-head">
