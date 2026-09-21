@@ -92,9 +92,11 @@ roughly one day in two; a page that never admits an empty day is lying by
 omission. Where there are names, they are listed with their one-day move and
 their rank.
 
-**3.6 What the record does not say.** A fixed closing paragraph, identical every
-day, never model-written, stating that the page reports what happened and makes
-no claim about why or about what comes next.
+**3.6 Method link.** One line at the foot, never model-written, linking to the
+method page, which states what the record measures. One line and not a
+paragraph: a caveat restated at length every day for a year stops reading as
+candour and starts reading as an apology. The limit is stated properly once,
+where someone can read it, rather than repeatedly where nobody will.
 
 ## 4. When it does not publish
 
@@ -122,19 +124,18 @@ five distinctive pieces under two hundred and fifty short ones a year.
 Each day is permanent at `/record/YYYY-MM-DD.html`. The index lists the most
 recent sixty, with an archive beyond.
 
-## 6. What this is not evidence of
+## 6. What the record measures
 
-On the page, and here so the point survives.
+One session: what the universe did, and what the screen produced that day. It
+is a measurement, not a performance history, because a day is not a horizon.
 
-The record shows what the screen produced and what those names did on one day.
-**One day is not a result.** The value backtest put the top decile's median
-six-month excess at +0.24pp against the universe, and the holdout inverted at
-twelve months. Nothing accumulated here changes that, and the page will not be
-used to imply it does.
+The screen's measured performance is a separate question with a separate
+answer, and `VALUE_SPEC.md` is where it is answered. The record points there
+and does not relitigate it.
 
-If this is ever read as a performance history, it will be one showing
-approximately nothing — because that is what the testing already said.
-Publishing it anyway is the point.
+Stated once, on the method page. Not restated daily. Publishing a factual daily
+record of your own universe is an unusual thing to do; presenting it as a
+confession would misdescribe it.
 
 ## 7. Cadence, cost and access
 
