@@ -722,6 +722,19 @@
     .briefing-note { font-size: 15px; line-height: 1.55; color: var(--paper-faint); margin: 0 0 14px; }
     .briefing-links { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
     .briefing-link { display: inline-block; color: var(--amber); text-decoration: none; font-size: 14.5px; letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--amber-deep); }
+    /* Shown on Saturday and Sunday, New York time. Nothing here claims the
+       market is open on a weekday, because a holiday would make that false. */
+    .briefing-status { font-size: 15px; line-height: 1.55; color: var(--paper); margin: 0 0 16px; padding: 10px 12px; border-left: 2px solid var(--amber); background: rgba(224, 163, 60, 0.06); }
+    /* The introduction's title card, drawn in the page's own type rather than
+       shipped as an image. It fills the player slot until intro.json names a
+       video, and stays as the fallback if YouTube will not load. */
+    .briefing-player { container-type: inline-size; }
+    .intro-card { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 0 7cqw;
+      background: radial-gradient(80cqw 60cqw at 12% 0%, #2d2115 0%, rgba(45, 33, 21, 0) 70%), var(--ink); }
+    .intro-card .eb { font-size: clamp(9px, 1.7cqw, 14px); font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--amber); margin-bottom: 2.6cqw; }
+    .intro-card .hl { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 7.4cqw, 72px); line-height: 1; color: var(--paper); }
+    .intro-card .bar { display: flex; height: clamp(8px, 2.6cqw, 22px); margin-top: 5.5cqw; border-radius: 2px; overflow: hidden; }
+    .intro-card .lab { display: flex; justify-content: space-between; margin-top: 1.8cqw; font-size: clamp(9px, 1.6cqw, 13px); color: var(--paper-faint); }
   </style>
       <style id="vr-screen">
       /* .scan-link is new; .scan-sub already exists but is restated so the
@@ -930,10 +943,10 @@
       <section class="block" id="briefing">
         <div class="wrap">
           <div class="sec-head">
-            <h2>Daily briefing</h2>
-            <span class="sec-meta">Why each name cleared<br>the screen today</span>
+            <h2>Start here</h2>
+            <span class="sec-meta">How the screen works,<br>in eighty seconds</span>
           </div>
-          <div id="briefingSlot" class="state-msg">Loading today&rsquo;s briefing&hellip;</div>
+          <div id="briefingSlot" class="state-msg">Loading&hellip;</div>
         </div>
       </section>
 
@@ -1822,22 +1835,46 @@
 }
 </style>
 <script>
-  /* Daily briefing. video.json is written by .github/workflows/daily_video.yml
-     after the briefing is uploaded; until then the slot says so plainly rather
-     than showing an empty player. */
+  /* Start here. intro.json names the introduction video once it is on
+     YouTube; until then the slot shows its title card, so the section is never
+     empty and never shows a stale daily briefing. This deliberately does not
+     read video.json -- that file belongs to the daily-briefing pipeline, which
+     still describes the retired screen and is paused until it is rebuilt. */
   (function () {
     var slot = document.getElementById("briefingSlot");
     if (!slot) return;
     function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-    function quiet(msg) { slot.className = "state-msg"; slot.textContent = msg; }
-    fetch("video.json?cb=" + Date.now(), { cache: "no-store" })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (v) {
-        if (!v || !v.video_id || v.video_id === "DRYRUN") throw new Error("no video");
-        var mins = v.duration_seconds ? Math.round(v.duration_seconds / 60) : null;
-        var syms = (v.symbols || []).map(esc).join(" &middot; ") || "None cleared";
 
+    var PILLARS = [
+      ["Cheapness", 40, "#c98500"], ["Quality", 30, "#3987e5"],
+      ["Safety", 20, "#199e70"], ["Confirmation", 10, "#9085e9"]
+    ];
+
+    function weekendInNewYork() {
+      try {
+        var d = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short" }).format(new Date());
+        return d === "Sat" || d === "Sun";
+      } catch (e) { var g = new Date().getDay(); return g === 0 || g === 6; }
+    }
+
+    function card() {
+      return '<div class="intro-card" role="img" aria-label="How the screen works: four measures, one ranking">' +
+        '<div class="eb">The Vance Report</div>' +
+        '<div class="hl">How the screen works</div>' +
+        '<div class="bar">' + PILLARS.map(function (p) {
+          return '<div style="width:' + p[1] + '%;background:' + p[2] + '"></div>'; }).join("") + "</div>" +
+        '<div class="lab">' + PILLARS.map(function (p) {
+          return "<span>" + p[0] + " " + p[1] + "%</span>"; }).join("") + "</div>" +
+        "</div>";
+    }
+
+    function render(v) {
+      var has = !!(v && v.video_id);
+      var secs = has && v.duration_seconds ? Math.round(v.duration_seconds) : null;
+      var runtime = secs ? Math.floor(secs / 60) + " min " + (secs % 60) + " s" : null;
+
+      if (has) {
         var ld = document.createElement("script");
         ld.type = "application/ld+json";
         ld.textContent = JSON.stringify({
@@ -1845,56 +1882,50 @@
           "@type": "VideoObject",
           "name": v.title,
           "description": v.description || v.title,
-          "thumbnailUrl": [v.thumbnail],
-          "uploadDate": v.generated_at,
+          "thumbnailUrl": ["https://i.ytimg.com/vi/" + v.video_id + "/maxresdefault.jpg"],
+          "uploadDate": v.uploaded,
           "duration": v.duration_iso,
-          "embedUrl": v.embed,
-          "url": v.url,
-          "contentUrl": v.url,
-          "publisher": {
-            "@type": "Organization",
-            "name": "The Vance Report",
-            "url": "https://thevancereport.com/"
-          },
+          "embedUrl": "https://www.youtube-nocookie.com/embed/" + v.video_id,
+          "url": "https://www.youtube.com/watch?v=" + v.video_id,
+          "publisher": { "@type": "Organization", "name": "The Vance Report", "url": "https://thevancereport.com/" },
           "isFamilyFriendly": true,
-          "inLanguage": "en-US",
-          "hasPart": (v.chapters || []).map(function (c, i, all) {
-            return {
-              "@type": "Clip",
-              "name": c.title,
-              "startOffset": Math.round(c.start),
-              "endOffset": Math.round(i + 1 < all.length ? all[i + 1].start
-                                                         : (v.duration_seconds || c.start + 30)),
-              "url": v.url + "&t=" + Math.round(c.start) + "s"
-            };
-          })
+          "inLanguage": "en-US"
         });
         document.head.appendChild(ld);
-        slot.className = "briefing";
-        slot.innerHTML =
-          '<div class="briefing-player"><iframe src="' + esc(v.embed) +
-          '" title="' + esc(v.title) + '" loading="lazy" allowfullscreen ' +
-          'allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"></iframe></div>' +
-          '<div class="briefing-side">' +
-            "<h3>Today&rsquo;s briefing</h3>" +
-            '<div class="briefing-meta">' +
-              "<div><span>Run date</span><b>" + esc(v.run_date || "&mdash;") + "</b></div>" +
-              "<div><span>Names covered</span><b>" + syms + "</b></div>" +
-              (mins ? "<div><span>Runtime</span><b>" + mins + " min</b></div>" : "") +
-            "</div>" +
-            '<p class="briefing-note">The briefing walks through what put each name ' +
-            "through the screen and the levels the formula itself works from. Opinion " +
-            "and education, not investment advice, and not intended for day or " +
-            "short-term trading.</p>" +
-            '<div class="briefing-links">' +
-            '<a class="briefing-link" href="' + esc(v.url) + '" target="_blank" rel="noopener">' +
-            "Watch this on YouTube &rarr;</a>" +
-            '<a class="briefing-link" href="https://www.youtube.com/playlist?list=PLbTbLJMtcdlw" target="_blank" rel="noopener">' +
-            "Every daily briefing &rarr;</a>" +
-            "</div>" +
-          "</div>";
-      })
-      .catch(function () { quiet("Today\u2019s briefing has not been published yet."); });
+      }
+
+      slot.className = "briefing";
+      slot.innerHTML =
+        '<div class="briefing-player">' + (has
+          ? '<iframe src="https://www.youtube-nocookie.com/embed/' + esc(v.video_id) + '" title="' +
+            esc(v.title || "How the screen works") + '" loading="lazy" allowfullscreen ' +
+            'allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"></iframe>'
+          : card()) + "</div>" +
+        '<div class="briefing-side">' +
+          "<h3>How the screen works</h3>" +
+          (weekendInNewYork()
+            ? '<p class="briefing-status">Markets are closed for the weekend. The screen updates again after the next trading session.</p>'
+            : "") +
+          '<div class="briefing-meta">' +
+            "<div><span>Covers</span><b>Four measures, one ranking</b></div>" +
+            "<div><span>Screen updates</span><b>Weekdays, after the close</b></div>" +
+            (runtime ? "<div><span>Runtime</span><b>" + runtime + "</b></div>" : "") +
+          "</div>" +
+          '<p class="briefing-note">What goes into each company\u2019s score, how it is compared ' +
+          "with its own sector, and how to read a rank. Educational research, not investment advice.</p>" +
+          '<div class="briefing-links">' +
+            (has ? '<a class="briefing-link" href="https://www.youtube.com/watch?v=' + esc(v.video_id) +
+                   '" target="_blank" rel="noopener">Watch on YouTube &rarr;</a>' : "") +
+            '<a class="briefing-link" href="stock.html">Stock lookup &rarr;</a>' +
+            '<a class="briefing-link" href="blog.html">Field notes &rarr;</a>' +
+          "</div>" +
+        "</div>";
+    }
+
+    fetch("intro.json?cb=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(render)
+      .catch(function () { render(null); });
   })();
 </script>
 
