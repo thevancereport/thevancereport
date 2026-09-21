@@ -599,7 +599,7 @@
           <ul class="post-list">
             <li>
               <a class="post-item" href="https://www.amazon.com/dp/B0HJN2PMST" target="_blank" rel="noopener">
-                <span class="post-index">09-13-2026</span>
+                <span class="post-index book-side"><img class="book-cover" src="images/books/value-investor.webp" width="90" height="143" alt="" loading="lazy" decoding="async" /><span class="book-date">09-13-2026</span></span>
                 <span>
                   <span class="post-title">The No-Code AI Agent for the Value Investor</span>
                   <span class="post-dek">Setting up AI research assistants, built on models such as Google Gemini, to scan for value candidates, run the balance-sheet arithmetic and write plain summaries &mdash; without writing code. See the note below before using its screening rule.</span>
@@ -609,7 +609,7 @@
             </li>
             <li>
               <a class="post-item" href="https://www.amazon.com/dp/B0HHJHRBPB" target="_blank" rel="noopener">
-                <span class="post-index">09-02-2026</span>
+                <span class="post-index book-side"><img class="book-cover" src="images/books/video-starter-kit.webp" width="90" height="143" alt="" loading="lazy" decoding="async" /><span class="book-date">09-02-2026</span></span>
                 <span>
                   <span class="post-title">The No-Code AI Video Starter Kit</span>
                   <span class="post-dek">From an idea on Saturday morning to an exported video by Sunday: a weekend workflow for scripting, generating and assembling video with AI tools, written for complete beginners.</span>
@@ -619,7 +619,7 @@
             </li>
             <li>
               <a class="post-item" href="https://www.amazon.com/dp/B0GX3XM7M7" target="_blank" rel="noopener">
-                <span class="post-index">05-02-2026</span>
+                <span class="post-index book-side"><img class="book-cover" src="images/books/code-smarter.webp" width="90" height="143" alt="" loading="lazy" decoding="async" /><span class="book-date">05-02-2026</span></span>
                 <span>
                   <span class="post-title">Code Smarter, Not Harder</span>
                   <span class="post-dek">A beginner&rsquo;s guide to agent-assisted coding: directing AI tools to design apps and automate workflows, with the tools handling the syntax while you handle the decisions.</span>
@@ -629,7 +629,7 @@
             </li>
             <li>
               <a class="post-item" href="https://www.amazon.com/dp/B0GDZHV63Q" target="_blank" rel="noopener">
-                <span class="post-index">01-05-2026</span>
+                <span class="post-index book-side"><img class="book-cover" src="images/books/mastering-ai-agents.webp" width="90" height="143" alt="" loading="lazy" decoding="async" /><span class="book-date">01-05-2026</span></span>
                 <span>
                   <span class="post-title">Mastering AI Agents, Second Edition</span>
                   <span class="post-dek">Building and deploying autonomous AI agents across a business: a phased roadmap from scoping to deployment, low-cost toolkits, and benchmarks for telling whether the automation is paying for itself.</span>
@@ -1131,6 +1131,36 @@
       }
       .note-box p:last-child { margin-bottom: 0; }
       .note-box .eyebrow { margin: 0 0 12px; }
+    
+      /* ---------- book covers ----------
+         Hosted here rather than hot-linked from Amazon's image servers,
+         which change their URLs and are not ours to lean on. Covers are the
+         author's own. 180px files shown at 90px, so they stay sharp on
+         high-density screens. */
+      .book-side { display: flex; flex-direction: column; gap: 12px; }
+      .book-cover {
+        display: block;
+        width: 90px;
+        height: auto;
+        aspect-ratio: 180 / 286;
+        border: 1px solid var(--rule);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+        transition: transform 0.2s ease;
+      }
+      .post-item:hover .book-cover { transform: translateY(-2px); }
+      @media (max-width: 720px) {
+        .book-side { flex-direction: row; align-items: flex-end; gap: 16px; }
+        .book-cover { width: 72px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .book-cover { transition: none; }
+        .post-item:hover .book-cover { transform: none; }
+      }
+    
+      /* The title, description and tags inside each card are <span>s, so the
+         margins and max-width on them above did nothing and all three ran
+         together on one line. They are meant to stack. */
+      .post-title, .post-dek, .post-tags { display: block; }
     </style>
 </body>
 </html>
