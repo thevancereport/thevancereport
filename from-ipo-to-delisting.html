@@ -37,7 +37,7 @@
             "headline": "From IPO to Delisting: What Investors Actually Live Through",
             "description": "A composite investor's five years in a single listing, set against the record of how often listed companies disappear and why.",
             "datePublished": "2026-09-20",
-            "dateModified": "2026-09-20",
+            "dateModified": "2026-09-21",
             "inLanguage": "en-US",
             "articleSection": "Market Structure",
             "keywords": "IPO, delisting, Nasdaq minimum bid price, reverse stock split, survivorship bias, listed companies, shareholder recovery, bankruptcy priority",
@@ -499,7 +499,37 @@
         }
       }
     </style>
-    </head>
+      <style id="note-video-css">
+      .note-video { margin: 0 0 40px; }
+      .note-video-thumb { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; padding: 0;
+        border: 1px solid var(--rule); background: #000; cursor: pointer; overflow: hidden; }
+      .note-video-thumb img, .note-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
+      .note-video-thumb:hover img, .note-video-thumb:focus-visible img { filter: brightness(1.08); }
+      .note-video-play { position: absolute; left: 50%; top: 50%; width: 76px; height: 54px; transform: translate(-50%, -50%);
+        background: rgba(19, 15, 10, .82); border: 1px solid var(--amber); border-radius: 10px; }
+      .note-video-play::after { content: ""; position: absolute; left: 31px; top: 16px; border-style: solid;
+        border-width: 11px 0 11px 18px; border-color: transparent transparent transparent var(--amber); }
+      .note-video figcaption { margin-top: 12px; font-size: 15px; color: var(--paper-faint); }
+      .note-video figcaption a { color: var(--amber); }
+      .correction { font-size: 15px; color: var(--paper-faint); }
+    </style>
+    <script>
+      /* Nothing loads from YouTube until the reader presses play. */
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest && e.target.closest(".note-video-thumb");
+        if (!b) return;
+        var f = document.createElement("iframe");
+        f.src = "https://www.youtube-nocookie.com/embed/" + b.getAttribute("data-yt") + "?autoplay=1&rel=0";
+        f.title = "Six in ten are already gone";
+        f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        f.allowFullscreen = true;
+        var wrap = document.createElement("div");
+        wrap.style.cssText = "position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--rule)";
+        wrap.appendChild(f);
+        b.replaceWith(wrap);
+      });
+    </script>
+  </head>
   <body>
     <!-- One menu for the whole site; see site-nav.js. -->
     <script src="site-nav.js" data-section="blog"></script>
@@ -543,6 +573,18 @@
               Listings<br />Delisting<br />Survivorship<br />IPO returns
             </aside>
             <div class="prose">
+              <figure class="note-video">
+                <button type="button" class="note-video-thumb" data-yt="7U8jqXvv5LI"
+                  aria-label="Play the video version of this note">
+                  <img src="https://i.ytimg.com/vi/7U8jqXvv5LI/maxresdefault.jpg" alt=""
+                    loading="lazy" width="1280" height="720" />
+                  <span class="note-video-play" aria-hidden="true"></span>
+                </button>
+                <figcaption>
+                  This note as a 1:48 video.
+                  <a href="https://www.youtube.com/watch?v=7U8jqXvv5LI">Watch on YouTube</a>
+                </figcaption>
+              </figure>
               <p class="lead">
                 Ellen Marsh bought her first share of Halcyon Grid on a Tuesday
                 in February 2021, at 9:52 in the morning, for $26.40. She sold
@@ -671,14 +713,15 @@
                 A company that says it has twelve months of cash is a company
                 that will be selling shares within nine. Halcyon Grid did, at
                 $6.40, in a registered offering that increased the share count
-                by 31%. Ellen's ownership of the business shrank by a third
-                without her selling anything or being asked.
+                by 31%. Ellen's ownership of the business shrank by nearly a
+                quarter without her selling anything or being asked.
               </p>
               <p>
                 She averaged down at $7.00. This is the point at which most
                 people's losses stop being caused by the original decision and
                 start being caused by the response to it. Her cost basis was now
-                $19.70 across three times the shares, and the position had gone
+                $16.21 across 3,100 shares, well over twice what she had held,
+                and the position had gone
                 from a small one to a meaningful one at exactly the moment the
                 balance sheet was deteriorating.
               </p>
@@ -704,8 +747,9 @@
               <p>
                 Halcyon Grid did a one-for-fifteen. Ellen's 3,100 shares became
                 206. The price went from $0.62 to $9.30 overnight and her
-                position was worth precisely what it had been worth the evening
-                before: $1,916.
+                position was worth exactly what it had been worth the evening
+                before: $1,922, now as $1,916 in shares and $6 in cash for the
+                fraction of a share the split could not issue.
               </p>
               <p>
                 A reverse split creates no value. It is a compliance action,
@@ -966,6 +1010,12 @@
                 Aswath Damodaran, NYU Stern. Filer counts for 2015–2025 are our
                 own, drawn from the SEC's Financial Statement Data Sets and
                 checked against the SEC's current company-ticker file.
+              </p>
+              <p class="correction">
+                <em>Corrected September 21, 2026:</em> two figures in Ellen's
+                story did not add up and have been fixed &mdash; how much the
+                offering diluted her stake, and her cost basis after averaging
+                down. None of the statistics changed.
               </p>
               <p>
                 <a class="back" href="blog.html"
