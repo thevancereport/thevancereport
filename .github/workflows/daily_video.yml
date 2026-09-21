@@ -4,10 +4,19 @@ name: Daily briefing video
 # stale screen is worse than not publishing one, so this job reads the file
 # from the repo rather than regenerating it, and stops if it is not from today.
 
+# PAUSED 20 September 2026. The briefing is built from research.json, which
+# describes the retired cash-plus-drop screen, not the ranking the site runs
+# now. Left on, it would post a retired-screen briefing to the channel after
+# every data sync and overwrite video.json with it. The automatic trigger is
+# removed rather than the file, so the pipeline and its history stay intact
+# for the rebuild on the current screen's vocabulary (issues #26 and #31).
+# It can still be run by hand from the Actions tab.
+#
+# To restore:  put these three lines back under "on:"
+#   workflow_run:
+#     workflows: ["Daily Financial Data Sync"]
+#     types: [completed]
 on:
-  workflow_run:
-    workflows: ["Daily Financial Data Sync"]   # the screener workflow, by its name: field
-    types: [completed]
   workflow_dispatch:
     inputs:
       privacy:
