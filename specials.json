@@ -1,0 +1,15 @@
+{
+  "_about": "Videos about one company. stock.html shows the latest entry for the symbol it is displaying. screen_date is the screen the video was made from; rank_then and universe_then are that day's figures, never today's.",
+  "videos": [
+    {
+      "symbol": "YELP",
+      "video_id": "PMDsugvz1Ag",
+      "title": "Why Yelp ranks first",
+      "screen_date": "2026-09-18",
+      "rank_then": 1,
+      "universe_then": 1185,
+      "duration": "1:34",
+      "uploaded": "2026-09-21"
+    }
+  ]
+}
