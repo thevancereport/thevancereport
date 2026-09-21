@@ -1,8 +1,17 @@
 name: Daily Financial Data Sync
 
+# PAUSED 20 September 2026. This job runs scripts/update_research.py, the
+# retired cash-plus-drop screen, and commits research.json and
+# screen_snapshot.json. No page on the site reads either file any more --
+# every page reads value_screen.json, written by value_daily.yml -- so the
+# schedule was spending an FMP quota every weekday to produce files nobody
+# sees. It also triggered the daily briefing video, paused the same night.
+# Kept runnable by hand from the Actions tab.
+#
+# To restore:  put these two lines back under "on:"
+#   schedule:
+#     - cron: '0 21 * * 1-5'
 on:
-  schedule:
-    - cron: '0 21 * * 1-5'
   workflow_dispatch:
 
 permissions:
