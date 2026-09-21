@@ -244,6 +244,31 @@
         color: var(--paper-dim);
         font-size: 17.5px;
       }
+      /* Added 20 September 2026. The screen this note describes is not the
+         one the site runs any more, and a reader arriving from a search
+         result has no other way to know that. */
+      .retired {
+        border: 1px solid var(--rule);
+        border-left: 3px solid var(--amber-deep);
+        background: var(--ink-2);
+        padding: 20px 22px;
+        margin: 0 0 34px;
+        font-size: 15.5px;
+        line-height: 1.66;
+        color: var(--paper-dim);
+      }
+      .retired h2 {
+        margin: 0 0 10px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+      .retired p { margin: 0 0 12px; }
+      .retired p:last-child { margin-bottom: 0; }
+      .retired strong { color: var(--paper); font-weight: 600; }
       .prose .lead {
         font-family: var(--serif);
         font-size: 28px;
@@ -405,6 +430,10 @@
                 <dt>Desk</dt>
                 <dd>Deep Value</dd>
               </div>
+              <div>
+                <dt>Status</dt>
+                <dd>Retired</dd>
+              </div>
             </dl>
           </div>
         </header>
@@ -416,6 +445,39 @@
               Cash cushion<br />Drawdowns<br />Solvency<br />Survivorship
             </aside>
             <div class="prose">
+              <section class="retired" aria-labelledby="retired-h">
+                <h2 id="retired-h">Status &mdash; retired</h2>
+                <p>
+                  <strong>This note describes the screen the site ran until
+                  September 2026.</strong> That screen has been retired and a
+                  different one runs here now. The note is kept as it was
+                  written.
+                </p>
+                <p>
+                  It was retired because it was tested. Forty picks across
+                  2021&ndash;2025: the median one trailed the Russell 2000 by
+                  7.96% over the following three months, and 45% of them beat
+                  it. The average was positive, but nine of the forty came from
+                  a single date &mdash; the April 2025 rebound &mdash; and
+                  every confidence interval ran comfortably through zero. The
+                  honest summary is that the test found nothing, in either
+                  direction.
+                </p>
+                <p>
+                  Survivorship was working in its favour, too. The test
+                  universe was built from companies still listed today, so the
+                  ones that went to zero are absent from it. The real figures
+                  are no better than these.
+                </p>
+                <p>
+                  What follows is left unchanged, because the reasoning in it
+                  is not what failed &mdash; on dilution, on runway, on what
+                  survivorship quietly edits out of every backtest a reader
+                  will ever see. What failed was the premise that a
+                  balance-sheet gate plus a sharp fall identifies something the
+                  market has not already priced.
+                </p>
+              </section>
               <p class="lead">
                 A severe three-day decline can look like an opportunity before
                 it has earned the name. Price tells us that expectations
@@ -1090,5 +1152,7 @@
   .scan-sub { white-space: normal; line-height: 1.3; }
 }
 </style>
+
+<script async id="netlify-rum-container" src="/.netlify/scripts/rum" data-netlify-rum-site-id="1bcc4d76-6d05-4a8e-9d73-45d7f2bfd2ec" data-netlify-deploy-branch="main" data-netlify-deploy-context="production" data-netlify-cwv-token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaXRlX2lkIjoiMWJjYzRkNzYtNmQwNS00YThlLTlkNzMtNDVkN2YyYmZkMmVjIiwiYWNjb3VudF9pZCI6IjZhYTc4NTA2YzVjNTlhNTNiZWRjMWU1NyIsImRlcGxveV9pZCI6IjZhYjA4MWM0YjhkMzc4MDAwODg2NTI5NiIsImlzc3VlciI6Im5mc2VydmVyIn0.bLxnBWCNjQLsF3PlmyUHOQEe8W2GEFgNohPTcb3go-M"></script>
 </body>
 </html>
