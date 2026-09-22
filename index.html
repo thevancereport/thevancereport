@@ -1091,15 +1091,16 @@
         <button type="button" class="x" data-close-alerts aria-label="Close">✕</button>
         <div id="alertsPane">
           <h2>Daily alerts</h2>
+          <p style="margin: 0 0 14px; color: var(--paper-faint); line-height: 1.5;">
+            The day&rsquo;s top ten and what changed, each weekday after the close.
+            You&rsquo;ll get one email to confirm. Unsubscribe any time.
+          </p>
           <form
             name="daily-alerts"
             method="POST"
-            action="/"
-            data-netlify="true"
-            netlify-honeypot="bot-field"
+            action="/api/subscribe"
             id="alertsForm"
           >
-            <input type="hidden" name="form-name" value="daily-alerts" />
             <p hidden aria-hidden="true">
               <label>Do not fill this out: <input name="bot-field" tabindex="-1" /></label>
             </p>
@@ -1540,22 +1541,29 @@
             submit.textContent = "Submitting…";
             note.hidden = true;
 
-            fetch(form.action || "/", {
+            // /api/subscribe (netlify/functions/subscribe.mjs) hands the
+            // address to Buttondown, which sends the confirmation email.
+            fetch("/api/subscribe", {
               method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: new URLSearchParams(new FormData(form)).toString(),
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: form.elements.email.value,
+                "bot-field": form.elements["bot-field"].value,
+              }),
             })
               .then(function (res) {
-                if (!res.ok) throw new Error("Request failed with status " + res.status);
-                form.hidden = true;
-                note.textContent = "Thank you — you’re on the daily-alert list.";
-                note.className = "form-note is-ok";
-                note.hidden = false;
+                return res.json().catch(function () { return {}; }).then(function (data) {
+                  if (!res.ok) throw new Error(data.error || "");
+                  form.hidden = true;
+                  note.textContent = "Almost done — check your inbox and confirm your address. The first email arrives after the next close.";
+                  note.className = "form-note is-ok";
+                  note.hidden = false;
+                });
               })
-              .catch(function () {
+              .catch(function (err) {
                 submit.disabled = false;
                 submit.textContent = "Submit";
-                note.textContent = "We couldn’t submit your signup just now. Please try again.";
+                note.textContent = (err && err.message) || "We couldn’t submit your signup just now. Please try again.";
                 note.className = "form-note is-error";
                 note.hidden = false;
               });

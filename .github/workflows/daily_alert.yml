@@ -1,0 +1,55 @@
+name: Daily alert email
+
+# Emails the day's screen to Buttondown subscribers once "Daily value screen"
+# has finished. It reads only the committed value_screen.json, so the email and
+# the site always agree.
+#
+# Settings (Settings -> Secrets and variables -> Actions):
+#   secret   BUTTONDOWN_API_KEY  -- from Buttondown -> Settings -> API
+#   variable ALERTS_MODE         -- "send" to email subscribers; anything else,
+#                                   or unset, saves a draft in Buttondown only.
+#
+# daily_alert.py skips thin, stale or weekend files and never creates a second
+# email for the same session, so a re-run is safe.
+
+on:
+  workflow_run:
+    workflows: ["Daily value screen"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-alert
+  cancel-in-progress: false
+
+jobs:
+  email:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          # Two commits of value_screen.json are needed to say what entered or
+          # left the top ten.
+          fetch-depth: 50
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Test the email builder
+        working-directory: scripts
+        run: python test_daily_alert.py
+
+      - name: Build and hand to Buttondown
+        env:
+          BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
+          ALERTS_MODE: ${{ vars.ALERTS_MODE }}
+          SCREEN_FILE: value_screen.json
+        run: python scripts/daily_alert.py
