@@ -63,6 +63,9 @@ class Words(unittest.TestCase):
         for w in ["will ", "should ", "expect", "target", "upside", "buy now", "surge", "soar"]:
             self.assertNotIn(w, text)
 
+    def test_new_reader_link(self):
+        self.assertIn("/vance-value-screener.html)", da.body(screen(), None))
+
     def test_subject(self):
         self.assertEqual(da.subject(screen()), "The screen, Fri 18 Sep: 300 companies ranked")
 

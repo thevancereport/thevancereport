@@ -170,6 +170,8 @@ def body(screen: dict, before: dict | None) -> str:
         "confirmation (10%), every one a percentile against the company's own "
         "sector. A high rank is a reason to look, not a reason to buy.",
         "",
+        f"New here? [How the Vance Value Screener works]({SITE}/vance-value-screener.html)",
+        "",
         "*Educational research only — not investment advice. The Vance Report "
         "is not a registered investment adviser.*",
     ]
