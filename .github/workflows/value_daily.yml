@@ -65,6 +65,7 @@ jobs:
           python test_value_core.py
           python test_value_data.py
           python test_value_daily.py
+          python test_screen_history.py
 
       - name: Rank today's universe
         working-directory: scripts
@@ -74,6 +75,13 @@ jobs:
           OUT_FILE: ${{ github.workspace }}/value_screen.json
           SEC_UA: "TheVanceReport research contact@thevancereport.com"
         run: python value_daily.py
+
+      - name: Record the session in screen_history.json
+        env:
+          SCREEN_FILE: ${{ github.workspace }}/value_screen.json
+          HISTORY_FILE: ${{ github.workspace }}/screen_history.json
+        working-directory: scripts
+        run: python screen_history.py
 
       - name: Keep a copy whatever happens
         if: always()
@@ -92,4 +100,4 @@ jobs:
           # which is exactly what happens to research.json on any day nobody
           # merges anything else.
           commit_message: "Daily value screen"
-          file_pattern: "value_screen.json"
+          file_pattern: "value_screen.json screen_history.json"
