@@ -17,6 +17,7 @@
 
   var ITEMS = [
     { key: "index",         href: "index.html",         label: "Today\u2019s screen" },
+    { key: "how",           href: "vance-value-screener.html", label: "How it works" },
     { key: "report",        href: "report.html",        label: "Inbox report" },
     { key: "stock",         href: "stock.html",         label: "Stock lookup" },
     { key: "blog",          href: "blog.html",          label: "Field notes" },

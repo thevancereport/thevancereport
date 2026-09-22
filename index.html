@@ -943,7 +943,7 @@
         <div class="wrap">
           <div class="sec-head">
             <h2>Start here</h2>
-            <span class="sec-meta">How the screen works,<br>in eighty seconds</span>
+            <span class="sec-meta">How the Vance Value<br>Screener works</span>
           </div>
           <div id="briefingSlot" class="state-msg">Loading&hellip;</div>
         </div>
@@ -1947,7 +1947,7 @@
     function card() {
       return '<div class="intro-card" role="img" aria-label="How the screen works: four measures, one ranking">' +
         '<div class="eb">The Vance Report</div>' +
-        '<div class="hl">How the screen works</div>' +
+        '<div class="hl">How it works</div>' +
         '<div class="bar">' + PILLARS.map(function (p) {
           return '<div style="width:' + p[1] + '%;background:' + p[2] + '"></div>'; }).join("") + "</div>" +
         '<div class="lab">' + PILLARS.map(function (p) {
@@ -1960,7 +1960,7 @@
       var secs = has && v.duration_seconds ? Math.round(v.duration_seconds) : null;
       var runtime = secs ? Math.floor(secs / 60) + " min " + (secs % 60) + " s" : null;
 
-      if (has) {
+      if (false) {
         var ld = document.createElement("script");
         ld.type = "application/ld+json";
         ld.textContent = JSON.stringify({
@@ -1982,11 +1982,11 @@
 
       slot.className = "briefing";
       slot.innerHTML =
-        '<div class="briefing-player">' + (has
+        '<div class="briefing-player">' + (false
           ? '<iframe src="https://www.youtube-nocookie.com/embed/' + esc(v.video_id) + '" title="' +
             esc(v.title || "How the screen works") + '" loading="lazy" allowfullscreen ' +
             'allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"></iframe>'
-          : card()) + "</div>" +
+          : '<a href="vance-value-screener.html" aria-label="How the Vance Value Screener works" style="display:block;height:100%">' + card() + "</a>") + "</div>" +
         '<div class="briefing-side">' +
           "<h3>How the Vance Value Screener works</h3>" +
           (weekendInNewYork()
@@ -1995,13 +1995,12 @@
           '<div class="briefing-meta">' +
             "<div><span>Covers</span><b>Four measures, one ranking</b></div>" +
             "<div><span>Screen updates</span><b>Weekdays, after the close</b></div>" +
-            (runtime ? "<div><span>Runtime</span><b>" + runtime + "</b></div>" : "") +
+            "<div><span>Read</span><b>6 minutes, with a 1:21 video</b></div>" +
           "</div>" +
           '<p class="briefing-note">What goes into each company\u2019s score, how it is compared ' +
-          "with its own sector, and how to read a rank. Educational research, not investment advice.</p>" +
+          "with its own sector, how to read a rank, and what testing found. Educational research, not investment advice.</p>" +
           '<div class="briefing-links">' +
-            (has ? '<a class="briefing-link" href="https://www.youtube.com/watch?v=' + esc(v.video_id) +
-                   '" target="_blank" rel="noopener">Watch on YouTube &rarr;</a>' : "") +
+            '<a class="briefing-link" href="vance-value-screener.html">How it works, in full &rarr;</a>' +
             '<a class="briefing-link" href="stock.html">Stock lookup &rarr;</a>' +
             '<a class="briefing-link" href="blog.html">Field notes &rarr;</a>' +
           "</div>" +
