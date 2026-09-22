@@ -137,6 +137,10 @@ vb.ticker_map = lambda: {c["cik"]: c["sym"] for c in COMPANIES}
 vdaily.vd = vd
 vdaily.vp = vp
 
+# A file left by an earlier local run would make this one decline to publish
+# (same prices, same session), which is the behaviour tested further down.
+if os.path.exists("/tmp/value_screen_test.json"):
+    os.remove("/tmp/value_screen_test.json")
 rc = vdaily.main()
 check("the run completed", rc, 0)
 
@@ -145,7 +149,7 @@ meta, ranked = payload["_meta"], payload["ranked"]
 
 check("metadata is present", sorted(meta) == sorted([
     "generated_at", "as_of", "universe", "unranked", "spec", "weights",
-    "floors", "pillars", "how_to_read", "excluded"]), True)
+    "floors", "pillars", "how_to_read", "excluded", "prices_through"]), True)
 check("as_of is the date asked for", meta["as_of"], "2026-09-01")
 check("the universe count matches the list", meta["universe"], len(ranked))
 check("the weights are the frozen ones", meta["weights"], vc_weights := __import__("value_core").PILLAR_WEIGHTS)
@@ -250,6 +254,71 @@ check("losing only the newest quarter warns, not fails",
 check("and it does warn",
       bool(fires(BASE, quarters=QS, loaded=QS[:-1], level="WARN")), True)
 check("no data at all fails", bool(fires(BASE, quarters=QS, loaded=[])), True)
+
+print("\ndating by the prices, not the clock")
+# 21 Sep 2026: the evening run found no Monday closes, fell back to Friday's,
+# and published them as Monday's. The file is now dated by its prices, and a
+# run whose prices are no newer than the published file writes nothing.
+check("the file records the session its prices describe", meta["prices_through"], "2026-09-01")
+check("and as_of is that session", meta["as_of"], meta["prices_through"])
+_gen = meta["generated_at"]
+check("a rerun on prices no newer exits cleanly", vdaily.main(), 0)
+check("and leaves the published file alone",
+      json.load(open("/tmp/value_screen_test.json"))["_meta"]["generated_at"], _gen)
+
+_WEEK = [date(2026, 9, 14) + timedelta(days=k) for k in range(5)]      # Mon-Fri
+
+
+def _hist(n=10):
+    return {f"T{k}": (list(_WEEK), [20.0] * 5, [500_000.0] * 5) for k in range(n)}
+
+
+check("session_of reads the prices, not the calendar",
+      vdaily.session_of(_hist(), date(2026, 9, 21)), date(2026, 9, 18))
+
+print("\ntop_up")
+_real_latest = vp.latest_close
+vp.latest_close = lambda sym: (date(2026, 9, 21), 21.0, 600_000.0)
+h = _hist()
+added, asked, sess = vdaily.top_up(h, date(2026, 9, 22))
+check("every name asked gets the close", (added, asked), (10, 10))
+check("the session is the quote's date", sess, date(2026, 9, 21))
+check("the close is appended", (h["T0"][0][-1], h["T0"][1][-1]), (date(2026, 9, 21), 21.0))
+check("session_of then moves on", vdaily.session_of(h, date(2026, 9, 22)), date(2026, 9, 21))
+
+vp.latest_close = lambda sym: (date(2026, 9, 21), 21.0, 600_000.0) if sym < "T5" else None
+h = _hist()
+added, asked, sess = vdaily.top_up(h, date(2026, 9, 22))
+check("half a day is not used", (added, sess), (0, None))
+check("and nothing is appended", h["T0"][0][-1], date(2026, 9, 18))
+
+vp.latest_close = lambda sym: (date(2026, 9, 23), 21.0, 600_000.0)
+h = _hist()
+check("a close dated after as_of is ignored", vdaily.top_up(h, date(2026, 9, 22))[0], 0)
+vp.latest_close = _real_latest
+
+print("\nlatest_close reads Nasdaq's quote")
+_real_fetch = vp._fetch
+_Q = {}
+
+
+def _fake_fetch(url, headers=None, timeout=45, attempts=2):
+    return json.dumps({"data": {"marketStatus": _Q["status"], "primaryData": {
+        "lastSalePrice": "$19.41", "lastTradeTimestamp": _Q["stamp"],
+        "volume": "1,478,917"}}}), None
+
+
+vp._fetch = _fake_fetch
+_Q.update(status="Closed", stamp="Sep 21, 2026")
+check("a closed market gives the close", vp.latest_close("YELP"),
+      (date(2026, 9, 21), 19.41, 1_478_917.0))
+_Q.update(stamp="DATA AS OF Sep 21, 2026 4:00 PM ET")
+check("a longer stamp still reads", vp.latest_close("YELP")[0], date(2026, 9, 21))
+_Q.update(status="After-Hours", stamp="Sep 21, 2026")
+check("after hours is never taken for the close", vp.latest_close("YELP"), None)
+_Q.update(status="Closed", stamp="")
+check("no stamp, no close", vp.latest_close("YELP"), None)
+vp._fetch = _real_fetch
 
 print("\n" + "=" * 60)
 if fails:

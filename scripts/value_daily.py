@@ -25,6 +25,7 @@ import os
 import statistics
 import sys
 import time
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 
@@ -40,6 +41,13 @@ MAX_SYMBOLS = int(os.environ.get("MAX_SYMBOLS", "0"))
 PRICE_WORKERS = int(os.environ.get("PRICE_WORKERS", "6"))
 OUT_FILE = os.environ.get("OUT_FILE", "value_screen.json")
 AS_OF = os.environ.get("AS_OF", "")          # blank = today
+# 1 = add the day's official close from Nasdaq's quote when the historical
+# table has not caught up yet. See top_up().
+TOP_UP = os.environ.get("TOP_UP", "1") != "0"
+# Share of the names asked for that must answer before a top-up is used.
+# A partial top-up would rank some companies on today's prices and the rest
+# on yesterday's, which is worse than either on its own.
+TOP_UP_MIN_SHARE = float(os.environ.get("TOP_UP_MIN_SHARE", "0.9"))
 
 UA = os.environ.get("SEC_UA", "TheVanceReport research contact@thevancereport.com")
 
@@ -78,6 +86,81 @@ def recent_quarters(when, n):
         if q < 1:
             y, q = y - 1, 4
     return list(reversed(out))
+
+
+def top_up(prices, as_of):
+    """Append the session's official close where the history stops short.
+
+    Nasdaq's historical table lags the close by hours; its quote does not.
+    Only names that could plausibly clear the price and liquidity floors are
+    asked, to keep the extra requests to the ones that matter. The top-up is
+    all or nothing: if fewer than TOP_UP_MIN_SHARE of the names asked answer
+    with the same new session, nothing is appended and the run carries on
+    with the history as it is (and will then decline to publish a file that
+    is no newer than the last one).
+
+    Returns (appended, asked, session or None).
+    """
+    if not TOP_UP:
+        return 0, 0, None
+    want = []
+    for sym, (days, closes, vols) in prices.items():
+        if not days or days[-1] >= as_of:
+            continue
+        tail = [closes[k] * vols[k] for k in range(max(0, len(days) - 60), len(days))]
+        if closes[-1] >= vc.MIN_PRICE * 0.5 and tail and \
+                statistics.median(tail) >= vc.MIN_DOLLAR_VOLUME * 0.25:
+            want.append(sym)
+    if not want:
+        return 0, 0, None
+
+    def one(sym):
+        return sym, vp.latest_close(sym)
+
+    got = {}
+    with ThreadPoolExecutor(max_workers=PRICE_WORKERS) as pool:
+        for sym, q in pool.map(one, want):
+            if q and prices[sym][0][-1] < q[0] <= as_of:
+                got[sym] = q
+    if not got:
+        return 0, len(want), None
+    session, n = Counter(q[0] for q in got.values()).most_common(1)[0]
+    if n < TOP_UP_MIN_SHARE * len(want):
+        log(f"Top-up: only {n:,} of {len(want):,} names had a close for {session}; "
+            "not using a partial day.")
+        return 0, len(want), None
+    for sym, (when, close, vol) in got.items():
+        if when != session:
+            continue
+        days, closes, vols = prices[sym]
+        prices[sym] = (list(days) + [when], list(closes) + [close], list(vols) + [vol])
+    return n, len(want), session
+
+
+def session_of(prices, as_of):
+    """The trading day the price data actually describes.
+
+    The most common latest date on or before as_of across every history. It,
+    not the runner's calendar, is what the file is dated by, so a day whose
+    closes never arrived can no longer be published under that day's name.
+    """
+    import value_backtest as vb
+    seen = Counter()
+    for days, _c, _v in prices.values():
+        i = vb.idx_on_or_before(days, as_of)
+        if i is not None:
+            seen[days[i]] += 1
+    return seen.most_common(1)[0][0] if seen else None
+
+
+def previous_session(path):
+    """prices_through from the file already on disk, or None."""
+    try:
+        with open(path) as fh:
+            meta = json.load(fh).get("_meta") or {}
+        return date.fromisoformat(meta["prices_through"]) if meta.get("prices_through") else None
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
 
 
 def rounded(v, places=2):
@@ -131,6 +214,22 @@ def main():
         log("Too few price histories. Nothing written -- the site keeps yesterday's file.")
         return 1
 
+    added, asked, topped = top_up(prices, as_of)
+    if asked:
+        log(f"Top-up from Nasdaq's closing quote: {added:,} of {asked:,} names"
+            + (f" now run to {topped}." if topped else " -- none used."))
+        log(vp.report() + "\n")
+    session = session_of(prices, as_of)
+    if session is None:
+        log("No price history reaches the as-of date. Nothing written.")
+        return 1
+    log(f"Prices run to {session} (asked for {as_of}).")
+    before = previous_session(OUT_FILE)
+    if before and session <= before:
+        log(f"The published file already covers {before}. Today's prices are no newer, "
+            "so nothing is written -- the site keeps the file it has, dated correctly.")
+        return 0
+
     # ----------------------------------------------------------------------
     # Build and score
     # ----------------------------------------------------------------------
@@ -140,11 +239,16 @@ def main():
         if not series:
             continue
         days, closes, vols = series
-        i = vb.idx_on_or_before(days, as_of)
+        i = vb.idx_on_or_before(days, session)
         if i is None or i < vc.MIN_PRICE_SESSIONS:
             rejected["not enough price history"] = rejected.get("not enough price history", 0) + 1
             continue
-        g = vd.figures_for(cik, facts, as_of)
+        if days[i] != session:
+            # A name with no close for the session would be ranked on an older
+            # price beside everyone else's current one.
+            rejected["no close for the session"] = rejected.get("no close for the session", 0) + 1
+            continue
+        g = vd.figures_for(cik, facts, session)
         if not g or g.get("shares") is None:
             rejected["no usable filing"] = rejected.get("no usable filing", 0) + 1
             continue
@@ -162,7 +266,7 @@ def main():
         row["ma_200"] = sum(closes[i - 199:i + 1]) / 200.0 if i >= 199 else None
         if i >= 252 and closes[i - 252] > 0:
             row["momentum_12_1"] = (closes[i - 21] - closes[i - 252]) / closes[i - 252]
-        age = (as_of - meta["last_filed"]).days if meta.get("last_filed") else None
+        age = (session - meta["last_filed"]).days if meta.get("last_filed") else None
         ok, why = vc.passes_universe(row, filing_age_days=age)
         if ok:
             rows.append(row)
@@ -219,7 +323,9 @@ def main():
     payload = {
         "_meta": {
             "generated_at": datetime.now(timezone.utc).isoformat(),
-            "as_of": as_of.isoformat(),
+            # The trading day the prices describe, not the day the job ran.
+            "as_of": session.isoformat(),
+            "prices_through": session.isoformat(),
             "universe": len(scored),
             "unranked": len(unranked),
             "spec": "scripts/VALUE_SPEC.md",

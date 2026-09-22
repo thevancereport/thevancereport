@@ -13,6 +13,7 @@ Run it directly to probe the sources without touching the backtest:
 
 import json
 import os
+import re
 import sys
 import time
 from datetime import date
@@ -180,6 +181,56 @@ def from_yahoo(symbol, start, end):
         return None
     return days, closes, vols
 
+
+
+_MONTHS = {m: i for i, m in enumerate(
+    ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1)}
+
+
+def latest_close(symbol, classes=("stocks", "etf")):
+    """The day's official close, from the quote Nasdaq publishes at the bell.
+
+    fetch_prices reads Nasdaq's historical table, which does not carry a
+    session's row until hours after it ends. On 21 Sep 2026 it still stopped
+    at Friday at 8 p.m. Eastern, so the evening run ranked 1,185 companies on
+    Friday's prices and stamped them Monday. The quote endpoint had Monday's
+    close ($19.41 for YELP) the whole time.
+
+    Returns (date, close, volume), or None. It answers only when Nasdaq says
+    the market is Closed, so an after-hours print can never be taken for the
+    close. The date comes from Nasdaq's own "last trade" stamp, never from the
+    runner's clock.
+    """
+    data = None
+    for cls in classes:
+        url = f"https://api.nasdaq.com/api/quote/{symbol}/info?assetclass={cls}"
+        text, err = _fetch(url, headers={"User-Agent": BROWSER_UA,
+                                         "Accept": "application/json"})
+        if err:
+            _note("nasdaq-quote", err)
+            return None
+        try:
+            data = (json.loads(text) or {}).get("data")
+        except ValueError:
+            _note("nasdaq-quote", "not json")
+            return None
+        if data:
+            break
+    if not data:
+        _note("nasdaq-quote", "no quote")
+        return None
+    if str(data.get("marketStatus", "")).strip().lower() != "closed":
+        _note("nasdaq-quote", "market not closed yet")
+        return None
+    primary = data.get("primaryData") or {}
+    close = _clean_number(primary.get("lastSalePrice"))
+    stamp = re.search(r"([A-Z][a-z]{2})[a-z]*\.? (\d{1,2}), (\d{4})",
+                      str(primary.get("lastTradeTimestamp", "")))
+    if close is None or close <= 0 or not stamp or stamp.group(1) not in _MONTHS:
+        _note("nasdaq-quote", "unreadable quote")
+        return None
+    when = date(int(stamp.group(3)), _MONTHS[stamp.group(1)], int(stamp.group(2)))
+    return when, close, _clean_number(primary.get("volume")) or 0.0
 
 # Measured from GitHub Actions on 19 Sep 2026: Nasdaq served 8 of 10 symbols,
 # Stooq returned an HTML block page rather than CSV, and Yahoo answered 429 on
