@@ -85,7 +85,8 @@
       letter-spacing: 0.5px;
       margin-bottom: 6px;
     }
-    .metric-value {
+    .metric-sub { font-size: 13px; color: var(--text-muted, #817365); margin-top: 6px; letter-spacing: .02em; }
+      .metric-value {
       font-size: 23px;
       font-weight: 700;
       color: var(--text);
@@ -571,10 +572,15 @@
         return out;
       }
 
-      function headlineBlock(row) {
+      function headlineBlock(row, meta) {
+        var asOf = meta && meta.as_of ? usDate(meta.as_of) : "the screen";
         return '<div class="metrics-grid">' +
-          '<div class="metric-card"><div class="metric-label">Price</div>' +
-            '<div class="metric-value">' + (isNum(row.price) ? "$" + row.price.toFixed(2) : "--") + "</div></div>" +
+          '<div class="metric-card"><div class="metric-label">Last trade</div>' +
+            '<div class="metric-value" id="livePrice">--</div>' +
+            '<div class="metric-sub" id="liveNote">Loading&hellip;</div></div>' +
+          '<div class="metric-card"><div class="metric-label">Close, ' + esc(asOf) + '</div>' +
+            '<div class="metric-value">' + (isNum(row.price) ? "$" + row.price.toFixed(2) : "--") + "</div>" +
+            '<div class="metric-sub">The price the score used</div></div>' +
           '<div class="metric-card"><div class="metric-label">Market capitalisation</div>' +
             '<div class="metric-value">' + money(row.market_cap) + "</div></div>" +
           '<div class="metric-card"><div class="metric-label">Median daily volume</div>' +
@@ -726,6 +732,36 @@
         if (input) input.focus({ preventScroll: true });
       }
 
+      /* The live figure comes from /api/quote, a Netlify function that asks
+         Nasdaq for the last trade. It is context only: the score, the rank and
+         every figure below are built from the closing price of the screen date.
+         If the quote is unavailable the tile simply says so. */
+      function loadQuote(symbol) {
+        var priceEl = document.getElementById("livePrice");
+        var noteEl = document.getElementById("liveNote");
+        if (!priceEl) return;
+        fetch("/api/quote?symbol=" + encodeURIComponent(symbol), { cache: "no-store" })
+          .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+          .then(function (q) {
+            if (!q || !isNum(q.price)) throw new Error("no price");
+            priceEl.textContent = "$" + q.price.toFixed(2);
+            var bits = [];
+            if (q.change_pct != null) {
+              var s = (q.change_pct > 0 ? "+" : "") + q.change_pct.toFixed(2) + "%";
+              bits.push(s);
+              priceEl.style.color = q.change_pct > 0 ? "var(--pass, #199e70)"
+                : q.change_pct < 0 ? "#cc6250" : "";
+            }
+            if (q.as_of) bits.push(q.as_of);
+            bits.push(q.real_time ? "Nasdaq, real time" : "Nasdaq, delayed");
+            noteEl.textContent = bits.join(" · ");
+          })
+          .catch(function () {
+            priceEl.textContent = "--";
+            noteEl.textContent = "Live quote unavailable";
+          });
+      }
+
       function render(symbol) {
         var row = bySymbol[symbol] || null;
         var meta = (data && data._meta) || {};
@@ -748,7 +784,8 @@
         var figSlot = document.getElementById("figures-slot");
 
         if (row) {
-          rankSlot.innerHTML = rankBlock(row, meta) + headlineBlock(row);
+          rankSlot.innerHTML = rankBlock(row, meta) + headlineBlock(row, meta);
+          loadQuote(symbol);
           figSlot.innerHTML = pillarBlock(row, meta) + figuresBlock(row);
         } else {
           rankSlot.innerHTML = notRankedBlock(symbol, meta);
