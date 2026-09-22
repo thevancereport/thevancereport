@@ -1,0 +1,1175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>How the Vance Value Screener Works — The Vance Report</title>
+    <meta
+      name="description"
+      content="How the Vance Value Screener ranks about 1,200 US companies every weekday: cheapness, quality, safety and confirmation, each scored against the company&#39;s own sector, and what testing found about the rank."
+    />
+    <link rel="canonical" href="https://thevancereport.com/vance-value-screener.html" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="The Vance Report" />
+    <meta property="og:title" content="How the Vance Value Screener Works" />
+    <meta
+      property="og:description"
+      content="Four questions a value investor asks, asked of every eligible US company every weekday, and an honest account of what the rank can and cannot tell you."
+    />
+    <meta property="og:url" content="https://thevancereport.com/vance-value-screener.html" />
+    <meta property="og:image" content="https://thevancereport.com/og-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="How the Vance Value Screener Works" />
+    <meta
+      name="twitter:description"
+      content="Four questions a value investor asks, asked of every eligible US company every weekday, and an honest account of what the rank can and cannot tell you."
+    />
+    <meta name="twitter:image" content="https://thevancereport.com/og-card.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebPage",
+            "@id": "https://thevancereport.com/vance-value-screener.html",
+            "url": "https://thevancereport.com/vance-value-screener.html",
+            "name": "How the Vance Value Screener Works",
+            "description": "How the Vance Value Screener ranks about 1,200 US companies every weekday: cheapness, quality, safety and confirmation, each scored against the company's own sector, and what testing found about the rank.",
+            "inLanguage": "en-US",
+            "datePublished": "2026-09-22",
+            "dateModified": "2026-09-22",
+            "isPartOf": {
+              "@type": "WebSite",
+              "name": "The Vance Report",
+              "url": "https://thevancereport.com/"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "The Vance Report",
+              "url": "https://thevancereport.com/",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://thevancereport.com/apple-touch-icon.png"
+              }
+            }
+          },
+          {
+            "@type": "VideoObject",
+            "name": "How the screener works",
+            "description": "How The Vance Report ranks roughly 1,200 US companies every weekday: four measures, each scored against the company's own sector, from its own filings.",
+            "thumbnailUrl": [
+              "https://i.ytimg.com/vi/CL5X3SXi_48/maxresdefault.jpg"
+            ],
+            "uploadDate": "2026-09-20",
+            "duration": "PT1M21S",
+            "embedUrl": "https://www.youtube-nocookie.com/embed/CL5X3SXi_48",
+            "url": "https://www.youtube.com/watch?v=CL5X3SXi_48",
+            "publisher": {
+              "@type": "Organization",
+              "name": "The Vance Report",
+              "url": "https://thevancereport.com/"
+            },
+            "inLanguage": "en-US"
+          },
+          {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://thevancereport.com/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "How the Vance Value Screener works",
+                "item": "https://thevancereport.com/vance-value-screener.html"
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@300;400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #130f0a;
+        --ink-2: #1c1611;
+        --rule: #372d23;
+        --rule-soft: #29221a;
+        --paper: #e7e3d8;
+        --paper-dim: #aea59d;
+        --paper-faint: #817365;
+        --amber: #e0a33c;
+        --amber-deep: #b97f1f;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+        --serif: "Instrument Serif", Georgia, serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--ink);
+        color: var(--paper);
+        font-family: var(--mono);
+        font-size: 17.5px;
+        font-weight: 300;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+      }
+      .grid-field,
+      .grain {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .grid-field {
+        background-image:
+          linear-gradient(
+            to right,
+            rgba(55, 45, 35, 0.45) 1px,
+            transparent 1px
+          ),
+          linear-gradient(to bottom, rgba(55, 45, 35, 0.3) 1px, transparent 1px);
+        background-size: 96px 96px;
+        mask-image: radial-gradient(
+          ellipse 120% 80% at 70% 0%,
+          #000 10%,
+          transparent 78%
+        );
+      }
+      .grain {
+        opacity: 0.16;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      .shell {
+        position: relative;
+        z-index: 1;
+      }
+      .wrap {
+        width: min(100% - 56px, 1180px);
+        margin-inline: auto;
+      }
+      .ticker {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        border-bottom: 1px solid var(--rule);
+        background: rgba(19, 15, 10, 0.86);
+        backdrop-filter: blur(8px);
+      }
+      .ticker-in {
+        height: 52px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .mark {
+        display: flex;
+        align-items: baseline;
+        gap: 9px;
+        margin-right: auto;
+        color: var(--paper);
+        text-decoration: none;
+      }
+      .mark-glyph {
+        width: 22px;
+        height: 22px;
+        border: 1px solid var(--amber);
+        display: grid;
+        place-items: center;
+        color: var(--amber);
+        font-size: 14.5px;
+        transform: translateY(3px);
+      }
+      .mark-name {
+        font-family: var(--serif);
+        font-size: 22px;
+      }
+      .mark-sub,
+      .edition {
+        font-size: 14.5px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+      }
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--amber);
+        text-decoration: none;
+        font-size: 14.5px;
+        font-weight: 500;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        border-bottom: 1px solid transparent;
+        transition:
+          border-color 0.16s ease,
+          color 0.16s ease;
+      }
+      .back:hover {
+        border-color: var(--amber);
+      }
+      .back:focus-visible {
+        outline: 2px solid var(--paper);
+        outline-offset: 5px;
+      }
+      .article-head {
+        padding: 92px 0 65px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .head-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.55fr);
+        gap: 70px;
+        align-items: end;
+      }
+      .eyebrow {
+        margin: 0 0 25px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: var(--amber);
+        font-size: 14.5px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+      }
+      .eyebrow:after {
+        content: "";
+        height: 1px;
+        flex: 1;
+        background: linear-gradient(to right, var(--amber-deep), transparent);
+      }
+      h1 {
+        max-width: 850px;
+        margin: 0;
+        font-family: var(--serif);
+        font-size: clamp(52px, 8vw, 98px);
+        font-weight: 400;
+        letter-spacing: -0.02em;
+        line-height: 0.93;
+      }
+      h1 em {
+        color: var(--amber);
+        font-weight: 400;
+      }
+      .dek {
+        max-width: 64ch;
+        margin: 30px 0 0;
+        color: var(--paper-dim);
+        font-size: 19px;
+      }
+      .story-meta {
+        border-top: 1px solid var(--rule);
+        padding-top: 15px;
+        display: grid;
+        gap: 13px;
+      }
+      .story-meta div {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        border-bottom: 1px dashed var(--rule-soft);
+        padding-bottom: 11px;
+      }
+      .story-meta dt {
+        color: var(--paper-faint);
+        font-size: 13.5px;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+      }
+      .story-meta dd {
+        margin: 0;
+        color: var(--paper-dim);
+        font-size: 14.5px;
+        text-align: right;
+      }
+      article {
+        padding: 74px 0 92px;
+      }
+      .article-grid {
+        display: grid;
+        grid-template-columns: 160px minmax(0, 680px);
+        gap: 56px;
+        justify-content: center;
+      }
+      .rail {
+        font-size: 13.5px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--paper-faint);
+      }
+      .rail-line {
+        width: 42px;
+        height: 1px;
+        background: var(--amber);
+        margin: 13px 0;
+      }
+      .rail strong {
+        color: var(--paper);
+        font-weight: 500;
+      }
+      .prose p {
+        margin: 0 0 27px;
+        color: var(--paper-dim);
+        font-size: 17.5px;
+      }
+      .prose .lead {
+        font-family: var(--serif);
+        font-size: 28px;
+        line-height: 1.28;
+        color: var(--paper);
+      }
+      .lead:first-letter {
+        float: left;
+        margin: 8px 10px 0 0;
+        color: var(--amber);
+        font-family: var(--serif);
+        font-size: 76px;
+        line-height: 0.65;
+      }
+      h2 {
+        margin: 56px 0 20px;
+        font-family: var(--serif);
+        font-size: 39px;
+        font-weight: 400;
+        line-height: 1.05;
+      }
+      .number {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--amber);
+        font-family: var(--mono);
+        font-size: 13.5px;
+        letter-spacing: 0.2em;
+      }
+      blockquote {
+        margin: 43px 0;
+        padding: 4px 0 4px 25px;
+        border-left: 2px solid var(--amber);
+        font-family: var(--serif);
+        font-size: 27px;
+        line-height: 1.3;
+        color: var(--paper);
+      }
+      .formula {
+        margin: 37px 0;
+        padding: 25px;
+        border: 1px solid var(--rule);
+        background: linear-gradient(
+          145deg,
+          var(--ink-2),
+          rgba(19, 15, 10, 0.35)
+        );
+      }
+      .formula-label {
+        display: block;
+        margin-bottom: 12px;
+        color: var(--paper-faint);
+        font-size: 13.5px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+      .formula code {
+        color: var(--amber);
+        font-family: var(--mono);
+        font-size: clamp(13px, 2.4vw, 18px);
+      }
+      .endmark {
+        margin-top: 58px;
+        padding-top: 22px;
+        border-top: 1px solid var(--rule);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .endmark span {
+        color: var(--paper-faint);
+        font-size: 13.5px;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+      }
+      footer {
+        padding: 37px 0 55px;
+        border-top: 1px solid var(--rule);
+      }
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+      }
+      .foot-note {
+        color: var(--paper-faint);
+        font-size: 13.5px;
+        letter-spacing: 0.08em;
+      }
+      @media (max-width: 760px) {
+        .wrap {
+          width: min(100% - 36px, 1180px);
+        }
+        .edition,
+        .mark-sub {
+          display: none;
+        }
+        .article-head {
+          padding: 65px 0 49px;
+        }
+        .head-grid {
+          grid-template-columns: 1fr;
+          gap: 42px;
+        }
+        .article-grid {
+          grid-template-columns: 1fr;
+        }
+        .rail {
+          display: none;
+        }
+        article {
+          padding: 56px 0 68px;
+        }
+        .prose .lead {
+          font-size: 24px;
+        }
+        .foot {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+    <style id="note-video-css">
+      .note-video { margin: 0 0 40px; }
+      .note-video-thumb { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; padding: 0;
+        border: 1px solid var(--rule); background: #000; cursor: pointer; overflow: hidden; }
+      .note-video-thumb img, .note-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
+      .note-video-thumb:hover img, .note-video-thumb:focus-visible img { filter: brightness(1.08); }
+      .note-video-play { position: absolute; left: 50%; top: 50%; width: 76px; height: 54px; transform: translate(-50%, -50%);
+        background: rgba(19, 15, 10, .82); border: 1px solid var(--amber); border-radius: 10px; }
+      .note-video-play::after { content: ""; position: absolute; left: 31px; top: 16px; border-style: solid;
+        border-width: 11px 0 11px 18px; border-color: transparent transparent transparent var(--amber); }
+      .note-video figcaption { margin-top: 12px; font-size: 15px; color: var(--paper-faint); }
+      .note-video figcaption a { color: var(--amber); }
+      .correction { font-size: 15px; color: var(--paper-faint); }
+    </style>
+    <script>
+      /* Nothing loads from YouTube until the reader presses play. */
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest && e.target.closest(".note-video-thumb");
+        if (!b) return;
+        var f = document.createElement("iframe");
+        f.src = "https://www.youtube-nocookie.com/embed/" + b.getAttribute("data-yt") + "?autoplay=1&rel=0";
+        f.title = "How the screener works";
+        f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        f.allowFullscreen = true;
+        var wrap = document.createElement("div");
+        wrap.style.cssText = "position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--rule)";
+        wrap.appendChild(f);
+        b.replaceWith(wrap);
+      });
+    </script>
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  </head>
+  <body>
+    <!-- One menu for the whole site; see site-nav.js. -->
+    <script src="site-nav.js" data-section="how"></script>
+    <div class="grid-field" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="shell">
+      <main>
+        <header class="article-head">
+          <div class="wrap head-grid">
+            <div>
+              <p class="eyebrow">The Vance Value Screener</p>
+              <h1>How the Vance Value Screener <em>works.</em></h1>
+              <p class="dek">
+                Four questions a value investor asks, asked of every eligible US
+                company every weekday: what goes into a rank, how it is
+                calculated, and what testing says it can and cannot tell you.
+              </p>
+            </div>
+            <dl class="story-meta">
+              <div>
+                <dt>Updated</dt>
+                <dd>Weekdays, 7:15 PM Central</dd>
+              </div>
+              <div>
+                <dt>Companies</dt>
+                <dd>About 1,200</dd>
+              </div>
+              <div>
+                <dt>Reading time</dt>
+                <dd>6 minutes</dd>
+              </div>
+            </dl>
+          </div>
+        </header>
+        <article>
+          <div class="wrap article-grid">
+            <aside class="rail" aria-label="Article classification">
+              <strong>Method</strong>
+              <div class="rail-line"></div>
+              Cheapness 40%<br />Quality 30%<br />Safety 20%<br />Confirmation 10%
+            </aside>
+            <div class="prose">
+              <figure class="note-video">
+                <button type="button" class="note-video-thumb" data-yt="CL5X3SXi_48"
+                  aria-label="Play the eighty-second version">
+                  <img src="https://i.ytimg.com/vi/CL5X3SXi_48/maxresdefault.jpg" alt=""
+                    loading="lazy" width="1280" height="720" />
+                  <span class="note-video-play" aria-hidden="true"></span>
+                </button>
+                <figcaption>
+                  The short version, in 1:21.
+                  <a href="https://www.youtube.com/watch?v=CL5X3SXi_48">Watch on YouTube</a>
+                </figcaption>
+              </figure>
+
+              <p class="lead">
+                Every weekday after the market closes, the Vance Value Screener
+                ranks about 1,200 US companies on four questions a value investor
+                asks: is it cheap, is it a good business, is it safe, and has the
+                selling stopped? This page explains each of those, how the answers
+                become one rank, and what that rank can and cannot tell you.
+              </p>
+
+              <h2>
+                <span class="number">01 / WHO GETS RANKED</span>The universe.
+              </h2>
+              <p>
+                A company is ranked if it files financial statements with the SEC,
+                trades on a US exchange, and clears four floors:
+              </p>
+              <ul>
+                <li>a share price of at least <strong>$3</strong>;</li>
+                <li>a market value of at least <strong>$300 million</strong>;</li>
+                <li>at least <strong>$2 million</strong> of stock traded on a typical day;</li>
+                <li>at least a year of price history and a recent quarterly filing.</li>
+              </ul>
+              <p>
+                Banks, insurers and REITs are left out. The measures below compare
+                a company's price with its operating business, and a bank's
+                balance sheet <em>is</em> its business, so the comparison does not
+                describe it. A company missing too much data to score is reported
+                as unranked, not quietly dropped.
+              </p>
+
+              <h2>
+                <span class="number">02 / LIKE WITH LIKE</span>Scored against its
+                own sector.
+              </h2>
+              <p>
+                Every measure is turned into a <strong>percentile within the
+                company's sector</strong>, from 0 to 100, where 100 is the best
+                reading in that sector today. A software company is compared with
+                software companies, a trucker with truckers. Ten times earnings is
+                cheap for one industry and expensive for another; comparing within
+                the sector keeps that from deciding the ranking on its own.
+              </p>
+
+              <h2>
+                <span class="number">03 / CHEAPNESS · 40%</span>Is it cheap?
+              </h2>
+              <p>
+                The largest weight, because this is a value screen. Price is
+                measured against the <strong>whole business</strong>, using
+                enterprise value: the market value of the shares, plus debt, minus
+                cash. That way a company can't look cheap just by carrying a lot of
+                debt.
+              </p>
+              <ul>
+                <li><strong>Enterprise value / operating profit</strong> (EBIT, last twelve months)</li>
+                <li><strong>Enterprise value / free cash flow</strong>: operating cash flow minus capital spending</li>
+                <li><strong>Enterprise value / revenue</strong></li>
+                <li><strong>Shareholder yield</strong>: dividends plus buybacks, as a share of market value</li>
+              </ul>
+              <p>
+                A company losing money or burning cash gets the <em>worst</em>
+                score on the matching measure, not a pass. A value screen that lets
+                loss-makers skip the price test is not a value screen.
+              </p>
+
+              <h2>
+                <span class="number">04 / QUALITY · 30%</span>Is it a good
+                business?
+              </h2>
+              <p>
+                Cheap stocks are often cheap for a reason. This pillar keeps the
+                broken ones from rising to the top.
+              </p>
+              <ul>
+                <li><strong>Gross profit / total assets</strong>: how much the business earns on what it owns</li>
+                <li><strong>Return on invested capital</strong></li>
+                <li><strong>Accruals</strong>: whether reported profit is backed by cash coming in</li>
+                <li><strong>Change in gross profitability</strong> from a year earlier</li>
+              </ul>
+
+              <h2>
+                <span class="number">05 / SAFETY · 20%</span>Can it get through a
+                bad stretch?
+              </h2>
+              <ul>
+                <li><strong>Net debt / EBITDA</strong>; a company with more cash than debt scores best</li>
+                <li><strong>Interest cover</strong>: operating profit over interest owed</li>
+                <li><strong>Net share issuance</strong>: whether the company is diluting its holders</li>
+                <li><strong>Working capital</strong> and <strong>retained earnings</strong>, each over total assets</li>
+              </ul>
+
+              <h2>
+                <span class="number">06 / CONFIRMATION · 10%</span>Has the selling
+                stopped?
+              </h2>
+              <ul>
+                <li><strong>12-1 momentum</strong>: the return over the past year, leaving out the latest month</li>
+                <li><strong>Price against its 200-day average</strong></li>
+              </ul>
+              <p>
+                The smallest weight on purpose. It is there to stop the screen
+                buying into a fall that has not finished, not to chase a rally.
+              </p>
+
+              <h2>
+                <span class="number">07 / ONE NUMBER</span>From four answers to a
+                rank.
+              </h2>
+              <p>
+                Each pillar's score is the average of its measures' percentiles.
+                The four are then weighted into one score out of 100:
+              </p>
+              <div class="formula">
+                <span class="formula-label">The score</span>
+                <code>40% Cheapness + 30% Quality + 20% Safety + 10% Confirmation</code>
+              </div>
+              <p>
+                Companies are ranked by that score, and ties go to the safer
+                company. To be scored at all, a company needs at least half the
+                measures in every pillar.
+              </p>
+
+              <h2>
+                <span class="number">08 / AN EXAMPLE</span>Yelp, on the close of
+                September 21, 2026.
+              </h2>
+              <div class="formula">
+                <span class="formula-label">Yelp · #1 of 1,187</span>
+                Cheapness <strong>97</strong> &nbsp;·&nbsp; Quality <strong>92</strong>
+                &nbsp;·&nbsp; Safety <strong>63</strong> &nbsp;·&nbsp; Confirmation
+                <strong>13</strong> &nbsp;&rarr;&nbsp; <strong>score 80.1</strong>
+              </div>
+              <p>
+                The business was priced at about three times its free cash flow,
+                returned 27% of its market value to shareholders in a year, earned
+                about 25% on invested capital and carried no net debt. The one
+                measure against it was the price: down about a quarter over the
+                year. That trade-off is visible on every company's page, so you
+                can see what put it where it is.
+                <a href="stock.html?symbol=YELP">See where Yelp ranks today</a>.
+              </p>
+
+              <h2>
+                <span class="number">09 / WHAT TESTING FOUND</span>A filter, not
+                a forecast.
+              </h2>
+              <p>
+                The rules above were written down before they were tested, and the
+                test results are published whether or not they flatter the screen.
+                We ran the ranking month by month from 2017 to 2025, on about 1,000
+                companies at a time.
+              </p>
+              <ul>
+                <li><strong>The ranking was ordered.</strong> Higher-ranked groups
+                  did better than lower-ranked ones, fairly consistently.</li>
+                <li><strong>Most of that came from the bottom.</strong> Over six
+                  months, the lowest-ranked tenth trailed the typical company by
+                  about 11 points at the median. The top tenth was only about
+                  level with it.</li>
+                <li><strong>In the most recent two years, the edge largely
+                  disappeared.</strong></li>
+                <li><strong>The test could only see companies still listed
+                  today</strong>, which flatters any result.</li>
+              </ul>
+              <blockquote>
+                A high rank is a reason to look, not a reason to buy.
+              </blockquote>
+              <p>
+                What the screen does well is put the numbers that matter for every
+                company in one place, compared fairly with its own industry. It is
+                better at telling you what deserves a closer look &mdash; and what
+                deserves caution &mdash; than at picking winners.
+              </p>
+
+              <h2>
+                <span class="number">10 / TIMING AND DATA</span>When it updates,
+                and where the numbers come from.
+              </h2>
+              <p>
+                The screen runs every weekday at about <strong>7:15 PM
+                Central</strong>, on that day's closing prices, so in the morning
+                the site shows the previous day's close. Financial figures come
+                from companies' own filings in the SEC's Financial Statement Data
+                Sets, and may lag a filing made in the last few days. Prices come
+                from Nasdaq.
+              </p>
+              <p>
+                <a href="index.html">Today's screen</a> &nbsp;·&nbsp;
+                <a href="stock.html">Look up any company</a> &nbsp;·&nbsp;
+                <a href="blog.html">Field notes</a>
+              </p>
+              <div class="endmark"></div>
+            </div>
+          </div>
+        </article>
+      </main>
+
+      <footer>
+        <div class="wrap foot">
+          <span class="foot-note"
+            >The Vance Report exists for information purposes only. Information
+            posted is based on publicly available information and are not
+            investment advice, an offer, or a solicitation. Figures
+            are drawn from each company&rsquo;s most recent SEC filings and may
+            lag later filings. You should always perform your
+            own analysis based upon our screen results before investing.</span
+          ><a class="back" href="index.html"
+            >The Vance Report home <span aria-hidden="true">→</span></a
+          >
+        </div>
+      </footer>
+    </div>
+  
+<!-- ============ BOTTOM FLOATING DISCLAIMER ============ -->
+    <div id="financialDisclaimerBar" class="disc-bar" role="region" aria-label="Financial Disclaimer">
+      <div class="wrap disc-wrap">
+        <div class="disc-text">
+          <span class="disc-badge">Notice</span>
+          Educational research only — not investment advice. The Vance Report is not a registered investment adviser or broker-dealer.<span class="disc-more"><br>
+          Screened securities are high-risk, volatile, and may involve total loss of principal. Data may be delayed or inaccurate — verify before relying on it.</span>
+        </div>
+        <div class="disc-actions">
+          <a class="disc-link" href="disclaimer.html">Read full disclaimer &rarr;</a>
+          <button type="button" class="disc-close" id="discClose" aria-label="Dismiss disclaimer">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .disc-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 90;
+        background: rgba(19, 15, 10, 0.97);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--rule, #372d23);
+        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
+        font-family: var(--mono, "IBM Plex Mono", monospace);
+      }
+
+      .disc-bar[hidden] {
+        display: none !important;
+      }
+
+      .disc-wrap {
+        padding: 16px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .disc-text {
+        flex: 1;
+        color: var(--amber, #e0a33c);
+        font-weight: 400;
+        font-size: 17px;
+        line-height: 1.55;
+      }
+
+      .disc-badge {
+        display: inline-block;
+        border: 1px solid var(--amber, #e0a33c);
+        color: var(--amber, #e0a33c);
+        font-weight: 500;
+        font-size: 14.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+
+      .disc-actions {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-shrink: 0;
+      }
+
+      .disc-link {
+        color: var(--paper, #e7e3d8);
+        text-decoration: none;
+        font-size: 15.5px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--amber, #e0a33c);
+        padding-bottom: 2px;
+        transition: color 0.16s ease, border-color 0.16s ease;
+      }
+
+      .disc-link:hover {
+        color: var(--amber, #e0a33c);
+      }
+
+      .disc-close {
+        background: none;
+        border: 0;
+        color: var(--paper-faint, #817365);
+        cursor: pointer;
+        font-size: 20px;
+        padding: 4px 8px;
+        transition: color 0.16s ease;
+        flex-shrink: 0;
+      }
+
+      .disc-close:hover {
+        color: var(--paper, #e7e3d8);
+      }
+
+      @media (max-width: 720px) {
+        .disc-wrap {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .disc-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+    </style>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var bar = document.getElementById("financialDisclaimerBar");
+        var closeBtn = document.getElementById("discClose");
+        if (!bar || !closeBtn) return;
+
+        var DISMISS_KEY = "vance_disclaimer_dismissed_until";
+        var dismissedUntil = localStorage.getItem(DISMISS_KEY);
+        if (dismissedUntil && Date.now() < Number(dismissedUntil)) {
+          bar.hidden = true;
+        }
+
+        closeBtn.addEventListener("click", function () {
+          bar.hidden = true;
+          var oneDayFromNow = Date.now() + 24 * 60 * 60 * 1000;
+          localStorage.setItem(DISMISS_KEY, String(oneDayFromNow));
+        });
+      });
+    </script>
+
+<style id="vr-mobile">
+/* ============================================================
+   MOBILE PASS
+
+   Every rule lives inside a max-width query, so nothing here
+   changes the desktop layout. Loaded last on each page so it
+   wins on source order rather than through !important.
+
+   Breakpoints
+     860px  two-column layouts fold to one
+     640px  phone: spacing, type, tables as cards, notice bar
+     359px  the narrowest phones still in use
+   ============================================================ */
+
+/* ---------- 860px: fold the two-column layouts ---------- */
+@media (max-width: 860px) {
+  .wrap { padding-left: 22px; padding-right: 22px; }
+  .hero-grid, .mast-grid, .brief, .head-grid, .research-grid { grid-template-columns: 1fr !important; }
+  .hero-grid { gap: 42px; }
+  .eng-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metrics-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
+
+/* ============================================================
+   640px and below: the phone pass
+   ============================================================ */
+@media (max-width: 640px) {
+
+  /* ---- gutters and vertical rhythm (desktop spacing halved) ---- */
+  .wrap { padding-left: 18px; padding-right: 18px; }
+  .container, .header { padding-left: 0; padding-right: 0; }
+  .hero { padding: 44px 0 38px; }
+  section.block { padding: 44px 0; }
+  footer { padding: 34px 0 44px; }
+  .brief { padding: 30px 0 20px; }
+
+  /* ---- masthead ---- */
+  .ticker-in { height: 46px; gap: 12px !important; justify-content: space-between !important; }
+  .ticker-in > * { min-width: 0; }
+  .blog-link, .home, .mark { font-size: 14.5px; letter-spacing: 0.1em; }
+  .tick-stat, .tick-stat .live { white-space: nowrap; font-size: 13.5px; }
+  header.top .wrap { gap: 12px; }
+  .brand { font-size: 15.5px; white-space: nowrap; }
+  .back { font-size: 13.5px; letter-spacing: 0.08em; white-space: nowrap; text-align: right; }
+
+  /* ---- headlines fill the column instead of breaking one word per line ---- */
+  .hero h1 { font-size: clamp(36px, 11vw, 46px); line-height: 1.02; }
+  h1 { font-size: clamp(38px, 11vw, 54px) !important; line-height: 1; }
+  .sec-head h2, .result-head h2, .testi-head h2 { font-size: 23px; line-height: 1.12; }
+  section.clause h2 { font-size: 21px; }
+  .eyebrow { font-size: 14px; letter-spacing: 0.22em; margin-bottom: 18px; }
+  .hero-lede, .dek, .subhead { font-size: 17px; margin-top: 20px; }
+
+  /* ---- section heads stop competing for one line ---- */
+  .sec-head, .result-head, .testi-head, .closing-in,
+  .criterion-head, .endmark, .foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .sec-head { margin-bottom: 22px; }
+  .sec-meta { font-size: 14.5px; text-align: left; }
+
+  /* ---- actions: full width, thumb-sized ---- */
+  .cta-row { flex-direction: column; align-items: stretch; gap: 14px; }
+  .btn-cta, .btn-run, .submit {
+    width: 100%;
+    justify-content: center;
+    padding: 16px 18px;
+    box-shadow: 3px 3px 0 0 var(--amber-deep);
+  }
+  .report-link { display: inline-block; padding: 12px 0 8px; }
+
+  /* ---- screen engine ---- */
+  .eng-grid { grid-template-columns: 1fr; gap: 14px; }
+  .console { padding: 20px 16px 18px; }
+  .engine-bar { padding: 11px 16px; gap: 10px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+
+  /* ============================================================
+     Tables become stacked cards.
+
+     A seven-column table on a 375px screen is a 994px sideways
+     scroll -- readable only by dragging, and easy to miss
+     entirely. Each row becomes a card and each figure carries
+     the column header it lost, through ::before.
+     ============================================================ */
+
+  /* --- today's scan (index) --- */
+  .scan-table, .scan-table tbody, .scan-table tr, .scan-table td { display: block; width: 100%; }
+  .scan-table { min-width: 0 !important; width: 100% !important; border-collapse: separate; border-spacing: 0; }
+  .scan-table thead { display: none; }
+  .scan-table tbody tr {
+    position: relative;
+    border: 1px solid var(--rule);
+    background: var(--ink-2);
+    padding: 16px 16px 12px;
+    margin-bottom: 14px;
+  }
+  .scan-table td { border: 0; padding: 0; text-align: left; }
+  .scan-table td:nth-child(1) { position: absolute; top: 14px; right: 14px; width: auto; }
+  .scan-table td:nth-child(2) { padding-right: 44px; margin-bottom: 4px; }
+  .scan-name { max-width: none; white-space: normal; }
+  .scan-table td:nth-child(n + 3):nth-child(-n + 7) {
+    padding: 9px 0;
+    border-top: 1px solid var(--rule-soft);
+    text-align: right;
+    overflow: hidden;
+  }
+  .scan-table td:nth-child(n + 3):nth-child(-n + 7)::before {
+    float: left;
+    color: var(--paper-faint);
+    font-size: 13.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding-top: 2px;
+  }
+  .scan-table td:nth-child(3)::before { content: "Price"; }
+  .scan-table td:nth-child(4)::before { content: "Net cash / share"; }
+  .scan-table td:nth-child(5)::before { content: "Cushion vs 30%"; }
+  .scan-table td:nth-child(6)::before { content: "5-day vs \2212 15%"; }
+  .scan-table td:nth-child(7)::before { content: "Momentum"; }
+  .scan-table td .scan-sub { display: inline; margin-left: 8px; }
+  .scan-table td:nth-child(2) .scan-sub { display: block; margin-left: 0; }
+  .scan-table td:nth-child(8) { padding-top: 13px; }
+  .scan-table td:nth-child(8) .scan-link {
+    display: block;
+    text-align: center;
+    border: 1px solid var(--rule);
+    padding: 11px 0;
+  }
+  .scan-legend { gap: 10px 18px; font-size: 13.5px; }
+
+  /* --- gatekeeper results (report) --- */
+  .results .table-scroll { overflow-x: visible; border: 0; }
+  .results table, .results tbody, .results tr, .results td { display: block; width: 100%; }
+  .results table { min-width: 0 !important; border-collapse: separate; border-spacing: 0; }
+  .results thead { display: none; }
+  .results tbody tr {
+    border: 1px solid var(--rule);
+    background: var(--ink2);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .results td { border: 0; padding: 0; text-align: left !important; }
+  .results td:nth-child(1) { margin-bottom: 6px; }
+  .results td:nth-child(1) .chart { margin-top: 10px; margin-right: 18px; }
+  .results td:nth-child(n + 2) {
+    padding: 9px 0;
+    border-top: 1px solid var(--rule);
+    text-align: right !important;
+    overflow: hidden;
+  }
+  .results td:nth-child(n + 2)::before {
+    float: left;
+    color: var(--faint);
+    font-size: 13.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding-top: 2px;
+  }
+  .results td:nth-child(2)::before { content: "Prior session"; }
+  .results td:nth-child(3)::before { content: "1-day change"; }
+  .results td:nth-child(4)::before { content: "Cash cushion"; }
+  .results td:nth-child(5)::before { content: "Gatekeeper"; }
+  .results td .sub { display: inline; margin-left: 8px; }
+  .results td:nth-child(1) .sub { display: block; margin-left: 0; }
+
+  /* ---- research entries and article body ---- */
+  .entry { grid-template-columns: 1fr; gap: 14px; padding: 22px 0; }
+  .metrics { gap: 6px 16px; font-size: 15px; }
+  .thesis { font-size: 16.5px; }
+  .article-grid { gap: 28px; }
+  .story-meta div { gap: 12px; }
+
+  /* ---- stock detail ---- */
+  .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .gate-row { grid-template-columns: 1fr auto; gap: 4px 12px; }
+  .gate-row .gate-mark { grid-column: 2; text-align: right; }
+  .lookup-form { flex-direction: column; align-items: stretch; gap: 10px; }
+  .lookup-form input, .lookup-form button { width: 100%; }
+
+  /* ---- review form ---- */
+  .choice-group { width: 100%; }
+  .choice-group > * { flex: 1; }
+  .submit-row { flex-direction: column; align-items: stretch; gap: 12px; }
+
+  /* ---- full disclaimer contents list ---- */
+  .toc ol { column-count: 1; }
+  .toc li { break-inside: avoid; }
+
+  /* ---- modals ---- */
+  .backdrop, .popup-backdrop { padding: 16px; align-items: start; }
+  .modal, .popup { padding: 28px 20px 24px; margin-top: 8vh; }
+
+  /* ============================================================
+     The notice bar.
+
+     At 375px the full two-sentence version stood 284px tall --
+     a third of the screen, on every page, above everything else.
+     The second sentence is hidden at this width and reached
+     through the link beside it, which is where the complete
+     disclaimer lives anyway. Nothing is hidden on desktop.
+     ============================================================ */
+  .disc-more { display: none; }
+  .disc-wrap { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 18px 12px; }
+  .disc-text { font-size: 13.5px; line-height: 1.45; }
+  .disc-badge { font-size: 12px; padding: 1px 5px; margin-right: 6px; }
+  .disc-actions { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; gap: 10px; }
+  .disc-link { font-size: 12.5px; letter-spacing: 0.06em; }
+  .disc-close { font-size: 17.5px; padding: 2px 4px; }
+}
+
+/* ---------- 359px and below ---------- */
+@media (max-width: 359px) {
+  .wrap { padding-left: 14px; padding-right: 14px; }
+  .metrics-grid, .stats { grid-template-columns: 1fr; }
+  .scan-table td:nth-child(n + 3):nth-child(-n + 7)::before { font-size: 13px; }
+}
+</style>
+
+<style id="vr-surface">
+  /* ============================================================
+     THE SURFACE
+
+     A warm brown base, a soft light falling from the upper right,
+     and a fine grain over both. Measured against the reference
+     screenshot rather than eyeballed: grain standard deviation
+     0.98 against its 0.95, and the glow peaks +32 over the base
+     against its +31.
+
+     The grain and the glow live on a fixed pseudo-element so they
+     stay still while the page scrolls, and so one rule covers
+     every page. It sits at z-index -1, which means html carries
+     the base colour and body must not paint one over the top --
+     a negative-z-index child is painted before its parent's own
+     background, not after. That one detail is why an earlier
+     attempt rendered completely flat.
+     ============================================================ */
+  html { background-color: var(--ink, var(--bg, #130f0a)); }
+  body { background-color: transparent; }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
+      radial-gradient(1500px 980px at 72% -10%,
+        rgba(214, 172, 112, 0.21),
+        rgba(214, 172, 112, 0.059) 45%,
+        rgba(214, 172, 112, 0) 72%);
+    background-repeat: repeat, no-repeat;
+    background-size: 220px 220px, 100% 100%;
+  }
+
+  /* The old grid overlay is replaced by the grain above. The
+     elements stay so nothing that positioned against them moves. */
+  .grid-field, .grain, .grid { background-image: none !important; }
+/* ------------------------------------------------------------------
+   Lifting the type scale made two masthead items too wide for a small
+   phone: the status pill and the back link are both single unbreakable
+   lines of letterspaced caps. They wrap here rather than shrinking back
+   to a size this pass exists to correct.
+   ------------------------------------------------------------------ */
+@media (max-width: 400px) {
+  .ticker-in { height: auto !important; min-height: 46px; padding-top: 6px; padding-bottom: 6px; }
+  .tick-stat, .tick-stat .live, .tick-stat .live span {
+    white-space: normal;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
+  }
+  .tick-stat .live { min-width: 0; align-items: flex-start; }
+
+  .back { white-space: normal; letter-spacing: 0.04em; line-height: 1.25; }
+}
+</style>
+</body>
+</html>
