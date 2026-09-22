@@ -13,9 +13,14 @@ name: Daily value screen
 
 on:
   schedule:
-    # 22:10 UTC on weekdays, well after the US close, so the last session is
-    # settled by the time the prices are read.
-    - cron: '10 22 * * 1-5'
+    # 00:15 UTC Tuesday-Saturday = 7:15 PM Central / 8:15 PM Eastern,
+    # Monday-Friday evenings. It has to be after 8 PM Eastern: that is when
+    # Nasdaq's quote marks the market Closed, and the run takes each session's
+    # official close from that quote because Nasdaq's historical table does
+    # not carry the day until much later (see value_prices.latest_close). The
+    # 22:10 UTC slot this replaces ran before either had the close, and on
+    # 21 Sep 2026 published Friday's prices under Monday's date.
+    - cron: '15 0 * * 2-6'
   workflow_dispatch:
     inputs:
       as_of:
