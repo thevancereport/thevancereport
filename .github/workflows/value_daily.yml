@@ -13,14 +13,25 @@ name: Daily value screen
 
 on:
   schedule:
-    # 00:15 UTC Tuesday-Saturday = 7:15 PM Central / 8:15 PM Eastern,
+    # 02:15 UTC Tuesday-Saturday = 9:15 PM Central / 10:15 PM Eastern, with a
+    # second attempt at 03:45 UTC. On 22 Sep 2026 the 00:15 slot found that
+    # only 2,236 of 3,087 names carried the day's close in Nasdaq's historical
+    # table an hour after the bell; the quote top-up is all-or-nothing, so the
+    # run correctly refused to publish and the site kept Monday's screen. The
+    # data fills in through the evening, so the job now starts later and tries
+    # again if the first attempt refuses. A second run on a day that already
+    # published is harmless: value_daily.py refuses to write a session that is
+    # not newer than the file's own prices_through.
+    #
+    # The original note on why it cannot run before 8 PM Eastern still holds:
     # Monday-Friday evenings. It has to be after 8 PM Eastern: that is when
     # Nasdaq's quote marks the market Closed, and the run takes each session's
     # official close from that quote because Nasdaq's historical table does
     # not carry the day until much later (see value_prices.latest_close). The
     # 22:10 UTC slot this replaces ran before either had the close, and on
     # 21 Sep 2026 published Friday's prices under Monday's date.
-    - cron: '15 0 * * 2-6'
+    - cron: '15 2 * * 2-6'
+    - cron: '45 3 * * 2-6'
   workflow_dispatch:
     inputs:
       as_of:
