@@ -563,8 +563,8 @@
       .t5-take .dn b { color: #cc8a50; }
       .t5-note { border-left: 2px solid var(--amber-deep); padding: 2px 0 2px 20px; margin: 0 0 26px; }
       .t5-note p { margin: 0; font-size: 16px; color: var(--paper); }
-      .t5-video { margin: 0 0 40px; display: grid; grid-template-columns: 240px 1fr; gap: 26px; align-items: center; }
-      .t5-video .panel { position: relative; aspect-ratio: 9 / 16; border: 1px solid var(--rule); border-radius: 3px;
+      .t5-video { margin: 0 0 40px; display: grid; grid-template-columns: 340px 1fr; gap: 26px; align-items: center; }
+      .t5-video .panel { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--rule); border-radius: 3px;
         background:
           radial-gradient(380px 280px at 20% 0%, #2d2115 0%, rgba(45, 33, 21, 0) 70%),
           radial-gradient(320px 280px at 100% 100%, #1f170f 0%, rgba(31, 23, 15, 0) 70%),
@@ -581,7 +581,7 @@
       @media (max-width: 640px) {
         .t5-bars div.r { grid-template-columns: 96px 1fr 30px; }
         .t5-video { grid-template-columns: 1fr; }
-        .t5-video .panel { max-width: 240px; }
+        .t5-video .panel { max-width: 100%; }
       }
     </style>
   </head>

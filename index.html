@@ -972,15 +972,21 @@
           letter-spacing: .14em; text-transform: uppercase; color: var(--amber); text-decoration: none; }
         .t5-read:hover { text-decoration: underline; }
         .t5-vid { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; background: #000; }
-        /* A vertical upload is a Short, and YouTube's thumbnail for one is a
-           letterboxed 1280x720 that looks broken in a portrait frame. So the
-           portrait panel is drawn here instead of fetched. */
+        /* The panel is drawn here rather than fetched from YouTube. A video
+           published as a Short gets a thumbnail padded out to 1280x720 with
+           black on every side, whatever shape the video itself is, and that
+           padding is not something we can predict or crop reliably. Drawing it
+           also means the card looks the same before and after an upload. */
         .t5-vid.portrait { aspect-ratio: 9 / 16; max-width: 264px; margin-left: auto; margin-right: auto;
           background:
             radial-gradient(420px 300px at 20% 0%, #2d2115 0%, rgba(45, 33, 21, 0) 70%),
             radial-gradient(360px 300px at 100% 100%, #1f170f 0%, rgba(31, 23, 15, 0) 70%),
             var(--ink); }
-        .t5-vid.portrait button { background: transparent; display: grid; place-items: center; gap: 16px; align-content: center; }
+        .t5-vid button { background: transparent; display: grid; place-items: center; gap: 16px; align-content: center; }
+        .t5-vid { background:
+            radial-gradient(420px 300px at 20% 0%, #2d2115 0%, rgba(45, 33, 21, 0) 70%),
+            radial-gradient(360px 300px at 100% 100%, #1f170f 0%, rgba(31, 23, 15, 0) 70%),
+            var(--ink); }
         .t5-vid .t5-vid-label { font-family: var(--mono); font-size: 11px; letter-spacing: .2em;
           text-transform: uppercase; color: var(--paper-faint); }
         .t5-vid button { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; cursor: pointer; background: #000; }
@@ -1025,11 +1031,8 @@
               if (/^[A-Za-z0-9_-]{11}$/.test(t5.video_id || "")) {
                 var id = t5.video_id;
                 var portrait = t5.orientation === "vertical";
-                var inner = portrait
-                  ? '<span class="t5-play" style="position:static;transform:none" aria-hidden="true"></span>' +
-                    '<span class="t5-vid-label">Play &middot; ' + esc(t5.duration || "") + "</span>"
-                  : '<img src="https://i.ytimg.com/vi/' + esc(id) + '/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720" />' +
-                    '<span class="t5-play" aria-hidden="true"></span>';
+                var inner = '<span class="t5-play" style="position:static;transform:none" aria-hidden="true"></span>' +
+                  '<span class="t5-vid-label">Play &middot; ' + esc(t5.duration || "") + "</span>";
                 vid = '<div><div class="t5-vid' + (portrait ? " portrait" : "") + '">' +
                   '<button type="button" data-yt="' + esc(id) + '" aria-label="Play the video of this note">' + inner + "</button></div>" +
                   '<div class="t5-cap">' + esc(t5.duration || "") + ' &middot; <a href="https://www.youtube.com/watch?v=' + esc(id) + '">Watch on YouTube</a></div></div>';
