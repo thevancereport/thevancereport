@@ -1,5 +1,5 @@
 {
- "note": "Every weekday's top 25, kept so the site can later say when a company entered the top ten and what has happened since. Written by scripts/screen_history.py after each run of the daily screen. Prices are the session's close, the same ones the scores were built from. Sessions before 2026-09-21 are not here: the runs of 20 Sep carried Friday's prices or a short universe, and a wrong record is worse than none.",
+ "note": "Every weekday's top 25, when each company first reached the top ten, and the close of every such company in every session since. Written by scripts/screen_history.py after each run of the daily screen. Prices are the session's close, the same ones the scores were built from. Sessions before 2026-09-21 are not here: the runs of 20 Sep carried Friday's prices or a short universe, and a wrong record is worse than none.",
  "top_n": 25,
  "sessions": [
   {
@@ -210,5 +210,110 @@
     }
    ]
   }
- ]
+ ],
+ "entry_rank": 10,
+ "entries": {
+  "YELP": {
+   "entered": "2026-09-21",
+   "entry_rank": 1,
+   "entry_price": 19.41,
+   "name": "YELP INC",
+   "sector": "Consumer Services"
+  },
+  "NRDS": {
+   "entered": "2026-09-21",
+   "entry_rank": 2,
+   "entry_price": 9.08,
+   "name": "NERDWALLET, INC.",
+   "sector": "Technology"
+  },
+  "CRCT": {
+   "entered": "2026-09-21",
+   "entry_rank": 3,
+   "entry_price": 5.65,
+   "name": "CRICUT, INC.",
+   "sector": "Industrials"
+  },
+  "CRL": {
+   "entered": "2026-09-21",
+   "entry_rank": 4,
+   "entry_price": 279.01,
+   "name": "CHARLES RIVER LABORATORIES INTERNATIONAL, INC.",
+   "sector": "Biotech & Pharma"
+  },
+  "NUTX": {
+   "entered": "2026-09-21",
+   "entry_rank": 5,
+   "entry_price": 201.48,
+   "name": "NUTEX HEALTH, INC.",
+   "sector": "Business Services"
+  },
+  "PGNY": {
+   "entered": "2026-09-21",
+   "entry_rank": 6,
+   "entry_price": 26.86,
+   "name": "PROGYNY, INC.",
+   "sector": "Healthcare Services"
+  },
+  "FE": {
+   "entered": "2026-09-21",
+   "entry_rank": 7,
+   "entry_price": 44.97,
+   "name": "FIRSTENERGY CORP",
+   "sector": "Utilities"
+  },
+  "PCRX": {
+   "entered": "2026-09-21",
+   "entry_rank": 8,
+   "entry_price": 24.11,
+   "name": "PACIRA BIOSCIENCES, INC.",
+   "sector": "Biotech & Pharma"
+  },
+  "BWA": {
+   "entered": "2026-09-21",
+   "entry_rank": 9,
+   "entry_price": 63.32,
+   "name": "BORGWARNER INC",
+   "sector": "Autos & Transport Equipment"
+  },
+  "COLL": {
+   "entered": "2026-09-21",
+   "entry_rank": 10,
+   "entry_price": 23.04,
+   "name": "COLLEGIUM PHARMACEUTICAL, INC",
+   "sector": "Biotech & Pharma"
+  }
+ },
+ "prices": {
+  "YELP": {
+   "2026-09-21": 19.41
+  },
+  "NRDS": {
+   "2026-09-21": 9.08
+  },
+  "CRCT": {
+   "2026-09-21": 5.65
+  },
+  "CRL": {
+   "2026-09-21": 279.01
+  },
+  "NUTX": {
+   "2026-09-21": 201.48
+  },
+  "PGNY": {
+   "2026-09-21": 26.86
+  },
+  "FE": {
+   "2026-09-21": 44.97
+  },
+  "PCRX": {
+   "2026-09-21": 24.11
+  },
+  "BWA": {
+   "2026-09-21": 63.32
+  },
+  "COLL": {
+   "2026-09-21": 23.04
+  }
+ }
 }
