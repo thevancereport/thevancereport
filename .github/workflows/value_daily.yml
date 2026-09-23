@@ -19,29 +19,30 @@ name: Daily value screen
 
 on:
   schedule:
-    # 02:15 UTC Tuesday-Saturday = 9:15 PM Central / 10:15 PM Eastern, with a
-    # second attempt at 03:45 UTC. On 22 Sep 2026 the 00:15 slot found that
-    # only 2,236 of 3,087 names carried the day's close in Nasdaq's historical
-    # table an hour after the bell; the quote top-up is all-or-nothing, so the
-    # run correctly refused to publish and the site kept Monday's screen. The
-    # data fills in through the evening, so the job now starts later and tries
-    # again if the first attempt refuses.
+    # A ladder up the evening, earliest rung first. Each run stops in seconds
+    # if the day is already on the site (the guard below) or if the session has
+    # not settled yet (the readiness check below), so extra rungs are cheap.
     #
-    # The second attempt is nearly always wasted work. The concurrency group
-    # below holds it until the first run finishes, and the guard step then ends
-    # it in a few seconds if the day is already on the site. Without that guard
-    # it re-ranked the same session and handed Buttondown a second draft of the
-    # same email (22 Sep 2026, run #8, cancelled by hand).
+    # Why it cannot start at the bell. On 23 Sep 2026 a probe sampled 400 real
+    # names at 4:21, 5:37, 6:37 and 7:33 pm Eastern. Every single time,
+    # marketStatus came back 'After-Hours' on 400 of 400, and the price with it
+    # was a live after-hours print stamped to the minute of the probe -- not
+    # the official close. Publishing those would put a number on the site that
+    # is not the closing price and does not match the history the rest of the
+    # screen is built from. So the Closed gate in value_prices.latest_close
+    # stays, and the earliest honest start is after Nasdaq marks the session
+    # closed at 8 pm Eastern.
     #
-    # The original note on why it cannot run before 8 PM Eastern still holds:
-    # Monday-Friday evenings. It has to be after 8 PM Eastern: that is when
-    # Nasdaq's quote marks the market Closed, and the run takes each session's
-    # official close from that quote because Nasdaq's historical table does
-    # not carry the day until much later (see value_prices.latest_close). The
-    # 22:10 UTC slot this replaces ran before either had the close, and on
-    # 21 Sep 2026 published Friday's prices under Monday's date.
-    - cron: '15 2 * * 2-6'
-    - cron: '45 3 * * 2-6'
+    # It settles gradually rather than at a stroke: at 8:15 pm Eastern on
+    # 22 Sep only 2,236 of 3,087 names carried the day, short of the 90% the
+    # top-up demands, while 10:15 pm cleared it. Hence a ladder rather than one
+    # slot -- whichever rung the universe is ready for is the one that
+    # publishes, and the rest cost seconds.
+    - cron: '10 0 * * 2-6'   # 8:10 pm Eastern / 7:10 pm Central
+    - cron: '40 0 * * 2-6'   # 8:40 pm Eastern
+    - cron: '40 1 * * 2-6'   # 9:40 pm Eastern
+    - cron: '15 2 * * 2-6'   # 10:15 pm Eastern -- the slot that worked on 22 Sep
+    - cron: '45 3 * * 2-6'   # 11:45 pm Eastern -- backstop
   workflow_dispatch:
     inputs:
       as_of:
@@ -129,13 +130,76 @@ jobs:
                   )
           PY
 
+      - name: Stop here if the session has not settled yet
+        id: settled
+        if: steps.guard.outputs.run == 'true'
+        working-directory: scripts
+        env:
+          AS_OF: ${{ inputs.as_of }}
+          FORCE: ${{ inputs.force || 'false' }}
+          SCREEN_FILE: ${{ github.workspace }}/value_screen.json
+        run: |
+          python - <<'PY'
+          # Asking forty names takes fifteen seconds and predicts what the real
+          # top-up will find. Without it an early rung spends twenty minutes
+          # fetching three thousand quotes only to be told the day is not there.
+          # The sample comes from the published screen, so it carries the same
+          # mix of liquid and thin names the run has to satisfy.
+          import json
+          import os
+          import random
+          from collections import Counter
+
+          import value_prices as vp
+
+          force = os.environ.get("FORCE", "").strip().lower() == "true"
+          as_of = os.environ.get("AS_OF", "").strip()
+          if force or as_of:
+              why = "force" if force else f"as_of {as_of}"
+              print(f"Readiness check skipped ({why}).")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                  fh.write("run=true\n")
+              raise SystemExit(0)
+
+          try:
+              with open(os.environ["SCREEN_FILE"], encoding="utf-8") as fh:
+                  rows = json.load(fh).get("ranked") or []
+          except (OSError, ValueError):
+              rows = []
+          syms = [r["symbol"] for r in rows if r.get("symbol")]
+          if len(syms) > 40:
+              syms = random.Random(20260923).sample(syms, 40)
+
+          if not syms:
+              print("No published screen to sample; letting the run decide.")
+              ok = True
+              detail = "no sample available"
+          else:
+              got = [vp.latest_close(s) for s in syms]
+              got = [q for q in got if q]
+              share = len(got) / len(syms)
+              session = Counter(q[0] for q in got).most_common(1)[0][0] if got else None
+              ok = share >= 0.9
+              detail = f"{len(got)} of {len(syms)} report a closed session ({share:.0%})"
+              if session:
+                  detail += f", newest {session}"
+
+          print(("Running: " if ok else "Skipping: ") + detail + ".")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"run={'true' if ok else 'false'}\n")
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a") as fh:
+                  fh.write(f"**{'Session settled' if ok else 'Not settled yet'}** &mdash; {detail}.\n\n")
+          PY
+
       # The histories barely change -- one row a day on top of two years of
       # rows -- so they are kept between runs. Restoring them is what turns an
       # hour of downloading into a couple of minutes. A miss is not a failure:
       # value_daily then fetches every history from source exactly as it did
       # before, and writes a fresh cache at the end.
       - name: Restore the price histories
-        if: steps.guard.outputs.run == 'true'
+        if: steps.guard.outputs.run == 'true' && steps.settled.outputs.run == 'true'
         uses: actions/cache@v4
         with:
           path: .price-cache
@@ -144,7 +208,7 @@ jobs:
             price-cache-v1-
 
       - name: Check the maths before it spends the evening on it
-        if: steps.guard.outputs.run == 'true'
+        if: steps.guard.outputs.run == 'true' && steps.settled.outputs.run == 'true'
         working-directory: scripts
         env:
           # test_end_to_end.py runs a full synthetic backtest, and the summary
@@ -161,7 +225,7 @@ jobs:
           python test_value_cache.py
 
       - name: Rank today's universe
-        if: steps.guard.outputs.run == 'true'
+        if: steps.guard.outputs.run == 'true' && steps.settled.outputs.run == 'true'
         working-directory: scripts
         env:
           AS_OF: ${{ inputs.as_of }}
@@ -172,7 +236,7 @@ jobs:
         run: python value_daily.py
 
       - name: Record the session in screen_history.json
-        if: steps.guard.outputs.run == 'true'
+        if: steps.guard.outputs.run == 'true' && steps.settled.outputs.run == 'true'
         env:
           SCREEN_FILE: ${{ github.workspace }}/value_screen.json
           HISTORY_FILE: ${{ github.workspace }}/screen_history.json
@@ -180,7 +244,7 @@ jobs:
         run: python screen_history.py
 
       - name: Keep a copy whatever happens
-        if: always() && steps.guard.outputs.run == 'true'
+        if: always() && steps.guard.outputs.run == 'true' && steps.settled.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: value-screen
@@ -188,7 +252,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Commit it
-        if: ${{ steps.guard.outputs.run == 'true' && inputs.commit != 'false' }}
+        if: ${{ steps.guard.outputs.run == 'true' && steps.settled.outputs.run == 'true' && inputs.commit != 'false' }}
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           # No [skip ci]. Netlify honours that marker and will not build, so the
