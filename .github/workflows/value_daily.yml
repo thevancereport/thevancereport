@@ -6,6 +6,12 @@ name: Daily value screen
 # It runs the offline tests first. A broken percentile costs ten seconds to find
 # here and a day of wrong numbers on the site if it is not found at all.
 #
+# The price histories are cached between runs (see scripts/value_cache.py).
+# Before that, the job asked Nasdaq for every symbol's last two years of closes
+# every single night -- about 1.5 million rows fetched to use the 3,000 new
+# ones -- which is where its 40 to 80 minutes went. Now a normal night fetches
+# the day and nothing else.
+#
 # The job never commits a thin file: value_daily.py refuses to write anything if
 # fewer than 200 price histories or fewer than 50 eligible companies come back,
 # so a bad data day leaves yesterday's file in place rather than replacing it
@@ -19,9 +25,13 @@ on:
     # table an hour after the bell; the quote top-up is all-or-nothing, so the
     # run correctly refused to publish and the site kept Monday's screen. The
     # data fills in through the evening, so the job now starts later and tries
-    # again if the first attempt refuses. A second run on a day that already
-    # published is harmless: value_daily.py refuses to write a session that is
-    # not newer than the file's own prices_through.
+    # again if the first attempt refuses.
+    #
+    # The second attempt is nearly always wasted work. The concurrency group
+    # below holds it until the first run finishes, and the guard step then ends
+    # it in a few seconds if the day is already on the site. Without that guard
+    # it re-ranked the same session and handed Buttondown a second draft of the
+    # same email (22 Sep 2026, run #8, cancelled by hand).
     #
     # The original note on why it cannot run before 8 PM Eastern still holds:
     # Monday-Friday evenings. It has to be after 8 PM Eastern: that is when
@@ -43,6 +53,9 @@ on:
       commit:
         description: "true = commit value_screen.json, false = build it and stop"
         default: "true"
+      force:
+        description: "true = rank again even if today is already published"
+        default: "false"
 
 permissions:
   contents: write
@@ -63,7 +76,75 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Check the maths before spending an hour on it
+      - name: Stop here if today is already on the site
+        id: guard
+        env:
+          AS_OF: ${{ inputs.as_of }}
+          FORCE: ${{ inputs.force || 'false' }}
+        run: |
+          python - <<'PY'
+          import datetime
+          import json
+          import os
+          import zoneinfo
+
+          force = os.environ.get("FORCE", "").strip().lower() == "true"
+          as_of = os.environ.get("AS_OF", "").strip()
+
+          # The session this run is for, not the calendar date. Both crons fire
+          # in the New York evening, and the retry can be held past midnight by
+          # the concurrency group when the first run is slow, so rolling the
+          # date at midnight would make the retry think it had a new day to do.
+          # Six hours back puts the whole evening window on one side of it.
+          now_ny = datetime.datetime.now(zoneinfo.ZoneInfo("America/New_York"))
+          session = (now_ny - datetime.timedelta(hours=6)).date().isoformat()
+
+          try:
+              with open("value_screen.json", encoding="utf-8") as fh:
+                  published = (json.load(fh).get("_meta") or {}).get("as_of")
+          except (OSError, ValueError):
+              published = None
+
+          if force:
+              run, why = True, "force was asked for"
+          elif as_of:
+              run, why = True, f"a specific date was asked for ({as_of})"
+          elif published and published >= session:
+              run, why = False, f"the {published} screen is already on the site"
+          else:
+              run, why = True, f"the {session} screen is not on the site yet"
+
+          print(f"value_screen.json is at {published}; this run is for {session}.")
+          print(("Running: " if run else "Skipping: ") + why + ".")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"run={'true' if run else 'false'}\n")
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as fh:
+                  fh.write(
+                      f"**{'Running' if run else 'Skipped'}** &mdash; {why}. "
+                      f"On the site: `{published}`. This run is for: `{session}`.\n\n"
+                  )
+          PY
+
+      # The histories barely change -- one row a day on top of two years of
+      # rows -- so they are kept between runs. Restoring them is what turns an
+      # hour of downloading into a couple of minutes. A miss is not a failure:
+      # value_daily then fetches every history from source exactly as it did
+      # before, and writes a fresh cache at the end.
+      - name: Restore the price histories
+        if: steps.guard.outputs.run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: .price-cache
+          key: price-cache-v1-${{ github.run_id }}
+          restore-keys: |
+            price-cache-v1-
+
+      - name: Check the maths before it spends the evening on it
+        if: steps.guard.outputs.run == 'true'
         working-directory: scripts
         env:
           # test_end_to_end.py runs a full synthetic backtest, and the summary
@@ -77,17 +158,21 @@ jobs:
           python test_value_data.py
           python test_value_daily.py
           python test_screen_history.py
+          python test_value_cache.py
 
       - name: Rank today's universe
+        if: steps.guard.outputs.run == 'true'
         working-directory: scripts
         env:
           AS_OF: ${{ inputs.as_of }}
           MAX_SYMBOLS: ${{ inputs.max_symbols || '0' }}
           OUT_FILE: ${{ github.workspace }}/value_screen.json
+          CACHE_FILE: ${{ github.workspace }}/.price-cache/prices.json.gz
           SEC_UA: "TheVanceReport research contact@thevancereport.com"
         run: python value_daily.py
 
       - name: Record the session in screen_history.json
+        if: steps.guard.outputs.run == 'true'
         env:
           SCREEN_FILE: ${{ github.workspace }}/value_screen.json
           HISTORY_FILE: ${{ github.workspace }}/screen_history.json
@@ -95,7 +180,7 @@ jobs:
         run: python screen_history.py
 
       - name: Keep a copy whatever happens
-        if: always()
+        if: always() && steps.guard.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: value-screen
@@ -103,12 +188,18 @@ jobs:
           if-no-files-found: warn
 
       - name: Commit it
-        if: ${{ inputs.commit != 'false' }}
+        if: ${{ steps.guard.outputs.run == 'true' && inputs.commit != 'false' }}
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           # No [skip ci]. Netlify honours that marker and will not build, so the
           # new file would sit in the repository and never reach the site --
           # which is exactly what happens to research.json on any day nobody
           # merges anything else.
+          #
+          # git-auto-commit-action does not rebase before pushing. If main moves
+          # while this job runs -- a PR merged, say -- the push is
+          # rejected non-fast-forward and the whole run is thrown away (22 Sep
+          # 2026, run #6). Do not start a manual run on anything but main, and
+          # do not merge while one is in flight.
           commit_message: "Daily value screen"
           file_pattern: "value_screen.json screen_history.json"

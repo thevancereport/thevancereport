@@ -187,6 +187,31 @@ _MONTHS = {m: i for i, m in enumerate(
     ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1)}
 
 
+def raw_quote(symbol, classes=("stocks", "etf")):
+    """The quote exactly as Nasdaq returns it, for probe_close.py.
+
+    latest_close below is deliberately not written in terms of this. It is the
+    one function in the project that can put a wrong price on the site, it has
+    already done so once (21 Sep 2026), and it is worth a few duplicated lines
+    to keep a diagnostic helper from ever changing how it behaves.
+    """
+    for cls in classes:
+        url = f"https://api.nasdaq.com/api/quote/{symbol}/info?assetclass={cls}"
+        text, err = _fetch(url, headers={"User-Agent": BROWSER_UA,
+                                         "Accept": "application/json"})
+        if err:
+            _note("nasdaq-quote", err)
+            return None
+        try:
+            data = (json.loads(text) or {}).get("data")
+        except ValueError:
+            _note("nasdaq-quote", "not json")
+            return None
+        if data:
+            return data
+    return None
+
+
 def latest_close(symbol, classes=("stocks", "etf")):
     """The day's official close, from the quote Nasdaq publishes at the bell.
 
