@@ -280,21 +280,38 @@ print("\ntop_up")
 _real_latest = vp.latest_close
 vp.latest_close = lambda sym: (date(2026, 9, 21), 21.0, 600_000.0)
 h = _hist()
-added, asked, sess = vdaily.top_up(h, date(2026, 9, 22))
+added, asked, sess, jumped = vdaily.top_up(h, date(2026, 9, 22))
 check("every name asked gets the close", (added, asked), (10, 10))
 check("the session is the quote's date", sess, date(2026, 9, 21))
+check("nothing looked like a split", jumped, [])
 check("the close is appended", (h["T0"][0][-1], h["T0"][1][-1]), (date(2026, 9, 21), 21.0))
 check("session_of then moves on", vdaily.session_of(h, date(2026, 9, 22)), date(2026, 9, 21))
 
 vp.latest_close = lambda sym: (date(2026, 9, 21), 21.0, 600_000.0) if sym < "T5" else None
 h = _hist()
-added, asked, sess = vdaily.top_up(h, date(2026, 9, 22))
+added, asked, sess, jumped = vdaily.top_up(h, date(2026, 9, 22))
 check("half a day is not used", (added, sess), (0, None))
 check("and nothing is appended", h["T0"][0][-1], date(2026, 9, 18))
 
 vp.latest_close = lambda sym: (date(2026, 9, 23), 21.0, 600_000.0)
 h = _hist()
 check("a close dated after as_of is ignored", vdaily.top_up(h, date(2026, 9, 22))[0], 0)
+
+# A two-for-one halves the quote while the history behind it is already
+# split-adjusted, so taking the quote would show the company down 50% on the
+# day and poison its momentum and 200-day readings. The cache cannot repair
+# that, so the name is left alone and refetched from source next time.
+vp.latest_close = lambda sym: (date(2026, 9, 21), 10.0, 600_000.0)
+h = _hist()
+added, asked, sess, jumped = vdaily.top_up(h, date(2026, 9, 22))
+check("a halved price is refused", (added, sess), (0, None))
+check("and every name is reported", sorted(jumped), sorted(_hist()))
+check("with the history untouched", h["T0"][0][-1], date(2026, 9, 18))
+
+vp.latest_close = lambda sym: (date(2026, 9, 21), 24.0, 600_000.0)
+h = _hist()
+added, _asked, _sess, jumped = vdaily.top_up(h, date(2026, 9, 22))
+check("a hard but believable day still goes in", (added, jumped), (10, []))
 vp.latest_close = _real_latest
 
 print("\nlatest_close reads Nasdaq's quote")
@@ -318,6 +335,16 @@ _Q.update(status="After-Hours", stamp="Sep 21, 2026")
 check("after hours is never taken for the close", vp.latest_close("YELP"), None)
 _Q.update(status="Closed", stamp="")
 check("no stamp, no close", vp.latest_close("YELP"), None)
+
+# raw_quote exists so probe_close.py can show what Nasdaq actually says at
+# four in the afternoon, which is what decides whether the screen can publish
+# then. It must never change what latest_close does with the same answer.
+_Q.update(status="Market Open", stamp="Sep 22, 2026 2:31 PM ET")
+_raw = vp.raw_quote("YELP")
+check("raw_quote hands back what Nasdaq said",
+      (_raw["marketStatus"], _raw["primaryData"]["lastTradeTimestamp"]),
+      ("Market Open", "Sep 22, 2026 2:31 PM ET"))
+check("and latest_close still refuses an open market", vp.latest_close("YELP"), None)
 vp._fetch = _real_fetch
 
 print("\n" + "=" * 60)

@@ -31,6 +31,7 @@ from datetime import date, datetime, timedelta, timezone
 
 import value_core as vc
 import value_data as vd
+import value_cache as vcache
 import value_prices as vp
 
 # How much filing history to read. Four quarters is the minimum the universe
@@ -40,6 +41,10 @@ QUARTERS_BACK = int(os.environ.get("QUARTERS_BACK", "8"))
 MAX_SYMBOLS = int(os.environ.get("MAX_SYMBOLS", "0"))
 PRICE_WORKERS = int(os.environ.get("PRICE_WORKERS", "6"))
 OUT_FILE = os.environ.get("OUT_FILE", "value_screen.json")
+# Where the price histories are kept between runs. Blank -- the default, and
+# what a local run gets -- means no cache at all and every history fetched
+# from source, which is exactly how this job behaved before value_cache.py.
+CACHE_FILE = os.environ.get("CACHE_FILE", "")
 AS_OF = os.environ.get("AS_OF", "")          # blank = today
 # 1 = add the day's official close from Nasdaq's quote when the historical
 # table has not caught up yet. See top_up().
@@ -99,10 +104,10 @@ def top_up(prices, as_of):
     with the history as it is (and will then decline to publish a file that
     is no newer than the last one).
 
-    Returns (appended, asked, session or None).
+    Returns (appended, asked, session or None, names that looked like splits).
     """
     if not TOP_UP:
-        return 0, 0, None
+        return 0, 0, None, []
     want = []
     for sym, (days, closes, vols) in prices.items():
         if not days or days[-1] >= as_of:
@@ -112,29 +117,43 @@ def top_up(prices, as_of):
                 statistics.median(tail) >= vc.MIN_DOLLAR_VOLUME * 0.25:
             want.append(sym)
     if not want:
-        return 0, 0, None
+        return 0, 0, None, []
 
     def one(sym):
         return sym, vp.latest_close(sym)
 
-    got = {}
+    got, jumped = {}, []
     with ThreadPoolExecutor(max_workers=PRICE_WORKERS) as pool:
         for sym, q in pool.map(one, want):
-            if q and prices[sym][0][-1] < q[0] <= as_of:
-                got[sym] = q
+            if not q or not (prices[sym][0][-1] < q[0] <= as_of):
+                continue
+            last = prices[sym][1][-1]
+            if last > 0 and abs(q[1] / last - 1.0) > vcache.JUMP_LIMIT:
+                # The history is split-adjusted and a live quote is not, so a
+                # move this size is a corporate action rather than a day's
+                # trading. Taking it would show a company down half on a
+                # two-for-one and wreck its momentum and 200-day readings.
+                jumped.append(sym)
+                continue
+            got[sym] = q
+    if jumped:
+        shown = ", ".join(sorted(jumped)[:8]) + (" ..." if len(jumped) > 8 else "")
+        log(f"Top-up: {len(jumped):,} names moved more than {vcache.JUMP_LIMIT:.0%} "
+            f"against their own history and were left alone, most likely splits "
+            f"({shown}).")
     if not got:
-        return 0, len(want), None
+        return 0, len(want), None, jumped
     session, n = Counter(q[0] for q in got.values()).most_common(1)[0]
     if n < TOP_UP_MIN_SHARE * len(want):
         log(f"Top-up: only {n:,} of {len(want):,} names had a close for {session}; "
             "not using a partial day.")
-        return 0, len(want), None
+        return 0, len(want), None, jumped
     for sym, (when, close, vol) in got.items():
         if when != session:
             continue
         days, closes, vols = prices[sym]
         prices[sym] = (list(days) + [when], list(closes) + [close], list(vols) + [vol])
-    return n, len(want), session
+    return n, len(want), session, jumped
 
 
 def session_of(prices, as_of):
@@ -193,32 +212,80 @@ def main():
     symbols = sorted(set(mapped.values()))
     if MAX_SYMBOLS:
         symbols = symbols[:MAX_SYMBOLS]
-    log(f"\n{len(mapped):,} filers carry a ticker. Fetching {len(symbols):,} price histories.")
+    log(f"\n{len(mapped):,} filers carry a ticker. {len(symbols):,} price histories wanted.")
 
-    prices, done = {}, [0]
+    # A history is two years of rows and gains one a day, so fetching all of
+    # them every night meant downloading about a million and a half rows to
+    # use three thousand. That was the whole of this job's running time, and
+    # it is why the screen could not go up until long after the close. Now the
+    # histories are kept between runs and only the day is fetched. Anything
+    # value_cache will not stand behind -- missing, short, stale, or in
+    # tonight's rebuild slice -- is fetched from source exactly as before.
+    cache, note = vcache.load(CACHE_FILE)
+    log(f"Price cache: {note}.")
+    full, extend, why = vcache.plan(cache, symbols, as_of, vp.MIN_SESSIONS)
+    log(f"  {len(extend):,} histories carried over, {len(full):,} to fetch.")
+    for reason, n in sorted(why.items(), key=lambda kv: -kv[1])[:6]:
+        log(f"    {n:,}: {reason}")
+
+    done, fetched = [0], set()
 
     def grab(sym):
         p = vp.fetch_prices(sym, date(as_of.year - 2, 1, 1), as_of + timedelta(days=1))
         done[0] += 1
         if done[0] % 500 == 0:
-            log(f"  ...{done[0]:,}/{len(symbols):,}")
+            log(f"  ...{done[0]:,}/{len(full):,}")
         return sym, p
 
-    with ThreadPoolExecutor(max_workers=PRICE_WORKERS) as pool:
-        for sym, p in pool.map(grab, symbols):
-            if p:
-                prices[sym] = p
-    log(f"{len(prices):,} usable price histories.")
+    if full:
+        with ThreadPoolExecutor(max_workers=PRICE_WORKERS) as pool:
+            for sym, p in pool.map(grab, full):
+                if p:
+                    vcache.put(cache, sym, *p)
+                    fetched.add(sym)
+
+    # A symbol whose fetch failed falls back to the cache only if the cache
+    # would have been trusted for it anyway. Otherwise it is left out, which
+    # is what happened before: a failed fetch has never put a stale history
+    # into the ranking and must not start now.
+    wanted_fresh = set(full)
+    prices, stale = {}, 0
+    for sym in symbols:
+        if sym in wanted_fresh and sym not in fetched:
+            ok, _why = vcache.usable(cache, sym, as_of, vp.MIN_SESSIONS)
+            if not ok:
+                stale += 1
+                continue
+        got = vcache.series(cache, sym)
+        if got:
+            prices[sym] = got
+    log(f"{len(prices):,} usable price histories"
+        + (f" ({stale:,} left out: fetch failed and nothing good was cached)." if stale else "."))
     log(vp.report() + "\n")
     if len(prices) < 200:
         log("Too few price histories. Nothing written -- the site keeps yesterday's file.")
         return 1
 
-    added, asked, topped = top_up(prices, as_of)
+    added, asked, topped, jumped = top_up(prices, as_of)
     if asked:
         log(f"Top-up from Nasdaq's closing quote: {added:,} of {asked:,} names"
             + (f" now run to {topped}." if topped else " -- none used."))
         log(vp.report() + "\n")
+
+    # Carry tonight's work into tomorrow. Anything that looked like a split is
+    # forgotten rather than repaired, so tomorrow fetches it from source.
+    for sym in jumped:
+        vcache.drop(cache, sym)
+    if topped:
+        for sym, (days, closes, vols) in prices.items():
+            if days and days[-1] == topped:
+                vcache.append(cache, sym, days[-1], closes[-1], vols[-1])
+    vcache.prune(cache, symbols)
+    log(vcache.summary(cache))
+    size = vcache.save(cache, CACHE_FILE, through=topped or as_of)
+    if size:
+        log(f"Price cache written: {size / 1e6:.1f} MB.")
+    log("")
     session = session_of(prices, as_of)
     if session is None:
         log("No price history reaches the as-of date. Nothing written.")
