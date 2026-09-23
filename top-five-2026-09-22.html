@@ -526,7 +526,12 @@
     <style id="vr-top5">
       /* The daily top five. Built to be generated, so everything here is
          driven by class, never by which company happens to be in the slot. */
-      .t5-wrap { margin: 34px 0 44px; overflow-x: auto; }
+      /* The article column is a grid item, so a wide child sets its
+         min-content width and pushes the whole page sideways on a phone
+         however much overflow the wrapper itself allows. min-width: 0 is
+         what actually contains the table. */
+      .article-grid > .prose { min-width: 0; }
+      .t5-wrap { margin: 34px 0 44px; overflow-x: auto; max-width: 100%; }
       table.t5 { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 14.5px; min-width: 640px; }
       table.t5 th { text-align: left; font-weight: 600; font-size: 11px; letter-spacing: .16em;
         text-transform: uppercase; color: var(--paper-faint); padding: 0 14px 12px 0; border-bottom: 1px solid var(--rule); }
