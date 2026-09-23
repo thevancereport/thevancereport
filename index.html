@@ -945,36 +945,53 @@
         </div>
       </section>
 
-      <!-- ============ DAILY SCAN ============ -->
-      <!-- The newest company special, from specials.json (the same list
-           stock.html reads). Hidden until there is one. -->
-      <section class="block" id="special" hidden>
+      <!-- The day's note and its video, from top5.json, written by the screen
+           run. Hidden until there is one. The per-company specials list
+           (specials.json) is untouched and still shows on stock.html. -->
+      <!-- ============ THE FIVE AT THE TOP ============ -->
+      <section class="block" id="topfive" hidden>
         <div class="wrap">
           <div class="sec-head">
-            <h2>Special</h2>
-            <span class="sec-meta">One company,<br>measure by measure</span>
+            <h2>The five at the top</h2>
+            <span class="sec-meta">The day's note,<br>and the video of it</span>
           </div>
-          <div id="specialSlot"></div>
+          <div id="topfiveSlot"></div>
         </div>
       </section>
-      <style id="vr-special-css">
-        .special-thumb { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; cursor: pointer; background: #000; }
-        .special-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .9; }
-        .special-thumb:hover img, .special-thumb:focus-visible img { opacity: 1; }
-        .special-play { position: absolute; left: 50%; top: 50%; width: 76px; height: 54px; transform: translate(-50%, -50%);
+      <style id="vr-topfive-css">
+        .t5-card { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 34px; align-items: start; }
+        .t5-card .t5-body { min-width: 0; }
+        .t5-card h3 { margin: 0 0 12px; font-family: var(--serif); font-size: 30px; font-weight: 400; line-height: 1.1; }
+        .t5-card p { margin: 0 0 20px; color: var(--paper-dim); font-size: 15px; line-height: 1.6; }
+        .t5-names { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 22px; }
+        .t5-names a { display: flex; align-items: baseline; gap: 8px; padding: 9px 14px; border: 1px solid var(--rule);
+          border-radius: 3px; text-decoration: none; font-family: var(--mono); font-size: 14px; color: var(--paper); }
+        .t5-names a:hover { border-color: var(--amber); }
+        .t5-names a i { font-style: normal; font-size: 11px; color: var(--amber); }
+        .t5-read { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 13px;
+          letter-spacing: .14em; text-transform: uppercase; color: var(--amber); text-decoration: none; }
+        .t5-read:hover { text-decoration: underline; }
+        .t5-vid { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; background: #000; }
+        .t5-vid button { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; cursor: pointer; background: #000; }
+        .t5-vid img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .9; }
+        .t5-vid button:hover img, .t5-vid button:focus-visible img { opacity: 1; }
+        .t5-play { position: absolute; left: 50%; top: 50%; width: 76px; height: 54px; transform: translate(-50%, -50%);
           background: rgba(19, 15, 10, .82); border: 1px solid var(--amber); border-radius: 10px; }
-        .special-play::after { content: ""; position: absolute; left: 31px; top: 16px; border-style: solid;
+        .t5-play::after { content: ""; position: absolute; left: 31px; top: 16px; border-style: solid;
           border-width: 11px 0 11px 18px; border-color: transparent transparent transparent var(--amber); }
+        .t5-cap { margin-top: 10px; font-family: var(--mono); font-size: 12px; color: var(--paper-faint); }
+        @media (max-width: 860px) { .t5-card { grid-template-columns: 1fr; } }
       </style>
-      <script id="vr-special">
-        /* A special is made from one day's screen; the ranking moves every
-         * day. So the card shows the rank the video describes and, beside it,
-         * the rank in today's file -- the reader never has to guess which
-         * figure is current. Nothing loads from YouTube until Play is pressed.
+      <script id="vr-topfive">
+        /* The day's note and, when there is one, the video of it. top5.json is
+         * written by the screen run; the rank shown is the rank in the file the
+         * note was written from, and today's file is read separately so a
+         * reader never has to guess which figure is current. Nothing loads from
+         * YouTube until Play is pressed.
          */
         (function () {
-          var section = document.getElementById("special");
-          var slot = document.getElementById("specialSlot");
+          var section = document.getElementById("topfive");
+          var slot = document.getElementById("topfiveSlot");
           if (!section || !slot) return;
           function esc(s) {
             return String(s).replace(/[&<>"]/g, function (c) {
@@ -983,53 +1000,44 @@
           }
           function day(iso) {
             var d = new Date(iso + "T12:00:00Z");
-            return isNaN(d) ? iso : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+            return isNaN(d) ? iso : d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
           }
-          Promise.all([
-            fetch("specials.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }),
-            fetch("value_screen.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-          ]).then(function (res) {
-            var list = res[0] && Array.isArray(res[0].videos) ? res[0].videos : [];
-            var v = list.filter(function (x) { return /^[A-Za-z0-9_-]{11}$/.test(x.video_id); }).pop();
-            if (!v) return;
-            var screen = res[1];
-            var row = screen && Array.isArray(screen.ranked)
-              ? screen.ranked.filter(function (r) { return r.symbol === v.symbol; })[0] : null;
-            var total = screen && screen.ranked ? screen.ranked.length : 0;
-            var today = row ? "#" + row.rank + " of " + total.toLocaleString() : (screen ? "Not ranked" : "&mdash;");
-            var id = v.video_id;
-            slot.innerHTML =
-              '<div class="briefing">' +
-                '<div class="briefing-player">' +
-                  '<button type="button" class="special-thumb" aria-label="Play: ' + esc(v.title) + '">' +
-                    '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt="" loading="lazy" />' +
-                    '<span class="special-play" aria-hidden="true"></span>' +
-                  "</button>" +
-                "</div>" +
-                '<div class="briefing-side">' +
-                  "<h3>" + esc(v.title) + "</h3>" +
-                  '<div class="briefing-meta">' +
-                    "<div><span>Made from the screen of</span><b>" + esc(day(v.screen_date)) + "</b></div>" +
-                    "<div><span>" + esc(v.symbol) + " rank then</span><b>#" + esc(v.rank_then) + " of " + Number(v.universe_then).toLocaleString() + "</b></div>" +
-                    "<div><span>" + esc(v.symbol) + " rank today</span><b>" + today + "</b></div>" +
-                    (v.duration ? "<div><span>Runtime</span><b>" + esc(v.duration) + "</b></div>" : "") +
-                  "</div>" +
-                  '<div class="briefing-links">' +
-                    '<a class="briefing-link" href="stock.html?symbol=' + encodeURIComponent(v.symbol) + '">' + esc(v.symbol) + "\u2019s figures today</a>" +
-                    '<a class="briefing-link" href="https://www.youtube.com/watch?v=' + id + '">Watch on YouTube</a>' +
-                  "</div>" +
-                "</div>" +
-              "</div>";
-            slot.querySelector(".special-thumb").addEventListener("click", function () {
-              var f = document.createElement("iframe");
-              f.src = "https://www.youtube-nocookie.com/embed/" + id + "?autoplay=1&rel=0";
-              f.title = v.title;
-              f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-              f.allowFullscreen = true;
-              this.replaceWith(f);
-            });
-            section.hidden = false;
-          }).catch(function () {});
+          fetch("top5.json", { cache: "no-cache" })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (t5) {
+              if (!t5 || !t5.page || !Array.isArray(t5.names) || !t5.names.length) return;
+              var names = t5.names.map(function (n) {
+                return '<a href="stock.html?symbol=' + encodeURIComponent(n.symbol) + '">' +
+                  esc(n.symbol) + '<i>#' + esc(n.rank) + '</i></a>';
+              }).join("");
+              var vid = "";
+              if (/^[A-Za-z0-9_-]{11}$/.test(t5.video_id || "")) {
+                var id = t5.video_id;
+                vid = '<div><div class="t5-vid"><button type="button" data-yt="' + esc(id) + '" aria-label="Play the video of this note">' +
+                  '<img src="https://i.ytimg.com/vi/' + esc(id) + '/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720" />' +
+                  '<span class="t5-play" aria-hidden="true"></span></button></div>' +
+                  '<div class="t5-cap">' + esc(t5.duration || "") + ' &middot; <a href="https://www.youtube.com/watch?v=' + esc(id) + '">Watch on YouTube</a></div></div>';
+              }
+              slot.innerHTML = '<div class="t5-card"><div class="t5-body">' +
+                "<h3>" + esc(day(t5.date)) + "</h3>" +
+                "<p>" + esc(t5.blurb || "") + "</p>" +
+                '<div class="t5-names">' + names + "</div>" +
+                '<a class="t5-read" href="' + esc(t5.page) + '">Read the note <span aria-hidden="true">&rarr;</span></a>' +
+                "</div>" + vid + "</div>";
+              section.hidden = false;
+              var btn = slot.querySelector(".t5-vid button");
+              if (btn) {
+                btn.addEventListener("click", function () {
+                  var f = document.createElement("iframe");
+                  f.width = "100%"; f.height = "100%"; f.style.border = "0";
+                  f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture";
+                  f.allowFullscreen = true;
+                  f.src = "https://www.youtube-nocookie.com/embed/" + btn.getAttribute("data-yt") + "?autoplay=1&rel=0";
+                  btn.parentNode.replaceChild(f, btn);
+                });
+              }
+            })
+            .catch(function () {});
         })();
       </script>
 
