@@ -563,8 +563,25 @@
       .t5-take .dn b { color: #cc8a50; }
       .t5-note { border-left: 2px solid var(--amber-deep); padding: 2px 0 2px 20px; margin: 0 0 26px; }
       .t5-note p { margin: 0; font-size: 16px; color: var(--paper); }
+      .t5-video { margin: 0 0 40px; display: grid; grid-template-columns: 240px 1fr; gap: 26px; align-items: center; }
+      .t5-video .panel { position: relative; aspect-ratio: 9 / 16; border: 1px solid var(--rule); border-radius: 3px;
+        background:
+          radial-gradient(380px 280px at 20% 0%, #2d2115 0%, rgba(45, 33, 21, 0) 70%),
+          radial-gradient(320px 280px at 100% 100%, #1f170f 0%, rgba(31, 23, 15, 0) 70%),
+          var(--ink); }
+      .t5-video .panel a { position: absolute; inset: 0; display: grid; place-items: center; align-content: center;
+        gap: 14px; text-decoration: none; }
+      .t5-video .panel i { width: 70px; height: 50px; background: rgba(19, 15, 10, .82);
+        border: 1px solid var(--amber); border-radius: 10px; position: relative; display: block; }
+      .t5-video .panel i::after { content: ""; position: absolute; left: 28px; top: 14px; border-style: solid;
+        border-width: 10px 0 10px 17px; border-color: transparent transparent transparent var(--amber); }
+      .t5-video .panel span { font-family: var(--mono); font-size: 11px; letter-spacing: .2em;
+        text-transform: uppercase; color: var(--paper-faint); }
+      .t5-video figcaption { margin: 0; color: var(--paper-dim); font-size: 15.5px; line-height: 1.6; }
       @media (max-width: 640px) {
         .t5-bars div.r { grid-template-columns: 96px 1fr 30px; }
+        .t5-video { grid-template-columns: 1fr; }
+        .t5-video .panel { max-width: 240px; }
       }
     </style>
   </head>
@@ -602,6 +619,18 @@
             </aside>
             <div class="prose">
 
+              <figure class="t5-video">
+                <div class="panel">
+                  <a href="https://www.youtube.com/watch?v=0Mml1WTxNKg" rel="noopener">
+                    <i aria-hidden="true"></i><span>Play &middot; 2:13</span>
+                  </a>
+                </div>
+                <figcaption>
+                  This note as a 2:13 video, read aloud.
+                  <a href="https://www.youtube.com/watch?v=0Mml1WTxNKg">Watch on YouTube</a>.
+                  Prices in it are Tuesday&rsquo;s closes, the same as below.
+                </figcaption>
+              </figure>
               <p class="lead">
                 On Tuesday the screener read the filings of 1,190 US companies
                 and put them in order. These were the five at the top. What
