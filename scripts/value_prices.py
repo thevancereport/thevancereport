@@ -225,6 +225,22 @@ def latest_close(symbol, classes=("stocks", "etf")):
     the market is Closed, so an after-hours print can never be taken for the
     close. The date comes from Nasdaq's own "last trade" stamp, never from the
     runner's clock.
+
+    **Do not relax the Closed test.** It looks over-cautious -- the quote
+    carries today's date from the moment the bell rings, so it is tempting to
+    accept anything stamped today after 4 pm Eastern and publish three hours
+    earlier. A probe on 23 Sep 2026 sampled 400 real names at four times:
+
+        4:21 pm ET   marketStatus 'After-Hours' on 400/400, stamps 4:21-4:23 pm
+        5:37 pm ET   'After-Hours' on 400/400, stamps 5:37-5:39 pm
+        6:37 pm ET   'After-Hours' on 400/400, stamps 6:37-6:39 pm
+        7:33 pm ET   'After-Hours' on 400/400, stamps 7:33-7:36 pm
+
+    Every stamp tracked the probe's own clock, because between 4 and 8 pm the
+    price on offer is the latest after-hours trade, not the closing auction
+    print. Accepting it would put a number on the site that is not the close
+    and does not match the history every other figure is computed against --
+    the same class of error as 21 Sep, arriving by a quieter route.
     """
     data = None
     for cls in classes:
