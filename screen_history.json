@@ -625,6 +625,214 @@
      "price": 48.61
     }
    ]
+  },
+  {
+   "session": "2026-09-24",
+   "prices_through": "2026-09-24",
+   "generated_at": "2026-09-25T02:21:54.112688+00:00",
+   "universe": 1174,
+   "top": [
+    {
+     "rank": 1,
+     "symbol": "YELP",
+     "name": "YELP INC",
+     "sector": "Consumer Services",
+     "score": 80.18,
+     "price": 18.37
+    },
+    {
+     "rank": 2,
+     "symbol": "NRDS",
+     "name": "NERDWALLET, INC.",
+     "sector": "Technology",
+     "score": 79.69,
+     "price": 8.2
+    },
+    {
+     "rank": 3,
+     "symbol": "CRCT",
+     "name": "CRICUT, INC.",
+     "sector": "Industrials",
+     "score": 78.48,
+     "price": 5.92
+    },
+    {
+     "rank": 4,
+     "symbol": "BWA",
+     "name": "BORGWARNER INC",
+     "sector": "Autos & Transport Equipment",
+     "score": 77.53,
+     "price": 58.48
+    },
+    {
+     "rank": 5,
+     "symbol": "CRL",
+     "name": "CHARLES RIVER LABORATORIES INTERNATIONAL, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 77.37,
+     "price": 294.44
+    },
+    {
+     "rank": 6,
+     "symbol": "PCRX",
+     "name": "PACIRA BIOSCIENCES, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 76.63,
+     "price": 25.56
+    },
+    {
+     "rank": 7,
+     "symbol": "FE",
+     "name": "FIRSTENERGY CORP",
+     "sector": "Utilities",
+     "score": 76.23,
+     "price": 43.19
+    },
+    {
+     "rank": 8,
+     "symbol": "NUTX",
+     "name": "NUTEX HEALTH, INC.",
+     "sector": "Business Services",
+     "score": 76.21,
+     "price": 204.59
+    },
+    {
+     "rank": 9,
+     "symbol": "PGNY",
+     "name": "PROGYNY, INC.",
+     "sector": "Healthcare Services",
+     "score": 75.99,
+     "price": 25.97
+    },
+    {
+     "rank": 10,
+     "symbol": "MD",
+     "name": "PEDIATRIX MEDICAL GROUP, INC.",
+     "sector": "Healthcare Services",
+     "score": 75.74,
+     "price": 25.66
+    },
+    {
+     "rank": 11,
+     "symbol": "COLL",
+     "name": "COLLEGIUM PHARMACEUTICAL, INC",
+     "sector": "Biotech & Pharma",
+     "score": 75.72,
+     "price": 22.64
+    },
+    {
+     "rank": 12,
+     "symbol": "REPX",
+     "name": "RILEY EXPLORATION PERMIAN, INC.",
+     "sector": "Energy",
+     "score": 75.56,
+     "price": 41.69
+    },
+    {
+     "rank": 13,
+     "symbol": "EXEL",
+     "name": "EXELIXIS, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 75.47,
+     "price": 57.95
+    },
+    {
+     "rank": 14,
+     "symbol": "WFRD",
+     "name": "WEATHERFORD INTERNATIONAL PLC",
+     "sector": "Industrials",
+     "score": 75.22,
+     "price": 84.13
+    },
+    {
+     "rank": 15,
+     "symbol": "USLM",
+     "name": "UNITED STATES LIME & MINERALS INC",
+     "sector": "Metals & Mining",
+     "score": 75.05,
+     "price": 109.42
+    },
+    {
+     "rank": 16,
+     "symbol": "COLM",
+     "name": "COLUMBIA SPORTSWEAR CO",
+     "sector": "Textiles & Apparel",
+     "score": 74.84,
+     "price": 56.97
+    },
+    {
+     "rank": 17,
+     "symbol": "ADBE",
+     "name": "ADOBE INC.",
+     "sector": "Technology",
+     "score": 74.64,
+     "price": 238.93
+    },
+    {
+     "rank": 18,
+     "symbol": "PRGS",
+     "name": "PROGRESS SOFTWARE CORP /MA",
+     "sector": "Technology",
+     "score": 74.29,
+     "price": 40.23
+    },
+    {
+     "rank": 19,
+     "symbol": "ANIP",
+     "name": "ANI PHARMACEUTICALS INC",
+     "sector": "Biotech & Pharma",
+     "score": 74.04,
+     "price": 74.04
+    },
+    {
+     "rank": 20,
+     "symbol": "PBYI",
+     "name": "PUMA BIOTECHNOLOGY, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 74.02,
+     "price": 9.82
+    },
+    {
+     "rank": 21,
+     "symbol": "GNTX",
+     "name": "GENTEX CORP",
+     "sector": "Autos & Transport Equipment",
+     "score": 73.51,
+     "price": 22.04
+    },
+    {
+     "rank": 22,
+     "symbol": "CART",
+     "name": "MAPLEBEAR INC.",
+     "sector": "Business Services",
+     "score": 73.51,
+     "price": 43.26
+    },
+    {
+     "rank": 23,
+     "symbol": "TCMD",
+     "name": "TACTILE SYSTEMS TECHNOLOGY INC",
+     "sector": "Medical Devices",
+     "score": 73.34,
+     "price": 22.89
+    },
+    {
+     "rank": 24,
+     "symbol": "CWCO",
+     "name": "CONSOLIDATED WATER CO. LTD.",
+     "sector": "Utilities",
+     "score": 73.08,
+     "price": 27.83
+    },
+    {
+     "rank": 25,
+     "symbol": "DECK",
+     "name": "DECKERS OUTDOOR CORP",
+     "sector": "Materials",
+     "score": 73.05,
+     "price": 78.68
+    }
+   ]
   }
  ],
  "entry_rank": 10,
@@ -711,55 +919,66 @@
   "YELP": {
    "2026-09-21": 19.41,
    "2026-09-22": 18.96,
-   "2026-09-23": 17.73
+   "2026-09-23": 17.73,
+   "2026-09-24": 18.37
   },
   "NRDS": {
    "2026-09-21": 9.08,
    "2026-09-22": 8.53,
-   "2026-09-23": 8.1
+   "2026-09-23": 8.1,
+   "2026-09-24": 8.2
   },
   "CRCT": {
    "2026-09-21": 5.65,
    "2026-09-22": 5.81,
-   "2026-09-23": 5.89
+   "2026-09-23": 5.89,
+   "2026-09-24": 5.92
   },
   "CRL": {
    "2026-09-21": 279.01,
    "2026-09-22": 285.11,
-   "2026-09-23": 277.33
+   "2026-09-23": 277.33,
+   "2026-09-24": 294.44
   },
   "NUTX": {
    "2026-09-21": 201.48,
    "2026-09-22": 208.82,
-   "2026-09-23": 201.86
+   "2026-09-23": 201.86,
+   "2026-09-24": 204.59
   },
   "PGNY": {
    "2026-09-21": 26.86,
    "2026-09-22": 26.24,
-   "2026-09-23": 25.83
+   "2026-09-23": 25.83,
+   "2026-09-24": 25.97
   },
   "FE": {
    "2026-09-21": 44.97,
    "2026-09-22": 44.73,
-   "2026-09-23": 43.65
+   "2026-09-23": 43.65,
+   "2026-09-24": 43.19
   },
   "PCRX": {
    "2026-09-21": 24.11,
    "2026-09-22": 24.7,
-   "2026-09-23": 24.63
+   "2026-09-23": 24.63,
+   "2026-09-24": 25.56
   },
   "BWA": {
    "2026-09-21": 63.32,
    "2026-09-22": 61.11,
-   "2026-09-23": 60.55
+   "2026-09-23": 60.55,
+   "2026-09-24": 58.48
   },
   "COLL": {
    "2026-09-21": 23.04,
    "2026-09-22": 22.78,
-   "2026-09-23": 22.45
+   "2026-09-23": 22.45,
+   "2026-09-24": 22.64
   },
   "MD": {
-   "2026-09-22": 26.35
+   "2026-09-22": 26.35,
+   "2026-09-24": 25.66
   }
  }
 }
