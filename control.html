@@ -1,0 +1,1851 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Control Room | The Vance Report</title>
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --ink: #130f0a; --ink-2: #1c1611; --ink-3: #241d16; --ink-4: #2d241b;
+  --rule: #372d23; --rule-soft: #29221a;
+  --paper: #e7e3d8; --paper-dim: #aea59d; --paper-faint: #817365;
+  --amber: #e0a33c; --amber-deep: #b97f1f;
+  --pass: #61a887; --fail: #cc6250; --hold: #c9a24a;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --sans: "IBM Plex Sans", system-ui, sans-serif;
+  --serif: "Instrument Serif", Georgia, serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ink); color: var(--paper); }
+body { font-family: var(--sans); font-size: 15px; line-height: 1.5; min-height: 100vh; }
+a { color: var(--amber); }
+button, input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; margin: 0; }
+h2 { font-size: 34px; line-height: 1.1; }
+h3 { font-size: 23px; line-height: 1.2; }
+.mono { font-family: var(--mono); }
+.eyebrow { font-family: var(--mono); font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--paper-faint); }
+.muted { color: var(--paper-dim); }
+.faint { color: var(--paper-faint); }
+.small { font-size: 13px; }
+.hidden { display: none !important; }
+
+/* ---------- layout ---------- */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 24px; border-bottom: 1px solid var(--rule); background: var(--ink-2); position: sticky; top: 0; z-index: 20; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand .mark { font-family: var(--mono); font-size: 12px; border: 1px solid var(--amber); color: var(--amber); padding: 2px 6px; }
+.brand .name { font-family: var(--serif); font-size: 22px; }
+.brand .sub { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--paper-faint); }
+.who { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.pill { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--rule); border-radius: 99px; white-space: nowrap; }
+.pill.ok { color: var(--pass); border-color: rgba(97,168,135,.45); }
+.pill.warn { color: var(--hold); border-color: rgba(201,162,74,.5); }
+.pill.bad { color: var(--fail); border-color: rgba(204,98,80,.5); }
+.pill.run { color: var(--amber); border-color: rgba(224,163,60,.5); }
+.app { display: grid; grid-template-columns: 230px 1fr; min-height: calc(100vh - 60px); }
+nav.side { border-right: 1px solid var(--rule); padding: 18px 12px; background: var(--ink); position: sticky; top: 60px; align-self: start; height: calc(100vh - 60px); overflow: auto; }
+nav.side button { display: flex; width: 100%; align-items: center; gap: 10px; text-align: left; background: none; border: 1px solid transparent; padding: 10px 12px; border-radius: 6px; cursor: pointer; color: var(--paper-dim); font-size: 14.5px; }
+nav.side button:hover { background: var(--ink-2); color: var(--paper); }
+nav.side button.on { background: var(--ink-3); border-color: var(--rule); color: var(--paper); }
+nav.side button .ic { width: 18px; text-align: center; color: var(--amber); font-family: var(--mono); }
+nav.side .navfoot { margin-top: 18px; padding: 12px; border-top: 1px solid var(--rule-soft); font-size: 12.5px; color: var(--paper-faint); }
+main { padding: 28px 32px 120px; max-width: 1100px; width: 100%; }
+.pagehead { margin-bottom: 22px; }
+.pagehead p { margin: 8px 0 0; color: var(--paper-dim); max-width: 720px; }
+
+/* ---------- blocks ---------- */
+.card { background: var(--ink-2); border: 1px solid var(--rule); border-radius: 8px; padding: 20px; margin-bottom: 18px; }
+.card > .cardhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.card > .cardhead p { margin: 4px 0 0; color: var(--paper-dim); font-size: 14px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.stat { background: var(--ink-3); border: 1px solid var(--rule-soft); border-radius: 6px; padding: 14px; }
+.stat .v { font-family: var(--mono); font-size: 22px; margin-top: 4px; }
+.stat .d { font-size: 13px; color: var(--paper-dim); margin-top: 4px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+label.f { display: block; margin-bottom: 12px; }
+label.f > span { display: block; font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--paper-faint); margin-bottom: 5px; }
+label.f > small { display: block; color: var(--paper-faint); font-size: 12.5px; margin-top: 4px; }
+input[type=text], input[type=url], input[type=password], input[type=date], input[type=number], input[type=search], select, textarea {
+  width: 100%; background: var(--ink); border: 1px solid var(--rule); border-radius: 5px; padding: 9px 11px; color: var(--paper); outline: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--amber-deep); box-shadow: 0 0 0 2px rgba(224,163,60,.15); }
+textarea { resize: vertical; min-height: 72px; }
+textarea.code { font-family: var(--mono); font-size: 13px; line-height: 1.55; min-height: 460px; white-space: pre; tab-size: 2; }
+input[type=checkbox] { accent-color: var(--amber); width: 16px; height: 16px; vertical-align: -3px; }
+.check { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; font-size: 14px; color: var(--paper-dim); cursor: pointer; }
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--rule); background: var(--ink-3); color: var(--paper); padding: 8px 14px; border-radius: 5px; cursor: pointer; font-size: 14px; text-decoration: none; white-space: nowrap; }
+.btn:hover { border-color: var(--paper-faint); }
+.btn.primary { background: var(--amber); border-color: var(--amber); color: #1a1208; font-weight: 600; }
+.btn.primary:hover { background: #eab04e; }
+.btn.danger { color: var(--fail); border-color: rgba(204,98,80,.45); background: transparent; }
+.btn.ghost { background: transparent; }
+.btn.sm { padding: 4px 9px; font-size: 13px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.iconbtn { background: transparent; border: 1px solid var(--rule); color: var(--paper-dim); width: 30px; height: 30px; border-radius: 5px; cursor: pointer; }
+.iconbtn:hover { color: var(--paper); border-color: var(--paper-faint); }
+.note { border-left: 3px solid var(--amber-deep); background: rgba(224,163,60,.06); padding: 10px 14px; border-radius: 0 6px 6px 0; color: var(--paper-dim); font-size: 14px; margin: 12px 0; }
+.note.bad { border-color: var(--fail); background: rgba(204,98,80,.07); }
+.note.good { border-color: var(--pass); background: rgba(97,168,135,.07); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--paper-faint); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--rule); }
+td { padding: 10px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+.tablewrap { overflow-x: auto; }
+
+/* list editors */
+.item { border: 1px solid var(--rule); background: var(--ink-3); border-radius: 7px; margin-bottom: 12px; }
+.item-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; }
+.item-head .t { flex: 1; min-width: 0; }
+.item-head .t b { display: block; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-head .t span { font-size: 12.5px; color: var(--paper-faint); font-family: var(--mono); }
+.item-body { padding: 4px 14px 14px; border-top: 1px solid var(--rule-soft); }
+.item.collapsed .item-body { display: none; }
+.item .thumb { width: 44px; height: 70px; object-fit: cover; border: 1px solid var(--rule); border-radius: 3px; background: var(--ink); flex-shrink: 0; }
+.item .vthumb { width: 96px; height: 54px; object-fit: cover; border: 1px solid var(--rule); border-radius: 3px; background: #000; flex-shrink: 0; }
+.dirty-bar { position: sticky; bottom: 16px; z-index: 5; display: flex; align-items: center; gap: 12px; background: var(--ink-4); border: 1px solid var(--amber-deep); border-radius: 8px; padding: 12px 16px; margin-top: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+
+/* video preview */
+.vprev { display: flex; gap: 14px; align-items: center; background: var(--ink); border: 1px solid var(--rule-soft); border-radius: 6px; padding: 10px; margin: 6px 0 12px; }
+.vprev img { width: 160px; aspect-ratio: 16/9; object-fit: cover; border-radius: 4px; background: #000; }
+.vprev .meta { font-size: 13.5px; }
+
+/* files */
+.files { display: grid; grid-template-columns: 290px 1fr; gap: 16px; }
+.filelist { max-height: 70vh; overflow: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--ink); }
+.filelist button { display: flex; justify-content: space-between; gap: 8px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--rule-soft); padding: 7px 10px; cursor: pointer; color: var(--paper-dim); font-family: var(--mono); font-size: 12.5px; }
+.filelist button:hover, .filelist button.on { background: var(--ink-3); color: var(--paper); }
+.filelist .dir { padding: 8px 10px 4px; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber-deep); }
+.tag { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; padding: 1px 6px; border-radius: 3px; border: 1px solid var(--rule); color: var(--paper-faint); }
+.tag.auto { color: var(--hold); border-color: rgba(201,162,74,.4); }
+
+/* diff */
+.diff { font-family: var(--mono); font-size: 12.5px; line-height: 1.5; background: var(--ink); border: 1px solid var(--rule); border-radius: 6px; max-height: 46vh; overflow: auto; }
+.diff div { padding: 0 10px; white-space: pre-wrap; word-break: break-word; }
+.diff .add { background: rgba(97,168,135,.13); color: #bfe6d2; }
+.diff .del { background: rgba(204,98,80,.13); color: #f0c2b9; }
+.diff .ctx { color: var(--paper-faint); }
+.diff .gap { color: var(--amber-deep); background: var(--ink-2); }
+.diff .fname { background: var(--ink-3); color: var(--amber); padding: 6px 10px; position: sticky; top: 0; }
+
+/* modal + toast */
+.scrim { position: fixed; inset: 0; background: rgba(8,6,4,.72); z-index: 50; display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px; overflow: auto; }
+.modal { background: var(--ink-2); border: 1px solid var(--rule); border-radius: 10px; width: 100%; max-width: 820px; padding: 22px; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+.modal h3 { margin-bottom: 8px; }
+.modal .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.toasts { position: fixed; right: 18px; bottom: 18px; z-index: 60; display: flex; flex-direction: column; gap: 10px; max-width: 380px; }
+.toast { background: var(--ink-4); border: 1px solid var(--rule); border-left: 3px solid var(--amber); border-radius: 6px; padding: 12px 14px; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.toast.good { border-left-color: var(--pass); }
+.toast.bad { border-left-color: var(--fail); }
+.toast .x { float: right; background: none; border: 0; color: var(--paper-faint); cursor: pointer; margin-left: 8px; }
+.spin { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--rule); border-top-color: var(--amber); border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -1px; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.loading { padding: 30px; text-align: center; color: var(--paper-faint); }
+
+/* sign-in */
+.gate { max-width: 680px; margin: 7vh auto; padding: 0 16px 60px; }
+.gate h1 { font-size: 46px; line-height: 1.05; margin: 10px 0 12px; }
+.gate ol { padding-left: 20px; color: var(--paper-dim); }
+.gate ol li { margin: 7px 0; }
+.gate code { font-family: var(--mono); font-size: 13px; background: var(--ink-3); border: 1px solid var(--rule-soft); padding: 1px 5px; border-radius: 3px; color: var(--paper); }
+
+#ythost { position: fixed; left: -10000px; top: 0; width: 320px; height: 180px; overflow: hidden; }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .app > * { min-width: 0; }
+  .top { flex-wrap: wrap; }
+  .who { flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .who a.btn { display: none; }
+  nav.side { position: sticky; top: 57px; height: auto; display: flex; gap: 4px; overflow-x: auto; padding: 8px; border-right: 0; border-bottom: 1px solid var(--rule); z-index: 15; }
+  nav.side button { width: auto; white-space: nowrap; padding: 8px 10px; }
+  nav.side .navfoot { display: none; }
+  main { padding: 20px 16px 120px; }
+  .grid2, .grid3, .files { grid-template-columns: 1fr; }
+  .top { padding: 12px 16px; }
+  .brand .sub { display: none; }
+  h2 { font-size: 28px; }
+  .filelist { max-height: 34vh; }
+}
+</style>
+</head>
+<body>
+<div id="ythost" aria-hidden="true"></div>
+
+<!-- ============ SIGN-IN ============ -->
+<section id="gate" class="gate hidden">
+  <p class="eyebrow">The Vance Report</p>
+  <h1>Control room.</h1>
+  <p class="muted">Change the website yourself: videos, Field Notes, the Author page, reviews, and the nightly jobs. Every change shows you exactly what will be different before it goes out, and every change can be undone.</p>
+
+  <div class="card" style="margin-top:24px">
+    <h3>Sign in with your GitHub key</h3>
+    <p class="muted small" style="margin-top:6px">Your site lives in GitHub, and Netlify publishes whatever is in GitHub about a minute later. A GitHub key lets this page save changes there for you. You make it once.</p>
+    <ol>
+      <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → New fine-grained token</a> (you're already signed in to GitHub in Chrome).</li>
+      <li><b>Token name:</b> <code>Vance Report control room</code>. <b>Expiration:</b> pick 1 year (or whatever you like; you'll just paste a new one when it runs out).</li>
+      <li><b>Repository access:</b> choose <i>Only select repositories</i> → <code>thevancereport/thevancereport</code>.</li>
+      <li><b>Permissions → Repository permissions:</b> set <code>Contents</code> to <i>Read and write</i>, and <code>Actions</code> to <i>Read and write</i>. Leave everything else alone.</li>
+      <li>Click <b>Generate token</b>, copy it, and paste it below.</li>
+    </ol>
+    <label class="f"><span>GitHub key</span>
+      <input type="password" id="tokenInput" placeholder="github_pat_…" autocomplete="off" spellcheck="false" />
+      <small>Sent only to GitHub. It can only touch this one repository.</small>
+    </label>
+    <label class="check"><input type="checkbox" id="rememberInput" checked /> Keep me signed in on this computer</label>
+    <div class="row" style="margin-top:14px">
+      <button class="btn primary" id="signinBtn">Sign in</button>
+      <button class="btn ghost" id="lookBtn">Look around first (view only)</button>
+      <span id="gateMsg" class="small"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="shell" class="hidden">
+  <header class="top">
+    <div class="brand">
+      <span class="mark">VR</span>
+      <span class="name">Control room</span>
+      <span class="sub">thevancereport.com</span>
+    </div>
+    <div class="who">
+      <span id="runBanner"></span>
+      <span id="modePill" class="pill"></span>
+      <a class="btn sm ghost" href="/" target="_blank" rel="noopener">Open site ↗</a>
+      <button class="btn sm ghost" id="signoutBtn">Sign out</button>
+    </div>
+  </header>
+  <div class="app">
+    <nav class="side" id="nav">
+      <button data-tab="overview"><span class="ic">◉</span>Overview</button>
+      <button data-tab="report"><span class="ic">5</span>Daily report</button>
+      <button data-tab="videos"><span class="ic">▶</span>Videos</button>
+      <button data-tab="notes"><span class="ic">¶</span>Field Notes</button>
+      <button data-tab="author"><span class="ic">✎</span>Author page</button>
+      <button data-tab="reviews"><span class="ic">★</span>Reviews</button>
+      <button data-tab="automation"><span class="ic">↻</span>Nightly jobs</button>
+      <button data-tab="files"><span class="ic">≡</span>All files &amp; undo</button>
+      <div class="navfoot">Saves go to GitHub, and Netlify publishes them in about a minute. Nothing is ever deleted: every earlier version stays in History.</div>
+    </nav>
+    <main id="main"></main>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   The Vance Report - Control room
+   Everything here talks to GitHub (where the site lives). Netlify
+   publishes whatever lands on the main branch, usually within a minute.
+   ===================================================================== */
+
+var CFG = {
+  owner: "thevancereport",
+  repo: "thevancereport",
+  branch: "main",
+  api: "https://api.github.com",
+  site: location.origin.indexOf("thevancereport.com") > -1 ? location.origin : "https://thevancereport.com",
+  tz: "America/Chicago",
+  prefix: "Control room: "
+};
+var REPO = CFG.owner + "/" + CFG.repo;
+var TOKEN_KEY = "vr_control_token";
+
+var S = {
+  token: null,
+  readOnly: true,
+  login: null,
+  tree: null,          // [{path, sha, mode, size, type}]
+  runsBusy: [],        // workflow runs in progress
+  tab: "overview"
+};
+
+/* ---------------- small utilities ---------------- */
+function $(sel, root) { return (root || document).querySelector(sel); }
+function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function escText(s) { // for writing into site HTML: keep apostrophes readable
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function escAttr(s) { return escText(s).replace(/"/g, "&quot;"); }
+function h(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function clean(s) { return String(s == null ? "" : s).replace(/\s+/g, " ").trim(); }
+function uid() { return Math.random().toString(36).slice(2, 9); }
+
+function store(kind) {
+  try { return kind === "local" ? window.localStorage : window.sessionStorage; } catch (e) { return null; }
+}
+function getSaved(key) {
+  var v = null;
+  ["session", "local"].forEach(function (k) { var st = store(k); if (!v && st) { try { v = st.getItem(key); } catch (e) {} } });
+  return v;
+}
+function setSaved(key, val, remember) {
+  ["session", "local"].forEach(function (k) { var st = store(k); if (st) { try { st.removeItem(key); } catch (e) {} } });
+  if (val == null) return;
+  var st = store(remember ? "local" : "session");
+  if (st) { try { st.setItem(key, val); } catch (e) {} }
+}
+
+/* ---------------- dates, always shown in Central time ---------------- */
+function fmtCT(d, opts) {
+  if (!d) return "";
+  if (!(d instanceof Date)) d = new Date(d);
+  return new Intl.DateTimeFormat("en-US", Object.assign({ timeZone: CFG.tz }, opts || { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })).format(d);
+}
+function isoCT(d) { // YYYY-MM-DD in Central time
+  return new Intl.DateTimeFormat("en-CA", { timeZone: CFG.tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(d || new Date());
+}
+function ago(d) {
+  var s = (Date.now() - new Date(d).getTime()) / 1000;
+  if (s < 60) return "just now";
+  if (s < 3600) return Math.round(s / 60) + " min ago";
+  if (s < 86400) return Math.round(s / 3600) + " h ago";
+  return Math.round(s / 86400) + " d ago";
+}
+var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function parseISO(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ""); return m ? { y: +m[1], m: +m[2], d: +m[3] } : null; }
+function fmtLong(iso) { var p = parseISO(iso); return p ? MONTHS[p.m - 1] + " " + p.d + ", " + p.y : iso; }            // September 25, 2026
+function fmtShort(iso) { var p = parseISO(iso); return p ? p.d + " " + MONTHS[p.m - 1].slice(0, 3) + " " + p.y : iso; } // 25 Sep 2026
+function fmtMDY(iso) { var p = parseISO(iso); return p ? String(p.m).padStart(2, "0") + "-" + String(p.d).padStart(2, "0") + "-" + p.y : iso; } // 09-25-2026
+function fromShort(s) { // "25 Sep 2026" -> ISO
+  var m = /^(\d{1,2})\s+([A-Za-z]{3})[a-z]*\s+(\d{4})$/.exec(clean(s));
+  if (!m) return "";
+  var mi = MONTHS.findIndex(function (x) { return x.slice(0, 3).toLowerCase() === m[2].toLowerCase(); });
+  return mi < 0 ? "" : m[3] + "-" + String(mi + 1).padStart(2, "0") + "-" + String(m[1]).padStart(2, "0");
+}
+function fromMDY(s) { var m = /^(\d{2})-(\d{2})-(\d{4})$/.exec(clean(s)); return m ? m[3] + "-" + m[1] + "-" + m[2] : ""; }
+
+/* ---------------- text <-> base64 (UTF-8 safe) ---------------- */
+function b64ToBytes(b64) { var bin = atob(String(b64).replace(/\s/g, "")); var a = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return a; }
+function bytesToB64(bytes) { var s = ""; var CH = 0x8000; for (var i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH)); return btoa(s); }
+function b64ToText(b64) { return new TextDecoder("utf-8").decode(b64ToBytes(b64)); }
+function textToB64(t) { return bytesToB64(new TextEncoder().encode(t)); }
+function looksBinary(path) { return /\.(png|jpe?g|webp|gif|ico|svg|pdf|mp4|woff2?)$/i.test(path) && !/\.svg$/i.test(path); }
+
+/* ---------------- GitHub API ---------------- */
+function GhError(msg, status, body) { var e = new Error(msg); e.status = status; e.body = body; return e; }
+function friendlyGhError(status, body, path) {
+  var m = (body && body.message) || "";
+  if (status === 401) return "GitHub didn't accept your key. It may have expired. Sign out and paste a new one.";
+  if (status === 403 && /rate limit/i.test(m)) return "GitHub's limit for view-only mode was reached (60 lookups an hour). Sign in with your key to lift it.";
+  if (status === 403 && /not accessible|permission/i.test(m)) {
+    if (/actions|workflow|dispatch/i.test(path || "")) return "Your GitHub key doesn't have permission to run jobs. Edit the key on GitHub and set Actions to Read and write.";
+    return "Your GitHub key doesn't have permission to save. Edit the key on GitHub and set Contents to Read and write.";
+  }
+  if (status === 404) return "GitHub couldn't find that (" + (path || "") + ").";
+  if (status === 409 || status === 422) return "GitHub refused the change: " + m;
+  return "GitHub said: " + (m || ("error " + status));
+}
+async function gh(path, opts) {
+  opts = opts || {};
+  var headers = { "Accept": opts.accept || "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+  if (S.token) headers["Authorization"] = "Bearer " + S.token;
+  var init = { method: opts.method || "GET", headers: headers, cache: "no-store" };
+  if (opts.body !== undefined) { headers["Content-Type"] = "application/json"; init.body = JSON.stringify(opts.body); }
+  var res;
+  try { res = await fetch(path.indexOf("http") === 0 ? path : CFG.api + path, init); }
+  catch (e) { throw GhError("Couldn't reach GitHub. Check your internet connection and try again.", 0); }
+  if (res.status === 204) return null;
+  var raw = await res.text();
+  var body = raw; try { body = raw ? JSON.parse(raw) : null; } catch (e) {}
+  if (!res.ok) throw GhError(friendlyGhError(res.status, body, path), res.status, body);
+  return body;
+}
+function encPath(p) { return p.split("/").map(encodeURIComponent).join("/"); }
+
+/** Read one file from the repo. Returns {path, sha, text, b64, size} */
+async function readFile(path, ref) {
+  var j = await gh("/repos/" + REPO + "/contents/" + encPath(path) + "?ref=" + encodeURIComponent(ref || CFG.branch));
+  var b64 = j.content || "";
+  if (!b64 && j.size > 0) { // files over 1 MB come back without content
+    var blob = await gh("/repos/" + REPO + "/git/blobs/" + j.sha);
+    b64 = blob.content;
+  }
+  return { path: path, sha: j.sha, b64: b64, text: looksBinary(path) ? null : b64ToText(b64), size: j.size };
+}
+async function fileExists(path) { try { await readFile(path); return true; } catch (e) { if (e.status === 404) return false; throw e; } }
+
+async function loadTree(force) {
+  if (S.tree && !force) return S.tree;
+  var ref = await gh("/repos/" + REPO + "/git/ref/heads/" + CFG.branch);
+  var t = await gh("/repos/" + REPO + "/git/trees/" + ref.object.sha + "?recursive=1");
+  S.tree = t.tree.filter(function (x) { return x.type === "blob"; });
+  return S.tree;
+}
+
+/**
+ * Commit a set of file changes as ONE commit on main (one Netlify deploy).
+ * changes: [{path, text} | {path, b64} | {path, remove:true}] each optionally with baseSha
+ * (the version the edit was made from). If any file moved on since, we stop
+ * rather than overwrite someone else's change (usually the nightly screen).
+ */
+async function commitFiles(changes, message) {
+  if (S.readOnly) throw GhError("You're in view-only mode. Sign in with your GitHub key to save.", 0);
+  for (var attempt = 0; attempt < 3; attempt++) {
+    var ref = await gh("/repos/" + REPO + "/git/ref/heads/" + CFG.branch);
+    var headSha = ref.object.sha;
+    var head = await gh("/repos/" + REPO + "/git/commits/" + headSha);
+    var cur = await gh("/repos/" + REPO + "/git/trees/" + head.tree.sha + "?recursive=1");
+    var byPath = {}; cur.tree.forEach(function (x) { byPath[x.path] = x; });
+    var entries = [];
+    for (var i = 0; i < changes.length; i++) {
+      var c = changes[i], existing = byPath[c.path];
+      if (c.baseSha !== undefined && (existing ? existing.sha : null) !== c.baseSha) {
+        var err = GhError("“" + c.path + "” changed on GitHub while you were editing, probably from the nightly screen.", 409);
+        err.conflict = true; throw err;
+      }
+      var mode = existing ? existing.mode : "100644";
+      if (c.remove) { if (existing) entries.push({ path: c.path, mode: mode, type: "blob", sha: null }); continue; }
+      if (c.b64 != null) {
+        var blob = await gh("/repos/" + REPO + "/git/blobs", { method: "POST", body: { content: c.b64, encoding: "base64" } });
+        entries.push({ path: c.path, mode: mode, type: "blob", sha: blob.sha });
+      } else {
+        entries.push({ path: c.path, mode: mode, type: "blob", content: c.text });
+      }
+    }
+    if (!entries.length) return null;
+    var tree = await gh("/repos/" + REPO + "/git/trees", { method: "POST", body: { base_tree: head.tree.sha, tree: entries } });
+    var commit = await gh("/repos/" + REPO + "/git/commits", { method: "POST", body: { message: message, tree: tree.sha, parents: [headSha] } });
+    try {
+      await gh("/repos/" + REPO + "/git/refs/heads/" + CFG.branch, { method: "PATCH", body: { sha: commit.sha, force: false } });
+      S.tree = null;
+      return commit;
+    } catch (e) {
+      if (e.status === 422 && attempt < 2) { await sleep(800); continue; } // main moved on in between: rebuild on top
+      throw e;
+    }
+  }
+}
+
+/* ---------------- toasts & modals ---------------- */
+function toast(html, kind, ms) {
+  var el = h('<div class="toast ' + (kind || "") + '"><button class="x" aria-label="Dismiss">✕</button>' + html + "</div>");
+  $(".x", el).onclick = function () { el.remove(); };
+  $("#toasts").appendChild(el);
+  if (ms !== 0) setTimeout(function () { el.remove(); }, ms || 6000);
+  return el;
+}
+function modal(opts) {
+  return new Promise(function (resolve) {
+    var el = h('<div class="scrim"><div class="modal" role="dialog" aria-modal="true"><h3></h3><div class="mbody"></div><div class="actions"></div></div></div>');
+    $("h3", el).textContent = opts.title || "";
+    var body = $(".mbody", el);
+    if (typeof opts.body === "string") body.innerHTML = opts.body; else if (opts.body) body.appendChild(opts.body);
+    var acts = $(".actions", el);
+    (opts.buttons || [{ label: "OK", value: true, primary: true }]).forEach(function (b) {
+      var btn = h('<button class="btn ' + (b.primary ? "primary" : b.danger ? "danger" : "ghost") + '"></button>');
+      btn.textContent = b.label;
+      btn.onclick = function () { el.remove(); resolve(b.value); };
+      acts.appendChild(btn);
+    });
+    el.addEventListener("click", function (e) { if (e.target === el && opts.dismissable !== false) { el.remove(); resolve(null); } });
+    document.addEventListener("keydown", function onk(e) { if (e.key === "Escape" && document.body.contains(el)) { el.remove(); resolve(null); document.removeEventListener("keydown", onk); } });
+    document.body.appendChild(el);
+    var first = $(".btn.primary", el); if (first) first.focus();
+  });
+}
+function confirmBox(title, html, okLabel, danger) {
+  return modal({ title: title, body: html, buttons: [{ label: "Cancel", value: false }, { label: okLabel || "Continue", value: true, primary: !danger, danger: !!danger }] });
+}
+
+/* ---------------- line diff for the review screen ---------------- */
+function lineDiff(a, b) {
+  var A = a.split("\n"), B = b.split("\n");
+  var pre = 0; while (pre < A.length && pre < B.length && A[pre] === B[pre]) pre++;
+  var sa = A.length - 1, sb = B.length - 1;
+  while (sa >= pre && sb >= pre && A[sa] === B[sb]) { sa--; sb--; }
+  var midA = A.slice(pre, sa + 1), midB = B.slice(pre, sb + 1), ops = [];
+  if (midA.length * midB.length > 4e6) {
+    midA.forEach(function (l) { ops.push(["-", l]); }); midB.forEach(function (l) { ops.push(["+", l]); });
+  } else {
+    var n = midA.length, m = midB.length, L = [];
+    for (var i = 0; i <= n; i++) { L.push(new Uint32Array(m + 1)); }
+    for (i = n - 1; i >= 0; i--) for (var j = m - 1; j >= 0; j--) L[i][j] = midA[i] === midB[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+    i = 0; j = 0;
+    while (i < n && j < m) {
+      if (midA[i] === midB[j]) { ops.push([" ", midA[i]]); i++; j++; }
+      else if (L[i + 1][j] >= L[i][j + 1]) { ops.push(["-", midA[i++]]); }
+      else { ops.push(["+", midB[j++]]); }
+    }
+    while (i < n) ops.push(["-", midA[i++]]); while (j < m) ops.push(["+", midB[j++]]);
+  }
+  var all = A.slice(0, pre).map(function (l) { return [" ", l]; }).concat(ops, A.slice(sa + 1).map(function (l) { return [" ", l]; }));
+  return all;
+}
+function diffHtml(path, a, b) {
+  if (a == null) a = "";
+  var ops = lineDiff(a, b), keep = new Array(ops.length).fill(false), C = 2, adds = 0, dels = 0;
+  ops.forEach(function (o, i) { if (o[0] !== " ") { if (o[0] === "+") adds++; else dels++; for (var k = Math.max(0, i - C); k <= Math.min(ops.length - 1, i + C); k++) keep[k] = true; } });
+  var out = ['<div class="fname">' + esc(path) + ' <span class="faint">(+' + adds + " / −" + dels + " lines)</span></div>"], skipping = false;
+  ops.forEach(function (o, i) {
+    if (!keep[i]) { if (!skipping) { out.push('<div class="gap">⋯</div>'); skipping = true; } return; }
+    skipping = false;
+    var cls = o[0] === "+" ? "add" : o[0] === "-" ? "del" : "ctx";
+    out.push('<div class="' + cls + '">' + (o[0] === " " ? "  " : o[0] + " ") + esc(o[1].length > 400 ? o[1].slice(0, 400) + " …" : o[1]) + "</div>");
+  });
+  return out.join("");
+}
+
+/* ---------------- the one save path everything uses ----------------
+   prepare() reads the latest files and returns
+     { changes:[{path, text|b64|remove, before(text), baseSha}], message, summary }
+   We show the changes, commit them in one go, then watch the live site. */
+async function saveFlow(prepare, opts) {
+  opts = opts || {};
+  if (S.readOnly) { await promptSignIn(); if (S.readOnly) return false; }
+  for (var round = 0; round < 3; round++) {
+    var busy = toast('<span class="spin"></span> Getting the latest version from GitHub…', "", 0);
+    var plan;
+    try { plan = await prepare(); }
+    catch (e) { busy.remove(); await modal({ title: "Can't save that yet", body: '<p class="muted">' + esc(e.message) + "</p>" }); return false; }
+    busy.remove();
+    var real = plan.changes.filter(function (c) { return c.remove || c.b64 != null || c.text !== c.before; });
+    if (!real.length) { toast("Nothing has changed, so there's nothing to save.", "", 4000); return false; }
+
+    var body = document.createElement("div");
+    var warn = runningWarning();
+    body.innerHTML = (plan.summary ? '<p class="muted" style="margin-top:0">' + plan.summary + "</p>" : "") + warn +
+      '<p class="eyebrow" style="margin:14px 0 6px">Exactly what will change</p>' +
+      '<div class="diff">' + real.map(function (c) {
+        if (c.remove) return '<div class="fname">' + esc(c.path) + '</div><div class="del">  This file will be removed.</div>';
+        if (c.b64 != null) return '<div class="fname">' + esc(c.path) + '</div><div class="add">  ' + (c.before == null ? "New" : "Replaced") + " file (" + (c.label || "image or other file") + ")</div>";
+        return diffHtml(c.path, c.before, c.text);
+      }).join("") + "</div>" +
+      '<label class="f" style="margin-top:14px"><span>Note for the history (optional)</span><input type="text" id="commitNote" placeholder="' + escAttr(plan.message) + '"></label>';
+    var go = await modal({ title: opts.title || "Review and publish", body: body, dismissable: false,
+      buttons: [{ label: "Cancel", value: false }, { label: warn ? "Publish anyway" : "Publish to the site", value: true, primary: true }] });
+    if (!go) return false;
+    var note = clean(($("#commitNote", body) || {}).value || "");
+    var msg = CFG.prefix + (note || plan.message);
+
+    var t2 = toast('<span class="spin"></span> Saving to GitHub…', "", 0);
+    try {
+      var commit = await commitFiles(real.map(function (c) { return { path: c.path, text: c.text, b64: c.b64, remove: c.remove, baseSha: c.baseSha }; }), msg);
+      t2.remove();
+      watchLive(commit, real);
+      if (opts.after) try { await opts.after(); } catch (e) {}
+      return true;
+    } catch (e) {
+      t2.remove();
+      if (e.conflict) {
+        var again = await confirmBox("Someone else just changed this", '<p class="muted">' + esc(e.message) + " Nothing was saved. I can re-apply your edit on top of the new version and show you the changes again.</p>", "Re-apply my edit");
+        if (again) continue;
+        return false;
+      }
+      await modal({ title: "Not saved", body: '<p class="muted">' + esc(e.message) + "</p>" });
+      return false;
+    }
+  }
+  return false;
+}
+
+function runningWarning() {
+  var busy = S.runsBusy.filter(function (r) { return /value_daily|daily_video|daily_update/.test(r.path || ""); });
+  if (!busy.length) return "";
+  return '<div class="note bad"><b>' + esc(busy.map(function (r) { return jobInfo(r.path).name; }).join(", ")) +
+    " is running right now.</b> It saves its results to GitHub when it finishes, and if you publish in the meantime, its last step fails and the run is wasted. Best to wait until it's done (see Nightly jobs).</div>";
+}
+
+/* ---------------- live-site check after a save ---------------- */
+function probeFor(before, after) {
+  var bset = new Set((before || "").split("\n").map(function (l) { return l.trim(); }));
+  var added = after.split("\n").map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 8 && !bset.has(l); });
+  if (added.length) return { has: added.sort(function (x, y) { return y.length - x.length; })[0] };
+  var aset = new Set(after.split("\n").map(function (l) { return l.trim(); }));
+  var removed = (before || "").split("\n").map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 8 && !aset.has(l); });
+  if (removed.length) return { lacks: removed.sort(function (x, y) { return y.length - x.length; })[0] };
+  return null;
+}
+function isPublic(path) { return !/^(\.github|scripts|netlify)\//.test(path) && !/\.(md|sql|py|mjs|toml)$/i.test(path) && !/^(package(-lock)?\.json|\.gitignore|_redirects)$/.test(path); }
+async function watchLive(commit, changes) {
+  var link = "https://github.com/" + REPO + "/commit/" + commit.sha;
+  var pub = changes.filter(function (c) { return isPublic(c.path); });
+  var el = toast('<b>Saved.</b> <span class="st"><span class="spin"></span> Publishing to the site, usually about a minute…</span><br><a href="' + link + '" target="_blank" rel="noopener" class="small">See it on GitHub</a>', "", 0);
+  if (!pub.length) { $(".st", el).textContent = "Saved to GitHub (this file isn't part of the public site)."; el.classList.add("good"); setTimeout(function () { el.remove(); }, 9000); return; }
+  var checks = pub.map(function (c) {
+    if (c.remove) return { url: "/" + c.path, gone: true };
+    if (c.b64 != null) return { url: "/" + c.path, exists: true };
+    var p = probeFor(c.before, c.text);
+    return p ? Object.assign({ url: "/" + (c.path === "index.html" ? "" : c.path) }, p) : null;
+  }).filter(Boolean);
+  var start = Date.now();
+  while (Date.now() - start < 5 * 60 * 1000) {
+    await sleep(8000);
+    var ok = true;
+    for (var i = 0; i < checks.length && ok; i++) {
+      var c = checks[i];
+      try {
+        var r = await fetch(CFG.site + c.url + (c.url.indexOf("?") > -1 ? "&" : "?") + "cb=" + Date.now(), { cache: "no-store" });
+        if (c.gone) { ok = r.status === 404; continue; }
+        if (c.exists) { ok = r.ok; continue; }
+        var txt = (await r.text()).split("\n").map(function (l) { return l.trim(); }).join("\n");
+        ok = c.has ? txt.indexOf(c.has) > -1 : txt.indexOf(c.lacks) === -1;
+      } catch (e) { ok = false; }
+    }
+    if (ok) {
+      $(".st", el).innerHTML = "✓ Live on the site now.";
+      el.classList.add("good");
+      setTimeout(function () { el.remove(); }, 12000);
+      return;
+    }
+  }
+  $(".st", el).innerHTML = "Saved to GitHub, but the site hasn't updated after 5 minutes. Netlify may be slow, or the deploy failed. Check the Deploys page in Netlify.";
+  el.classList.add("bad");
+}
+
+/* ---------------- YouTube helpers ---------------- */
+function ytId(input) {
+  var s = clean(input);
+  if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+  var m = /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([A-Za-z0-9_-]{11})/.exec(s);
+  return m ? m[1] : null;
+}
+function isShortsLink(input) { return /\/shorts\//.test(input || ""); }
+function ytThumb(id) { return "https://i.ytimg.com/vi/" + id + "/mqdefault.jpg"; }
+function ytWatch(id) { return "https://www.youtube.com/watch?v=" + id; }
+function mmss(sec) {
+  sec = Math.round(sec);
+  var hh = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return (hh ? hh + ":" + String(m).padStart(2, "0") : m) + ":" + String(s).padStart(2, "0");
+}
+function isoDur(sec) { sec = Math.round(sec); var hh = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60; return "PT" + (hh ? hh + "H" : "") + (m ? m + "M" : "") + (s || (!hh && !m) ? s + "S" : ""); }
+function secFromMmss(t) { var p = clean(t).split(":").map(Number); if (p.some(isNaN) || !p.length) return null; return p.reduce(function (a, x) { return a * 60 + x; }, 0); }
+
+var _yt;
+function loadYT() {
+  if (_yt) return _yt;
+  _yt = new Promise(function (res, rej) {
+    if (window.YT && window.YT.Player) return res(window.YT);
+    window.onYouTubeIframeAPIReady = function () { res(window.YT); };
+    var s = document.createElement("script"); s.src = "https://www.youtube.com/iframe_api";
+    s.onerror = function () { _yt = null; rej(new Error("Couldn't reach YouTube")); };
+    document.head.appendChild(s);
+    setTimeout(function () { rej(new Error("YouTube took too long to answer")); }, 15000);
+  });
+  return _yt;
+}
+/** Ask YouTube for a video's length and title (no API key needed). */
+async function ytInfo(id) {
+  var YT = await loadYT();
+  return new Promise(function (resolve, reject) {
+    var host = document.createElement("div"); $("#ythost").appendChild(host);
+    var done = false, p;
+    function finish(v, e) { if (done) return; done = true; try { p.destroy(); } catch (x) {} host.remove(); e ? reject(e) : resolve(v); }
+    function tryRead() { var d = p.getDuration && p.getDuration(); if (d > 0) { try { p.pauseVideo(); } catch (x) {} finish({ seconds: d, title: (p.getVideoData && p.getVideoData() || {}).title || "" }); return true; } return false; }
+    p = new YT.Player(host, {
+      videoId: id, width: 320, height: 180, playerVars: { mute: 1, controls: 0, rel: 0 },
+      events: {
+        onReady: function () { if (!tryRead()) { try { p.mute(); p.playVideo(); } catch (x) {} } },
+        onStateChange: function () { tryRead(); },
+        onError: function (e) { finish(null, new Error(e.data === 100 ? "YouTube says that video doesn't exist or is private." : (e.data === 101 || e.data === 150) ? "That video doesn't allow playing on other sites, so it can't be shown on your site." : "YouTube couldn't load that video (error " + e.data + ").")); }
+      }
+    });
+    setTimeout(function () { finish(null, new Error("YouTube didn't tell us the length in time. Type it in yourself.")); }, 20000);
+  });
+}
+
+/**
+ * A reusable "paste a YouTube link" field.
+ * Returns an element with .getState() -> {id, seconds, duration, title, vertical}
+ */
+function videoField(opts) {
+  opts = opts || {};
+  var st = { id: opts.id || null, seconds: opts.seconds || null, title: opts.title || "", vertical: !!opts.vertical };
+  var el = h(
+    '<div class="vfield">' +
+      '<label class="f"><span>' + esc(opts.label || "YouTube link") + '</span>' +
+        '<input type="url" class="vurl" placeholder="Paste the YouTube link, e.g. https://youtu.be/…" value="' + escAttr(st.id ? ytWatch(st.id) : "") + '">' +
+        '<small>Any YouTube link works: the normal link, the Share link, or a Shorts link.</small></label>' +
+      '<div class="vprev hidden"><img alt=""><div class="meta"><div class="vt"></div><div class="vs faint small"></div></div></div>' +
+      '<div class="grid2">' +
+        '<label class="f"><span>Length (m:ss)</span><input type="text" class="vdur" placeholder="e.g. 7:51" value="' + escAttr(st.seconds ? mmss(st.seconds) : (opts.duration || "")) + '"><small>Filled in from YouTube when you paste a link.</small></label>' +
+        (opts.noVertical ? "" : '<label class="check" style="align-self:center"><input type="checkbox" class="vvert"' + (st.vertical ? " checked" : "") + '> It\'s a Short (vertical 9:16 video)</label>') +
+      "</div>" +
+    "</div>");
+  var url = $(".vurl", el), dur = $(".vdur", el), prev = $(".vprev", el), vert = $(".vvert", el);
+  function showPrev(msg) {
+    if (!st.id) { prev.classList.add("hidden"); return; }
+    prev.classList.remove("hidden");
+    $("img", prev).src = ytThumb(st.id);
+    $(".vt", prev).textContent = st.title || "Video " + st.id;
+    $(".vs", prev).innerHTML = msg || '<a href="' + ytWatch(st.id) + '" target="_blank" rel="noopener">Open on YouTube ↗</a>';
+  }
+  async function lookup() {
+    var id = ytId(url.value);
+    if (!url.value.trim()) { st.id = null; showPrev(); opts.onChange && opts.onChange(); return; }
+    if (!id) { st.id = null; prev.classList.remove("hidden"); $("img", prev).removeAttribute("src"); $(".vt", prev).textContent = "That doesn't look like a YouTube link."; $(".vs", prev).textContent = ""; return; }
+    if (vert && isShortsLink(url.value)) vert.checked = true;
+    if (id === st.id && st.seconds) { showPrev(); return; }
+    st.id = id; st.title = ""; showPrev('<span class="spin"></span> Asking YouTube for the length…');
+    try {
+      var info = await ytInfo(id);
+      if (st.id !== id) return;
+      st.seconds = info.seconds; st.title = info.title; dur.value = mmss(info.seconds);
+      showPrev();
+    } catch (e) { showPrev(esc(e.message)); }
+    opts.onChange && opts.onChange();
+  }
+  url.addEventListener("change", lookup);
+  url.addEventListener("paste", function () { setTimeout(lookup, 30); });
+  dur.addEventListener("input", function () { st.seconds = secFromMmss(dur.value); opts.onChange && opts.onChange(); });
+  if (vert) vert.addEventListener("change", function () { opts.onChange && opts.onChange(); });
+  if (st.id) showPrev();
+  el.getState = function () {
+    var secs = secFromMmss(dur.value) || st.seconds;
+    return { id: ytId(url.value), seconds: secs, duration: secs ? mmss(secs) : clean(dur.value), title: st.title, vertical: vert ? vert.checked : false };
+  };
+  return el;
+}
+
+/* ---------------- jobs (GitHub Actions) ---------------- */
+var JOBS = {
+  "value_daily.yml": { name: "Daily screen", order: 1, core: true, what: "Ranks every company from the day's closing prices and updates the site's numbers and the top five. It tries several times each weeknight from about 7:10 to 10:45 PM Central, and each try stops early if the day is already done or the closing prices aren't ready yet.", runWarn: "It takes about an hour. <b>Don't publish anything from this dashboard until it finishes</b>, or its last step fails and the run is wasted. It only publishes if the day's official closing prices are available." },
+  "daily_alert.yml": { name: "Daily alert email", order: 2, core: true, what: "Writes the daily email to subscribers after the screen publishes.", runWarn: "<b>If sending is switched on, this emails every subscriber.</b> Only run it if tonight's email didn't go out." },
+  "daily_video.yml": { name: "Daily video", order: 3, core: true, what: "Builds the daily briefing video.", runWarn: "It takes a while and may save files to the repo when it finishes." },
+  "daily_update.yml": { name: "Daily financial data sync", order: 4, core: true, what: "Refreshes the research data file every weekday afternoon.", runWarn: "" },
+  "pairs_study.yml": { name: "Pairs study", order: 10, what: "One-off research study. Results are in the run's log.", runWarn: "" },
+  "premise_check.yml": { name: "Premise check", order: 11, what: "One-off research study. Results are in the run's log.", runWarn: "" },
+  "value_backtest.yml": { name: "Value screen backtest", order: 12, what: "One-off backtest. Results are in the run's log.", runWarn: "" }
+};
+function jobInfo(path) { var f = (path || "").split("/").pop(); return JOBS[f] || { name: f.replace(/\.ya?ml$/, "").replace(/_/g, " "), order: 50, what: "", runWarn: "" }; }
+function runState(run) {
+  if (!run) return { cls: "", label: "Never run" };
+  if (run.status !== "completed") return { cls: "run", label: run.status === "queued" ? "Waiting to start" : "Running now" };
+  if (run.conclusion === "success") return { cls: "ok", label: "Succeeded" };
+  if (run.conclusion === "cancelled" || run.conclusion === "skipped") return { cls: "warn", label: run.conclusion === "cancelled" ? "Cancelled" : "Skipped" };
+  return { cls: "bad", label: "Failed" };
+}
+async function loadRuns() {
+  var wfs = await gh("/repos/" + REPO + "/actions/workflows?per_page=50");
+  var runs = await gh("/repos/" + REPO + "/actions/runs?per_page=60");
+  var list = wfs.workflows.filter(function (w) { return w.state === "active"; }).map(function (w) {
+    var mine = runs.workflow_runs.filter(function (r) { return r.workflow_id === w.id; });
+    return { wf: w, info: jobInfo(w.path), last: mine[0] || null, lastDone: mine.find(function (r) { return r.status === "completed"; }) || null, running: mine.filter(function (r) { return r.status !== "completed"; }) };
+  }).sort(function (a, b) { return a.info.order - b.info.order; });
+  S.runsBusy = runs.workflow_runs.filter(function (r) { return r.status !== "completed"; });
+  updateRunBanner();
+  return list;
+}
+function updateRunBanner() {
+  var el = $("#runBanner"); if (!el) return;
+  var busy = S.runsBusy;
+  el.innerHTML = busy.length ? '<span class="pill run"><span class="spin"></span> ' + esc(jobInfo(busy[0].path).name) + " running</span>" : "";
+}
+async function runJob(item) {
+  var info = item.info;
+  var ok = await confirmBox("Run “" + info.name + "” now?",
+    '<p class="muted">' + esc(info.what) + "</p>" + (info.runWarn ? '<div class="note">' + info.runWarn + "</div>" : "") +
+    '<p class="muted small">It runs on GitHub using the latest version of the site, the same as a scheduled run.</p>', "Run it now");
+  if (!ok) return false;
+  if (S.readOnly) { await promptSignIn(); if (S.readOnly) return false; }
+  try {
+    await gh("/repos/" + REPO + "/actions/workflows/" + item.wf.id + "/dispatches", { method: "POST", body: { ref: CFG.branch } });
+    toast("<b>Started.</b> " + esc(info.name) + " shows up as running within about 10 seconds.", "good");
+    return true;
+  } catch (e) {
+    var m = e.message;
+    if (e.status === 422 && /input/i.test(JSON.stringify(e.body || ""))) m = "This job needs settings that can only be filled in on GitHub. Open it on GitHub and use Run workflow there.";
+    await modal({ title: "Couldn't start it", body: '<p class="muted">' + esc(m) + "</p>" });
+    return false;
+  }
+}
+
+/* =====================================================================
+   Reading and writing the site's own files.
+   Each "parse" turns a page into plain data for the forms; each "write"
+   puts edited data back, touching only the part of the page it owns.
+   ===================================================================== */
+
+function findList(text, className, afterIdx) {
+  var open = '<ul class="' + className + '">';
+  var a = text.indexOf(open, afterIdx || 0);
+  if (a < 0) return null;
+  var b = text.indexOf("</ul>", a);
+  if (b < 0) return null;
+  var lineStart = text.lastIndexOf("\n", a) + 1;
+  var indent = text.slice(lineStart, a);
+  if (/\S/.test(indent)) indent = "";
+  return { start: a, end: b + 5, inner: text.slice(a + open.length, b), indent: indent };
+}
+function frag(html) { return new DOMParser().parseFromString("<!doctype html><body><ul>" + html + "</ul>", "text/html").body; }
+function txt(el) { return el ? clean(el.textContent) : ""; }
+
+/* ---------------- Field Notes (blog.html) ---------------- */
+var READ_RE = /^\d+\s*min(ute)?s?$/i;
+function parseNotes(html) {
+  var L = findList(html, "post-list");
+  if (!L) throw new Error("Couldn't find the list of notes on blog.html. The page layout may have changed; ask Claude to update the control room.");
+  return $$("li", frag(L.inner)).map(function (li) {
+    var a = $("a.post-item", li) || $("a", li);
+    var tags = $$(".post-tags > span", li).map(txt);
+    var read = tags.length && READ_RE.test(tags[tags.length - 1]) ? tags.pop() : "";
+    var dateTxt = txt($(".post-index", li));
+    return { key: uid(), href: a ? a.getAttribute("href") : "", date: fromShort(dateTxt) || "", dateText: dateTxt,
+      title: txt($(".post-title", li)), dek: txt($(".post-dek", li)), tags: tags, read: read };
+  });
+}
+function noteLi(n, ind) {
+  var I = function (k) { return ind + "  ".repeat(k); };
+  var tags = (n.tags || []).concat(n.read ? [n.read] : []).filter(Boolean);
+  return [
+    I(1) + "<li>",
+    I(2) + '<a class="post-item" href="' + escAttr(n.href) + '">',
+    I(3) + '<span class="post-index">' + escText(n.date ? fmtShort(n.date) : n.dateText) + "</span>",
+    I(3) + "<span>",
+    I(4) + '<span class="post-title">' + escText(n.title) + "</span>",
+    I(4) + '<span class="post-dek">' + escText(n.dek) + "</span>",
+    I(4) + '<span class="post-tags">' + tags.map(function (t) { return "<span>" + escText(t) + "</span>"; }).join("") + "</span>",
+    I(3) + "</span>",
+    I(2) + "</a>",
+    I(1) + "</li>"
+  ].join("\n");
+}
+function writeNotes(html, notes, todayIso) {
+  var L = findList(html, "post-list");
+  var block = '<ul class="post-list">\n' + notes.map(function (n) { return noteLi(n, L.indent); }).join("\n") + "\n" + L.indent + "</ul>";
+  var out = html.slice(0, L.start) + block + html.slice(L.end);
+  out = out.replace(/(<dt>\s*Published\s*<\/dt>\s*<dd>)[^<]*(<\/dd>)/i, "$1" + notes.length + (notes.length === 1 ? " note" : " notes") + "$2");
+  out = out.replace(/(<dt>\s*Updated\s*<\/dt>\s*<dd>)[^<]*(<\/dd>)/i, "$1" + fmtLong(todayIso) + "$2");
+  return out;
+}
+
+/* ---------------- Author page (arden-k-vance.html) ---------------- */
+var BUY_RE = /^(on amazon|buy|read more|get it)/i;
+function parseBooks(html) {
+  var L = findList(html, "post-list");
+  if (!L) throw new Error("Couldn't find the list of books on arden-k-vance.html.");
+  return $$("li", frag(L.inner)).map(function (li) {
+    var a = $("a", li), img = $("img", li);
+    var tags = $$(".post-tags > span", li).map(txt);
+    var buy = tags.length && BUY_RE.test(tags[tags.length - 1]) ? tags.pop() : "";
+    var d = txt($(".book-date", li));
+    return { key: uid(), href: a ? a.getAttribute("href") : "", cover: img ? img.getAttribute("src") : "", date: fromMDY(d), dateText: d,
+      title: txt($(".post-title", li)), dek: txt($(".post-dek", li)), tags: tags, buy: buy || "On Amazon ↗" };
+  });
+}
+function bookLi(b, ind) {
+  var I = function (k) { return ind + "  ".repeat(k); };
+  var tags = (b.tags || []).concat(b.buy ? [b.buy] : []).filter(Boolean);
+  return [
+    I(1) + "<li>",
+    I(2) + '<a class="post-item" href="' + escAttr(b.href) + '" target="_blank" rel="noopener">',
+    I(3) + '<span class="post-index book-side">' + (b.cover ? '<img class="book-cover" src="' + escAttr(b.cover) + '" width="90" height="143" alt="" loading="lazy" decoding="async" />' : "") +
+      '<span class="book-date">' + escText(b.date ? fmtMDY(b.date) : b.dateText) + "</span></span>",
+    I(3) + "<span>",
+    I(4) + '<span class="post-title">' + escText(b.title) + "</span>",
+    I(4) + '<span class="post-dek">' + escText(b.dek) + "</span>",
+    I(4) + '<span class="post-tags">' + tags.map(function (t) { return "<span>" + escText(t) + "</span>"; }).join("") + "</span>",
+    I(3) + "</span>",
+    I(2) + "</a>",
+    I(1) + "</li>"
+  ].join("\n");
+}
+function writeBooks(html, books, todayIso) {
+  var L = findList(html, "post-list");
+  var block = '<ul class="post-list">\n' + books.map(function (b) { return bookLi(b, L.indent); }).join("\n") + "\n" + L.indent + "</ul>";
+  var out = html.slice(0, L.start) + block + html.slice(L.end);
+  out = out.replace(/(<dt>\s*Books\s*<\/dt>\s*<dd>)[^<]*(<\/dd>)/i, "$1" + books.length + "$2");
+  out = out.replace(/(<dt>\s*Updated\s*<\/dt>\s*<dd>)[^<]*(<\/dd>)/i, "$1" + fmtMDY(todayIso) + "$2");
+  return out;
+}
+
+function parseChannels(html) {
+  var L = findList(html, "channel-grid");
+  if (!L) return [];
+  return $$("li", frag(L.inner)).map(function (li) {
+    var a = $("a", li);
+    return { cls: (li.className.match(/ch-([\w-]+)/) || [])[1] || "", name: txt($(".ch-name", li)), href: a ? a.getAttribute("href") : "", caption: txt($(".ch-caption", li)) };
+  });
+}
+function writeChannels(html, chans) {
+  var L = findList(html, "channel-grid");
+  if (!L) throw new Error("Couldn't find the social links on the Author page.");
+  var inner = L.inner, i = 0;
+  inner = inner.replace(/<li class="ch[^"]*">[\s\S]*?<\/li>/g, function (chunk) {
+    var c = chans[i++]; if (!c) return chunk;
+    chunk = chunk.replace(/(<a\s[^>]*?href=")[^"]*(")/, "$1" + escAttr(c.href) + "$2");
+    chunk = chunk.replace(/(<span class="ch-caption">)[\s\S]*?(<\/span>)/, "$1" + escText(c.caption) + "$2");
+    return chunk;
+  });
+  return html.slice(0, L.start) + '<ul class="channel-grid">' + inner + "</ul>" + html.slice(L.end);
+}
+
+/* ---------------- sitemap.xml ---------------- */
+function sitemapHas(xml, page) { return xml.indexOf("<loc>" + CFG.site.replace(/^http:/, "https:") + "/" + page + "</loc>") > -1 || xml.indexOf("/" + page + "</loc>") > -1; }
+function sitemapAdd(xml, page, todayIso, opts) {
+  opts = opts || {};
+  if (sitemapHas(xml, page)) return xml;
+  var entry = "  <url>\n    <loc>https://thevancereport.com/" + page + "</loc>\n    <lastmod>" + todayIso + "</lastmod>\n    <changefreq>" + (opts.freq || "monthly") + "</changefreq>\n    <priority>" + (opts.priority || "0.7") + "</priority>\n  </url>\n";
+  return xml.replace(/<\/urlset>/, entry + "</urlset>");
+}
+function sitemapTouch(xml, page, todayIso) {
+  var re = new RegExp("(<loc>https://thevancereport\\.com/" + page.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "</loc>\\s*<lastmod>)[^<]*(</lastmod>)");
+  return xml.replace(re, "$1" + todayIso + "$2");
+}
+
+/* ---------------- top five: put the video on the note page too ---------------- */
+var NOTE_VIDEO_HEAD =
+'<style id="note-video-css">\n' +
+'.note-video { margin: 0 0 40px; }\n' +
+'.note-video-thumb { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; padding: 0;\n' +
+'  border: 1px solid var(--rule); background: #000; cursor: pointer; overflow: hidden; }\n' +
+'.note-video-thumb img, .note-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }\n' +
+'.note-video-thumb:hover img, .note-video-thumb:focus-visible img { filter: brightness(1.08); }\n' +
+'.note-video-play { position: absolute; left: 50%; top: 50%; width: 76px; height: 54px; transform: translate(-50%, -50%);\n' +
+'  background: rgba(19, 15, 10, .82); border: 1px solid var(--amber); border-radius: 10px; }\n' +
+'.note-video-play::after { content: ""; position: absolute; left: 31px; top: 16px; border-style: solid;\n' +
+'  border-width: 11px 0 11px 18px; border-color: transparent transparent transparent var(--amber); }\n' +
+'.note-video figcaption { margin-top: 12px; font-size: 15px; color: var(--paper-faint); }\n' +
+'.note-video figcaption a { color: var(--amber); }\n' +
+'</style>\n' +
+'<script>\n' +
+'/* Nothing loads from YouTube until the reader presses play. */\n' +
+'document.addEventListener("click", function (e) {\n' +
+'  var b = e.target.closest && e.target.closest(".note-video-thumb");\n' +
+'  if (!b) return;\n' +
+'  var f = document.createElement("iframe");\n' +
+'  f.src = "https://www.youtube-nocookie.com/embed/" + b.getAttribute("data-yt") + "?autoplay=1&rel=0";\n' +
+'  f.title = document.title;\n' +
+'  f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";\n' +
+'  f.allowFullscreen = true;\n' +
+'  var wrap = document.createElement("div");\n' +
+'  wrap.style.cssText = "position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--rule)";\n' +
+'  wrap.appendChild(f);\n' +
+'  b.replaceWith(wrap);\n' +
+'});\n' +
+'<\/script>\n';
+
+function noteVideoFigure(id, duration) {
+  return '<figure class="note-video" data-control="note-video">\n' +
+    '<button type="button" class="note-video-thumb" data-yt="' + escAttr(id) + '" aria-label="Play the video of this note">' +
+    '<img src="https://i.ytimg.com/vi/' + escAttr(id) + '/hqdefault.jpg" alt="" loading="lazy" decoding="async" />' +
+    '<span class="note-video-play" aria-hidden="true"></span></button>\n' +
+    "<figcaption>This note as " + (duration ? (/^8|^11|^18/.test(duration) ? "an " : "a ") + escText(duration) + " video" : "a video") + ", read aloud. " +
+    '<a href="https://www.youtube.com/watch?v=' + escAttr(id) + '">Watch on YouTube</a>.</figcaption>\n' +
+    "</figure>\n";
+}
+/** returns {html, status}: status in added|updated|removed|unchanged|nospot */
+function setNotePageVideo(html, id, duration) {
+  var figRe = /<figure class="note-video" data-control="note-video">[\s\S]*?<\/figure>\n?/;
+  var has = figRe.test(html);
+  if (!id) return has ? { html: html.replace(figRe, ""), status: "removed" } : { html: html, status: "unchanged" };
+  if (has) { var out = html.replace(figRe, noteVideoFigure(id, duration)); return { html: out, status: out === html ? "unchanged" : "updated" }; }
+  if (/class="(t5-video|note-video)"/.test(html)) return { html: html, status: "hand-made" };
+  var p = html.indexOf('<div class="prose">');
+  if (p < 0) return { html: html, status: "nospot" };
+  var at = p + '<div class="prose">'.length;
+  var out2 = html.slice(0, at) + "\n\n" + noteVideoFigure(id, duration) + html.slice(at).replace(/^\n+/, "\n");
+  if (out2.indexOf('id="note-video-css"') < 0) out2 = out2.replace(/<\/head>/i, NOTE_VIDEO_HEAD + "</head>");
+  return { html: out2, status: "added" };
+}
+
+/* ---------------- JSON helpers ---------------- */
+function jsonOut(obj) { return JSON.stringify(obj, null, 2) + "\n"; }
+function slug(s) { return clean(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "file"; }
+
+/* =====================================================================
+   Screens
+   ===================================================================== */
+var VIEWS = {};
+function show(tab) {
+  S.tab = tab;
+  $$("#nav button").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-tab") === tab); });
+  try { history.replaceState(null, "", "#" + tab); } catch (e) {}
+  var main = $("#main");
+  main.innerHTML = '<div class="loading"><span class="spin"></span> Loading…</div>';
+  Promise.resolve(VIEWS[tab](main)).catch(function (e) {
+    main.innerHTML = '<div class="note bad"><b>Something went wrong loading this screen.</b><br>' + esc(e.message) + '</div><button class="btn" id="retry">Try again</button>';
+    $("#retry").onclick = function () { show(tab); };
+  });
+  window.scrollTo(0, 0);
+}
+function pageHead(title, text) { return '<div class="pagehead"><h2>' + title + "</h2>" + (text ? "<p>" + text + "</p>" : "") + "</div>"; }
+async function siteJSON(path) { var r = await fetch(CFG.site + "/" + path + "?cb=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw new Error(path + " couldn't be read from the site (" + r.status + ")"); return r.json(); }
+function field(label, inputHtml, help) { return '<label class="f"><span>' + label + "</span>" + inputHtml + (help ? "<small>" + help + "</small>" : "") + "</label>"; }
+function divField(label, inputHtml) { return '<div class="f" style="margin-bottom:12px"><span class="eyebrow" style="display:block;margin-bottom:5px">' + label + "</span>" + inputHtml + "</div>"; }
+function ti(cls, val, ph) { return '<input type="text" class="' + cls + '" value="' + escAttr(val || "") + '" placeholder="' + escAttr(ph || "") + '">'; }
+
+/* expected most-recent screen date (weeknights, published by ~11 PM Central) */
+function expectedScreenDate() {
+  var now = new Date();
+  var parts = new Intl.DateTimeFormat("en-US", { timeZone: CFG.tz, weekday: "short", hour: "numeric", hour12: false }).formatToParts(now);
+  var wd = parts.find(function (p) { return p.type === "weekday"; }).value, hr = +parts.find(function (p) { return p.type === "hour"; }).value;
+  var d = new Date(isoCT(now) + "T12:00:00Z");
+  var weekday = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(wd);
+  var back = 0;
+  if (weekday === 0) back = 2; else if (weekday === 6) back = 1; else if (hr < 23) back = weekday === 1 ? 3 : 1;
+  d.setUTCDate(d.getUTCDate() - back);
+  return d.toISOString().slice(0, 10);
+}
+
+/* ================= OVERVIEW ================= */
+VIEWS.overview = async function (main) {
+  main.innerHTML = pageHead("Overview", "How the site is doing right now, and what's changed lately.") +
+    '<div class="grid3" id="ovStats"><div class="stat"><div class="eyebrow">Daily screen</div><div class="v"><span class="spin"></span></div></div><div class="stat"><div class="eyebrow">Top five card</div><div class="v"><span class="spin"></span></div></div><div class="stat"><div class="eyebrow">Nightly jobs</div><div class="v"><span class="spin"></span></div></div></div>' +
+    '<div class="card" style="margin-top:18px"><div class="cardhead"><div><h3>Quick jobs</h3><p>The things you\'ll do most often.</p></div></div><div class="row">' +
+      '<button class="btn primary" data-go="report">5 Create today\'s top-five note</button>' +
+      '<button class="btn" data-go="videos">▶ Put a video on the site</button>' +
+      '<button class="btn" data-go="notes">¶ Edit Field Notes</button>' +
+      '<button class="btn" data-go="author">✎ Books &amp; social links</button>' +
+      '<button class="btn" data-go="reviews">★ Read reviews</button>' +
+    "</div></div>" +
+    '<div class="card"><div class="cardhead"><div><h3>Recent changes</h3><p>Everything that has changed on the site, newest first, whether you made it here, Claude made it, or a nightly job did. You can undo any change made from this control room.</p></div><button class="btn sm" id="ovRefresh">Refresh</button></div><div id="ovCommits"><div class="loading"><span class="spin"></span></div></div></div>';
+  $$("[data-go]", main).forEach(function (b) { b.onclick = function () { show(b.getAttribute("data-go")); }; });
+  $("#ovRefresh").onclick = function () { show("overview"); };
+
+  var stats = $$("#ovStats .stat", main);
+  // 1. screen freshness
+  siteJSON("value_screen.json").then(function (vs) {
+    var m = vs._meta || {}, exp = expectedScreenDate(), fresh = (m.as_of || "") >= exp;
+    stats[0].innerHTML = '<div class="eyebrow">Daily screen</div><div class="v">' + esc(fmtLong(m.as_of)) + '</div><div class="d"><span class="pill ' + (fresh ? "ok" : "warn") + '">' + (fresh ? "Up to date" : "Behind") + "</span> " +
+      (m.universe ? Number(m.universe).toLocaleString() + " companies ranked" : "") + (fresh ? "" : '<br><span class="small">Expected the ' + esc(fmtLong(exp)) + " screen. This can be a market holiday or a job still running; see Nightly jobs.</span>") + "</div>";
+  }).catch(function (e) { stats[0].innerHTML = '<div class="eyebrow">Daily screen</div><div class="d">' + esc(e.message) + "</div>"; });
+  // 2. top five
+  Promise.all([siteJSON("top5.json"), siteJSON("value_screen.json")]).then(function (res) {
+    var t = res[0], asOf = (res[1]._meta || {}).as_of, behind = asOf && t.date < asOf;
+    stats[1].innerHTML = '<div class="eyebrow">Top five note</div><div class="v">' + esc(fmtLong(t.date)) + '</div><div class="d">' +
+      (behind ? '<span class="pill warn">' + esc(fmtLong(asOf)) + " note not made yet</span> <a href=\"#\" data-go2=\"report\">Create it</a><br>" : "") +
+      (t.video_id ? '<span class="pill ok">Video on</span> ' + esc(t.duration || "") : '<span class="pill warn">No video yet</span> <a href="#" data-go2="videos">Add one</a>') + "</div>";
+    $$("[data-go2]", stats[1]).forEach(function (a) { a.onclick = function (e) { e.preventDefault(); show(a.getAttribute("data-go2")); }; });
+  }).catch(function (e) { stats[1].innerHTML = '<div class="eyebrow">Top five card</div><div class="d">' + esc(e.message) + "</div>"; });
+  // 3. jobs
+  loadRuns().then(function (list) {
+    var core = list.filter(function (x) { return x.info.core; });
+    var bad = core.filter(function (x) { return x.lastDone && x.lastDone.conclusion === "failure" && (!x.last || x.last.status === "completed"); });
+    var running = list.filter(function (x) { return x.running.length; });
+    stats[2].innerHTML = '<div class="eyebrow">Nightly jobs</div><div class="v">' + (running.length ? "Running" : bad.length ? bad.length + " failed" : "All good") + '</div><div class="d">' +
+      (running.length ? '<span class="pill run">' + esc(running.map(function (x) { return x.info.name; }).join(", ")) + "</span>" :
+        bad.length ? '<span class="pill bad">' + esc(bad.map(function (x) { return x.info.name; }).join(", ")) + "</span>" : '<span class="pill ok">Last runs succeeded</span>') +
+      ' <a href="#" id="toJobs">Details</a></div>';
+    $("#toJobs").onclick = function (e) { e.preventDefault(); show("automation"); };
+  }).catch(function (e) { stats[2].innerHTML = '<div class="eyebrow">Nightly jobs</div><div class="d">' + esc(e.message) + "</div>"; });
+  // 4. commits
+  try {
+    var commits = await gh("/repos/" + REPO + "/commits?sha=" + CFG.branch + "&per_page=15");
+    $("#ovCommits").innerHTML = '<div class="tablewrap"><table><thead><tr><th>When (Central)</th><th>What changed</th><th>By</th><th></th></tr></thead><tbody>' +
+      commits.map(function (c) {
+        var msg = c.commit.message.split("\n")[0], mine = msg.indexOf(CFG.prefix) === 0;
+        var who = mine ? "You (control room)" : /\[bot\]|github-actions/i.test((c.author && c.author.login) || c.commit.author.name) ? "Nightly job" : (c.commit.author.name || "");
+        return "<tr><td class='mono small' style='white-space:nowrap'>" + esc(fmtCT(c.commit.author.date)) + "</td><td>" + esc(mine ? msg.slice(CFG.prefix.length) : msg) +
+          ' <a class="small" href="' + c.html_url + '" target="_blank" rel="noopener">details</a></td><td class="small muted">' + esc(who) + "</td><td>" +
+          (mine ? '<button class="btn sm ghost" data-undo="' + c.sha + '">Undo</button>' : "") + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+    $$("[data-undo]", main).forEach(function (b) { b.onclick = function () { undoCommit(b.getAttribute("data-undo")); }; });
+  } catch (e) { $("#ovCommits").innerHTML = '<div class="note bad">' + esc(e.message) + "</div>"; }
+};
+
+async function undoCommit(sha) {
+  var c = await gh("/repos/" + REPO + "/commits/" + sha);
+  var parent = c.parents[0] && c.parents[0].sha;
+  var ok = await saveFlow(async function () {
+    var changes = [];
+    for (var i = 0; i < c.files.length; i++) {
+      var f = c.files[i], cur = null;
+      try { cur = await readFile(f.filename); } catch (e) { if (e.status !== 404) throw e; }
+      if (f.status === "added") { if (cur) changes.push({ path: f.filename, remove: true, before: cur.text, baseSha: cur.sha }); continue; }
+      var old = await readFile(f.previous_filename || f.filename, parent);
+      if (looksBinary(f.filename)) changes.push({ path: f.filename, b64: old.b64, before: cur ? "" : null, baseSha: cur ? cur.sha : null, label: "earlier version" });
+      else changes.push({ path: f.filename, text: old.text, before: cur ? cur.text : "", baseSha: cur ? cur.sha : null });
+    }
+    return { changes: changes, message: "Undo “" + c.commit.message.split("\n")[0].replace(CFG.prefix, "") + "”",
+      summary: "This puts " + (c.files.length === 1 ? "the file" : "these files") + " back the way they were before that change. If anything else changed in them since, that goes too; check below." };
+  }, { title: "Undo this change?" });
+  if (ok) setTimeout(function () { if (S.tab === "overview") show("overview"); }, 1500);
+}
+
+/* ================= VIDEOS ================= */
+VIEWS.videos = async function (main) {
+  main.innerHTML = pageHead("Videos", "Put your YouTube videos on the site. Paste the link and the length fills itself in. Nothing is uploaded here; you still upload to YouTube yourself.") +
+    '<div id="vTop"></div><div id="vIntro"></div><div id="vSpecials"></div>';
+  renderTopFive($("#vTop"));
+  renderIntro($("#vIntro"));
+  renderSpecials($("#vSpecials"));
+};
+
+async function renderTopFive(box) {
+  box.innerHTML = '<div class="card"><div class="loading"><span class="spin"></span></div></div>';
+  var f = await readFile("top5.json"), t = JSON.parse(f.text);
+  var card = h('<div class="card"><div class="cardhead"><div><p class="eyebrow">Home page · “The five at the top”</p><h3>Today\'s note and its video</h3><p>This is the box on the home page next to “The day\'s note, and the video of it.” The nightly screen writes a new note each weekday and clears the video, so add the video after you upload it.</p></div></div></div>');
+  var info = h('<div class="note">Showing the note for <b>' + esc(fmtLong(t.date)) + "</b>: " + (t.names || []).map(function (n) { return esc(n.symbol); }).join(", ") +
+    ' · <a href="' + CFG.site + "/" + esc(t.page) + '" target="_blank" rel="noopener">read the note ↗</a></div>');
+  card.appendChild(info);
+  var vf = videoField({ label: "The note's video (YouTube link)", id: t.video_id, duration: t.duration, vertical: t.orientation === "vertical" });
+  card.appendChild(vf);
+  var alsoPage = h('<label class="check"><input type="checkbox" checked> Also put the video at the top of the note page itself (' + esc(t.page) + ")</label>");
+  card.appendChild(alsoPage);
+  var blurb = h(field("Home-page summary of the note", '<textarea rows="3">' + esc(t.blurb || "") + "</textarea>", "The couple of sentences shown in the box. The nightly screen writes this; you can polish it."));
+  card.appendChild(blurb);
+  var acts = h('<div class="row"><button class="btn primary">Publish</button><button class="btn danger">Remove the video</button></div>');
+  card.appendChild(acts);
+  box.innerHTML = ""; box.appendChild(card);
+
+  async function publish(remove) {
+    var v = vf.getState();
+    if (!remove && !v.id) { toast("Paste a YouTube link first.", "bad"); return; }
+    if (!remove && !v.duration) { toast("Add the video's length (for example 7:51).", "bad"); return; }
+    await saveFlow(async function () {
+      var cur = await readFile("top5.json"), j = JSON.parse(cur.text);
+      if (j.date !== t.date) throw new Error("The nightly screen has published a newer note (" + fmtLong(j.date) + ") since you opened this page. Reload the page and add the video to the right note.");
+      if (remove) { j.video_id = null; delete j.duration; delete j.orientation; }
+      else { j.video_id = v.id; j.duration = v.duration; if (v.vertical) j.orientation = "vertical"; else delete j.orientation; }
+      j.blurb = clean($("textarea", blurb).value) || j.blurb;
+      var changes = [{ path: "top5.json", text: jsonOut(j), before: cur.text, baseSha: cur.sha }], extra = "";
+      if (($("input", alsoPage).checked || remove) && j.page) {
+        try {
+          var pg = await readFile(j.page);
+          var r = setNotePageVideo(pg.text, remove ? null : v.id, v.duration);
+          if (r.status === "hand-made") extra = " The note page already has a video that was put there by hand, so I've left the page alone.";
+          else if (r.status === "nospot") extra = " I couldn't find where the video goes on the note page, so only the home-page box changes.";
+          changes.push({ path: j.page, text: r.html, before: pg.text, baseSha: pg.sha });
+        } catch (e) { extra = " (The note page " + j.page + " couldn't be read, so only the home-page box changes.)"; }
+      }
+      return { changes: changes, message: remove ? "Remove the video from the " + fmtShort(j.date) + " top-five note" : "Add video " + v.id + " (" + v.duration + ") to the " + fmtShort(j.date) + " top-five note",
+        summary: (remove ? "Takes the video off the home-page box." : "Puts <b>" + esc(v.title || v.id) + "</b> (" + esc(v.duration) + ") in the home-page box.") + extra };
+    }, { after: function () { renderTopFive(box); } });
+  }
+  $(".btn.primary", acts).onclick = function () { publish(false); };
+  $(".btn.danger", acts).onclick = function () { publish(true); };
+}
+
+async function renderIntro(box) {
+  box.innerHTML = '<div class="card"><div class="loading"><span class="spin"></span></div></div>';
+  var f = await readFile("intro.json"), j = JSON.parse(f.text);
+  var card = h('<div class="card"><div class="cardhead"><div><p class="eyebrow">Home page · “Start here” &amp; How it works page</p><h3>The explainer video</h3><p>The short video that explains how the screener works. It appears on the home page and on the How it works page.</p></div></div></div>');
+  var vf = videoField({ label: "Explainer video (YouTube link)", id: j.video_id, seconds: j.duration_seconds, title: j.title, noVertical: true });
+  card.appendChild(vf);
+  var tI = h(field("Title", ti("", j.title))), dI = h(field("Description", '<textarea rows="3">' + esc(j.description || "") + "</textarea>", "Search engines read this; readers don't see it."));
+  card.appendChild(tI); card.appendChild(dI);
+  var acts = h('<div class="row"><button class="btn primary">Publish</button></div>');
+  card.appendChild(acts);
+  box.innerHTML = ""; box.appendChild(card);
+  $(".btn.primary", acts).onclick = function () {
+    var v = vf.getState();
+    if (!v.id || !v.seconds) { toast("Paste the YouTube link and make sure the length is filled in.", "bad"); return; }
+    saveFlow(async function () {
+      var cur = await readFile("intro.json"), o = JSON.parse(cur.text), oldId = o.video_id, oldLen = mmss(o.duration_seconds || 0);
+      o.video_id = v.id; o.title = clean($("input", tI).value) || o.title; o.description = clean($("textarea", dI).value) || o.description;
+      o.duration_seconds = Math.round(v.seconds * 10) / 10; o.duration_iso = isoDur(v.seconds);
+      if (oldId !== v.id) o.uploaded = isoCT();
+      var changes = [{ path: "intro.json", text: jsonOut(o), before: cur.text, baseSha: cur.sha }];
+      if (oldId && oldId !== v.id) {
+        try { var vv = await readFile("vance-value-screener.html"); if (vv.text.indexOf(oldId) > -1) changes.push({ path: "vance-value-screener.html", text: vv.text.split(oldId).join(v.id), before: vv.text, baseSha: vv.sha }); } catch (e) {}
+      }
+      if (oldLen !== v.duration) {
+        try { var ix = await readFile("index.html"); var nx = ix.text.split("with a " + oldLen + " video").join("with a " + v.duration + " video"); if (nx !== ix.text) changes.push({ path: "index.html", text: nx, before: ix.text, baseSha: ix.sha }); } catch (e) {}
+      }
+      return { changes: changes, message: "Explainer video → " + v.id + " (" + v.duration + ")", summary: "Updates the explainer video wherever the site shows it." };
+    }, { after: function () { renderIntro(box); } });
+  };
+}
+
+async function renderSpecials(box) {
+  box.innerHTML = '<div class="card"><div class="loading"><span class="spin"></span></div></div>';
+  var f = await readFile("specials.json"), j = JSON.parse(f.text), list = (j.videos || []).map(function (x) { return Object.assign({ key: uid() }, x); });
+  var card = h('<div class="card"><div class="cardhead"><div><p class="eyebrow">Stock pages</p><h3>Videos about one company</h3><p>A video about a single company shows on that company\'s Stock Lookup page. If a company has more than one, the newest shows.</p></div><button class="btn primary sm" id="spAdd">+ Add a company video</button></div><div id="spList"></div></div>');
+  box.innerHTML = ""; box.appendChild(card);
+  function draw() {
+    var L = $("#spList", card);
+    if (!list.length) { L.innerHTML = '<p class="faint">No company videos yet.</p>'; return; }
+    L.innerHTML = "";
+    list.forEach(function (x, i) {
+      var it = h('<div class="item collapsed"><div class="item-head"><img class="vthumb" alt=""><div class="t"><b></b><span></span></div><button class="iconbtn" title="Remove">✕</button></div><div class="item-body"></div></div>');
+      $("img", it).src = ytThumb(x.video_id); $(".t b", it).textContent = x.symbol + " · " + x.title; $(".t span", it).textContent = (x.duration || "") + " · uploaded " + (x.uploaded || "?");
+      $(".iconbtn", it).onclick = function (e) { e.stopPropagation(); list.splice(i, 1); markDirty(); draw(); };
+      $(".item-head", it).onclick = function () { it.classList.toggle("collapsed"); };
+      var body = $(".item-body", it);
+      var vf = videoField({ id: x.video_id, duration: x.duration, noVertical: true, onChange: function () { var s = vf.getState(); if (s.id) { x.video_id = s.id; x.duration = s.duration; markDirty(); } } });
+      body.appendChild(vf);
+      body.appendChild(h('<div class="grid2">' + field("Ticker", ti("sym", x.symbol, "YELP")) + field("Title", ti("tit", x.title)) + field("Screen date it was made from", '<input type="date" class="sd" value="' + escAttr(x.screen_date || "") + '">') +
+        field("Rank that day", '<input type="number" class="rk" value="' + escAttr(x.rank_then || "") + '">') + field("Companies ranked that day", '<input type="number" class="un" value="' + escAttr(x.universe_then || "") + '">') + field("Uploaded to YouTube on", '<input type="date" class="up" value="' + escAttr(x.uploaded || "") + '">') + "</div>"));
+      [["sym", "symbol", function (v) { return v.toUpperCase(); }], ["tit", "title"], ["sd", "screen_date"], ["rk", "rank_then", Number], ["un", "universe_then", Number], ["up", "uploaded"]].forEach(function (d) {
+        $("." + d[0], body).addEventListener("input", function (e) { var v = clean(e.target.value); x[d[1]] = d[2] ? d[2](v) : v; markDirty(); });
+      });
+      L.appendChild(it);
+    });
+  }
+  var bar = h('<div class="dirty-bar hidden"><span>You have unsaved changes to company videos.</span><span class="spacer"></span><button class="btn ghost">Discard</button><button class="btn primary">Review &amp; publish</button></div>');
+  card.appendChild(bar);
+  function markDirty() { bar.classList.remove("hidden"); }
+  $(".btn.ghost", bar).onclick = function () { renderSpecials(box); };
+  $(".btn.primary", bar).onclick = function () {
+    var bad = list.find(function (x) { return !x.symbol || !x.video_id || !x.title; });
+    if (bad) { toast("Each company video needs a ticker, a YouTube link and a title.", "bad"); return; }
+    saveFlow(async function () {
+      var cur = await readFile("specials.json"), o = JSON.parse(cur.text);
+      o.videos = list.map(function (x) { var c = Object.assign({}, x); delete c.key; ["rank_then", "universe_then"].forEach(function (k) { if (!c[k]) delete c[k]; }); return c; });
+      return { changes: [{ path: "specials.json", text: jsonOut(o), before: cur.text, baseSha: cur.sha }], message: "Update company videos", summary: "Updates the videos shown on company pages." };
+    }, { after: function () { renderSpecials(box); } });
+  };
+  $("#spAdd", card).onclick = function () {
+    list.unshift({ key: uid(), symbol: "", video_id: "", title: "", screen_date: "", uploaded: isoCT(), duration: "" });
+    draw(); markDirty();
+    var first = $(".item", card); first.classList.remove("collapsed"); $(".vurl", first).focus();
+  };
+  draw();
+}
+
+/* ================= FIELD NOTES ================= */
+VIEWS.notes = async function (main) {
+  var f = await readFile("blog.html"), notes = parseNotes(f.text), tree = await loadTree();
+  var pages = tree.filter(function (x) { return /\.html$/.test(x.path) && x.path.indexOf("/") < 0 && !/^(control|admin-reviews|welcome|index|blog|reviews|disclaimer|stock|report|arden-k-vance)\.html$/.test(x.path); }).map(function (x) { return x.path; });
+  main.innerHTML = pageHead("Field Notes", "The list of notes on the Field Notes page. Change the wording, reorder them, hide one, or add a new note once its page exists. Newest at the top.") +
+    '<datalist id="pagelist">' + pages.map(function (p) { return '<option value="' + escAttr(p) + '">'; }).join("") + "</datalist>" +
+    '<div class="row" style="margin-bottom:14px"><button class="btn primary" id="nAdd">+ Add a note</button><span class="spacer"></span><a class="btn ghost sm" href="' + CFG.site + '/blog.html" target="_blank" rel="noopener">View the page ↗</a></div>' +
+    '<div id="nList"></div>' +
+    '<label class="check"><input type="checkbox" id="nSitemap" checked> Add any new note pages to the sitemap so Google finds them</label>' +
+    '<div class="dirty-bar hidden" id="nBar"><span>Unsaved changes to Field Notes.</span><span class="spacer"></span><button class="btn ghost" id="nDiscard">Discard</button><button class="btn primary" id="nSave">Review &amp; publish</button></div>';
+  var dirty = function () { $("#nBar").classList.remove("hidden"); };
+  function draw(openKey) {
+    var L = $("#nList"); L.innerHTML = "";
+    notes.forEach(function (n, i) {
+      var it = h('<div class="item' + (n.key === openKey ? "" : " collapsed") + '"><div class="item-head"><div class="t"><b></b><span></span></div>' +
+        '<button class="iconbtn up" title="Move up">↑</button><button class="iconbtn dn" title="Move down">↓</button><button class="iconbtn rm" title="Remove from the list">✕</button></div><div class="item-body"></div></div>');
+      $(".t b", it).textContent = n.title || "(untitled note)";
+      $(".t span", it).textContent = (n.date ? fmtShort(n.date) : n.dateText) + " · " + (n.href || "no page yet");
+      $(".item-head", it).onclick = function (e) { if (!e.target.closest("button")) it.classList.toggle("collapsed"); };
+      $(".up", it).onclick = function () { if (i > 0) { notes.splice(i - 1, 0, notes.splice(i, 1)[0]); dirty(); draw(); } };
+      $(".dn", it).onclick = function () { if (i < notes.length - 1) { notes.splice(i + 1, 0, notes.splice(i, 1)[0]); dirty(); draw(); } };
+      $(".rm", it).onclick = async function () {
+        if (await confirmBox("Remove this note from the list?", '<p class="muted">“' + esc(n.title) + '” comes off the Field Notes list. The note page itself stays online (anyone with the link can still read it), and you can add it back later.</p>', "Remove from list", true)) { notes.splice(i, 1); dirty(); draw(); }
+      };
+      var body = $(".item-body", it);
+      body.innerHTML = '<div class="grid2">' + field("Date shown", '<input type="date" class="d" value="' + escAttr(n.date) + '">') + field("Reading time", ti("r", n.read, "7 min")) + "</div>" +
+        field("Title", ti("ti", n.title)) + field("Summary", '<textarea class="de" rows="4">' + esc(n.dek) + "</textarea>") +
+        field("Topics", ti("tg", n.tags.join(", "), "Daily screen, Top five"), "Separate with commas. Shown in small capitals under the summary.") +
+        field("Page it links to", '<input type="text" class="hr" list="pagelist" value="' + escAttr(n.href) + '" placeholder="my-new-note.html">', "Pick one of the site's pages, or paste a full web address.");
+      function bind(cls, fn) { $("." + cls, body).addEventListener("input", function (e) { fn(e.target.value); $(".t b", it).textContent = n.title || "(untitled note)"; dirty(); }); }
+      bind("d", function (v) { n.date = v; }); bind("r", function (v) { n.read = clean(v); }); bind("ti", function (v) { n.title = clean(v); });
+      bind("de", function (v) { n.dek = clean(v); }); bind("tg", function (v) { n.tags = v.split(",").map(clean).filter(Boolean); }); bind("hr", function (v) { n.href = clean(v); });
+      L.appendChild(it);
+    });
+  }
+  $("#nAdd").onclick = function () { var n = { key: uid(), href: "", date: isoCT(), dateText: "", title: "", dek: "", tags: [], read: "" }; notes.unshift(n); dirty(); draw(n.key); $("#nList .ti").focus(); };
+  $("#nDiscard").onclick = function () { show("notes"); };
+  $("#nSave").onclick = function () {
+    var bad = notes.find(function (n) { return !n.title || !n.href; });
+    if (bad) { toast("Every note needs a title and a page to link to.", "bad"); return; }
+    var addMap = $("#nSitemap").checked;
+    saveFlow(async function () {
+      var cur = await readFile("blog.html"), today = isoCT();
+      var out = writeNotes(cur.text, notes, today);
+      var changes = [{ path: "blog.html", text: out, before: cur.text, baseSha: cur.sha }], missing = [];
+      var tr = await loadTree(true), have = new Set(tr.map(function (x) { return x.path; }));
+      notes.forEach(function (n) { if (!/^https?:/.test(n.href) && !have.has(n.href.replace(/^\//, "").split("#")[0])) missing.push(n.href); });
+      if (missing.length) throw new Error("These pages don't exist on the site yet: " + missing.join(", ") + ". Create the note page first (Claude can write it for you), or fix the link.");
+      var sm = await readFile("sitemap.xml"), xml = sitemapTouch(sm.text, "blog.html", today);
+      if (addMap) notes.forEach(function (n) { if (!/^https?:/.test(n.href)) xml = sitemapAdd(xml, n.href.replace(/^\//, ""), today); });
+      if (xml !== sm.text) changes.push({ path: "sitemap.xml", text: xml, before: sm.text, baseSha: sm.sha });
+      return { changes: changes, message: "Update the Field Notes list", summary: "Updates the Field Notes page. The note count and the “Updated” date at the top are set for you." };
+    }, { after: function () { show("notes"); } });
+  };
+  draw();
+};
+
+/* ================= AUTHOR PAGE ================= */
+VIEWS.author = async function (main) {
+  var f = await readFile("arden-k-vance.html"), books = parseBooks(f.text), chans = parseChannels(f.text), tree = await loadTree();
+  var covers = tree.filter(function (x) { return /^images\/books\//.test(x.path); }).map(function (x) { return x.path; });
+  var pending = {}; // cover path -> {b64, label}
+  main.innerHTML = pageHead("Author page", "Your books and your links elsewhere, as shown on the Arden K. Vance page.") +
+    '<div class="card"><div class="cardhead"><div><h3>Books</h3><p>Newest first. The book count and the “Updated” date at the top of the page are set for you.</p></div><div class="row"><button class="btn primary sm" id="bAdd">+ Add a book</button><a class="btn ghost sm" href="' + CFG.site + '/arden-k-vance.html" target="_blank" rel="noopener">View the page ↗</a></div></div><div id="bList"></div></div>' +
+    '<div class="card"><div class="cardhead"><div><h3>Links elsewhere</h3><p>The “Elsewhere” tiles: where each one goes and the small caption under it. If you change a link, it also changes anywhere else on the site that uses the old link.</p></div></div><div id="cList"></div></div>' +
+    '<div class="dirty-bar hidden" id="aBar"><span>Unsaved changes to the Author page.</span><span class="spacer"></span><button class="btn ghost" id="aDiscard">Discard</button><button class="btn primary" id="aSave">Review &amp; publish</button></div>';
+  var dirty = function () { $("#aBar").classList.remove("hidden"); };
+  var origChans = chans.map(function (c) { return Object.assign({}, c); });
+
+  function draw(openKey) {
+    var L = $("#bList"); L.innerHTML = "";
+    books.forEach(function (b, i) {
+      var it = h('<div class="item' + (b.key === openKey ? "" : " collapsed") + '"><div class="item-head"><img class="thumb" alt=""><div class="t"><b></b><span></span></div>' +
+        '<button class="iconbtn up" title="Move up">↑</button><button class="iconbtn dn" title="Move down">↓</button><button class="iconbtn rm" title="Remove">✕</button></div><div class="item-body"></div></div>');
+      var img = $("img", it); img.src = pending[b.cover] ? "data:image/webp;base64," + pending[b.cover].b64 : (b.cover ? CFG.site + "/" + b.cover : "");
+      $(".t b", it).textContent = b.title || "(new book)"; $(".t span", it).textContent = (b.date ? fmtMDY(b.date) : b.dateText) + " · " + (b.href || "no link yet");
+      $(".item-head", it).onclick = function (e) { if (!e.target.closest("button")) it.classList.toggle("collapsed"); };
+      $(".up", it).onclick = function () { if (i > 0) { books.splice(i - 1, 0, books.splice(i, 1)[0]); dirty(); draw(); } };
+      $(".dn", it).onclick = function () { if (i < books.length - 1) { books.splice(i + 1, 0, books.splice(i, 1)[0]); dirty(); draw(); } };
+      $(".rm", it).onclick = async function () { if (await confirmBox("Remove this book?", '<p class="muted">“' + esc(b.title) + '” comes off the Author page. Its cover picture stays in the files in case you want it back.</p>', "Remove", true)) { books.splice(i, 1); dirty(); draw(); } };
+      var body = $(".item-body", it);
+      body.innerHTML = field("Title", ti("ti", b.title)) + '<div class="grid2">' + field("Publication date", '<input type="date" class="d" value="' + escAttr(b.date) + '">') + field("Link (Amazon page)", '<input type="url" class="hr" value="' + escAttr(b.href) + '" placeholder="https://www.amazon.com/dp/…">') + "</div>" +
+        field("Description", '<textarea class="de" rows="3">' + esc(b.dek) + "</textarea>") +
+        '<div class="grid2">' + field("Topics", ti("tg", b.tags.join(", "), "Investing, AI agents"), "Separate with commas.") + field("Link label", ti("bu", b.buy, "On Amazon ↗")) + "</div>" +
+        divField("Cover picture", '<select class="cv"><option value="">(no cover)</option>' + covers.concat(Object.keys(pending).filter(function (p) { return covers.indexOf(p) < 0; })).map(function (p) { return '<option value="' + escAttr(p) + '"' + (p === b.cover ? " selected" : "") + ">" + esc(p.split("/").pop()) + "</option>"; }).join("") + "</select>" +
+          '<div class="row" style="margin-top:8px"><label class="btn sm">Upload a new cover…<input type="file" accept="image/*" class="up hidden"></label><span class="small faint">Any JPG or PNG. It is resized and saved as a small WebP, like the others.</span></div>');
+      function bind(cls, fn) { $("." + cls, body).addEventListener("input", function (e) { fn(e.target.value); $(".t b", it).textContent = b.title || "(new book)"; dirty(); }); }
+      bind("ti", function (v) { b.title = clean(v); }); bind("d", function (v) { b.date = v; }); bind("hr", function (v) { b.href = clean(v); });
+      bind("de", function (v) { b.dek = clean(v); }); bind("tg", function (v) { b.tags = v.split(",").map(clean).filter(Boolean); }); bind("bu", function (v) { b.buy = clean(v); });
+      $(".cv", body).addEventListener("change", function (e) { b.cover = e.target.value; dirty(); draw(b.key); });
+      $(".up", body).addEventListener("change", async function (e) {
+        var file = e.target.files[0]; if (!file) return;
+        try {
+          var b64 = await toWebp(file, 360);
+          var path = "images/books/" + slug(b.title || file.name.replace(/\.\w+$/, "")) + ".webp";
+          pending[path] = { b64: b64 }; b.cover = path; dirty(); draw(b.key);
+        } catch (err) { toast("That picture couldn't be read: " + esc(err.message), "bad"); }
+      });
+      L.appendChild(it);
+    });
+  }
+  function drawChans() {
+    var L = $("#cList"); L.innerHTML = "";
+    if (!chans.length) { L.innerHTML = '<p class="faint">No links found.</p>'; return; }
+    L.appendChild(h('<div class="tablewrap"><table><thead><tr><th>Where</th><th>Link</th><th>Caption</th></tr></thead><tbody></tbody></table></div>'));
+    chans.forEach(function (c) {
+      var tr = h("<tr><td><b>" + esc(c.name) + '</b></td><td><input type="url" class="hr" value="' + escAttr(c.href) + '"></td><td><input type="text" class="cp" value="' + escAttr(c.caption) + '"></td></tr>');
+      $(".hr", tr).addEventListener("input", function (e) { c.href = clean(e.target.value); dirty(); });
+      $(".cp", tr).addEventListener("input", function (e) { c.caption = clean(e.target.value); dirty(); });
+      $("tbody", L).appendChild(tr);
+    });
+  }
+  $("#bAdd").onclick = function () { var b = { key: uid(), href: "", cover: "", date: isoCT(), dateText: "", title: "", dek: "", tags: [], buy: "On Amazon ↗" }; books.unshift(b); dirty(); draw(b.key); $("#bList .ti").focus(); };
+  $("#aDiscard").onclick = function () { show("author"); };
+  $("#aSave").onclick = function () {
+    if (books.find(function (b) { return !b.title || !b.href; })) { toast("Every book needs a title and a link.", "bad"); return; }
+    if (chans.find(function (c) { return !/^https?:\/\//.test(c.href); })) { toast("Each link elsewhere needs a full web address starting with https://", "bad"); return; }
+    saveFlow(async function () {
+      var cur = await readFile("arden-k-vance.html"), today = isoCT();
+      var out = writeBooks(cur.text, books, today);
+      if (chans.length) out = writeChannels(out, chans);
+      var changes = [{ path: "arden-k-vance.html", text: out, before: cur.text, baseSha: cur.sha }];
+      Object.keys(pending).forEach(function (p) { if (books.some(function (b) { return b.cover === p; })) changes.push({ path: p, b64: pending[p].b64, before: covers.indexOf(p) > -1 ? "" : null, label: "book cover" }); });
+      // social links changed: update the same link on other pages too
+      var swaps = origChans.map(function (o, i) { return chans[i] && o.href !== chans[i].href ? [o.href, chans[i].href] : null; }).filter(Boolean);
+      if (swaps.length) {
+        var tr = await loadTree(true);
+        var htmls = tr.filter(function (x) { return /\.(html|js)$/.test(x.path) && x.path.indexOf("/") < 0 && x.path !== "arden-k-vance.html" && x.path !== "control.html"; });
+        for (var i = 0; i < htmls.length; i++) {
+          var pf = await readFile(htmls[i].path), nt = pf.text;
+          swaps.forEach(function (s) { nt = nt.split('"' + s[0] + '"').join('"' + escAttr(s[1]) + '"'); });
+          if (nt !== pf.text) changes.push({ path: pf.path, text: nt, before: pf.text, baseSha: pf.sha });
+        }
+      }
+      return { changes: changes, message: "Update the Author page", summary: "Updates the Author page" + (swaps.length ? ", and the changed link" + (swaps.length > 1 ? "s" : "") + " everywhere else on the site" : "") + "." };
+    }, { after: function () { show("author"); } });
+  };
+  draw(); drawChans();
+};
+
+function toWebp(file, width) {
+  return new Promise(function (resolve, reject) {
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function () {
+      var w = Math.min(width, img.naturalWidth), hgt = Math.round(img.naturalHeight * w / img.naturalWidth);
+      var c = document.createElement("canvas"); c.width = w; c.height = hgt;
+      c.getContext("2d").drawImage(img, 0, 0, w, hgt);
+      URL.revokeObjectURL(url);
+      var data = c.toDataURL("image/webp", 0.82);
+      if (data.indexOf("data:image/webp") !== 0) return reject(new Error("this browser can't make WebP images"));
+      resolve(data.split(",")[1]);
+    };
+    img.onerror = function () { reject(new Error("not an image")); };
+    img.src = url;
+  });
+}
+
+/* ================= REVIEWS ================= */
+var REVIEW_LABELS = { data_freshness: "Daily data freshness", screen_filters: "Custom screen engine", site_layout: "Layout & navigation", visual_design: "Visual design", info_quality: "Quality of information" };
+VIEWS.reviews = async function (main) {
+  var saved = getSaved("vr_review_key") || "";
+  main.innerHTML = pageHead("Reviews", "What readers wrote on the Reviews page. The home page automatically shows the newest of the best-rated ones (4 or 5 out of 5).") +
+    '<div class="card"><div class="row"><div style="flex:1;min-width:220px">' + field("Reviews admin key", '<input type="password" id="rKey" value="' + escAttr(saved) + '" placeholder="ADMIN_REVIEW_KEY">', "The ADMIN_REVIEW_KEY value you set in Netlify (Site configuration → Environment variables). Only used to ask your site for the reviews.") +
+    '</div><button class="btn primary" id="rLoad" style="margin-top:6px">Show reviews</button></div><label class="check"><input type="checkbox" id="rRemember"' + (saved ? " checked" : "") + "> Remember the key on this computer</label></div>" +
+    '<div id="rOut"></div>';
+  async function load() {
+    var key = $("#rKey").value.trim(); if (!key) { toast("Type your reviews admin key first.", "bad"); return; }
+    setSaved("vr_review_key", $("#rRemember").checked ? key : null, true);
+    var out = $("#rOut"); out.innerHTML = '<div class="loading"><span class="spin"></span></div>';
+    try {
+      var r = await fetch(CFG.site + "/api/reviews?view=dashboard", { headers: { "x-admin-key": key }, cache: "no-store" });
+      if (r.status === 401) throw new Error("That key isn't right. It has to match ADMIN_REVIEW_KEY in Netlify exactly.");
+      if (!r.ok) throw new Error("The site answered with error " + r.status + ".");
+      var list = (await r.json()).reviews || [];
+      if (!list.length) { out.innerHTML = '<div class="card"><p class="faint">No reviews yet.</p></div>'; return; }
+      var avg = list.reduce(function (a, x) { return a + Number(x.positive_score || 0); }, 0) / list.length;
+      var counts = Object.keys(REVIEW_LABELS).map(function (k) { return [k, list.filter(function (x) { return x[k] === "needs_work"; }).length]; });
+      out.innerHTML = '<div class="grid3" style="margin-bottom:18px"><div class="stat"><div class="eyebrow">Reviews</div><div class="v">' + list.length + '</div></div><div class="stat"><div class="eyebrow">Average score</div><div class="v">' + avg.toFixed(1) + ' / 5</div></div><div class="stat"><div class="eyebrow">Most asked to fix</div><div class="d">' +
+        counts.filter(function (c) { return c[1]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 3).map(function (c) { return esc(REVIEW_LABELS[c[0]]) + " (" + c[1] + ")"; }).join("<br>") + "</div></div></div>" +
+        '<div class="row" style="margin-bottom:10px"><label class="check"><input type="checkbox" id="rOnly"> Only show reviews that asked for something to be fixed</label></div><div id="rList"></div>';
+      function drawList() {
+        var only = $("#rOnly").checked;
+        $("#rList").innerHTML = list.filter(function (x) { return !only || Object.keys(REVIEW_LABELS).some(function (k) { return x[k] === "needs_work"; }); }).map(function (x) {
+          var notes = Object.keys(REVIEW_LABELS).map(function (k) { return x[k] === "needs_work" ? '<div class="small" style="color:var(--fail)">✖ ' + esc(REVIEW_LABELS[k]) + ": " + esc(x[k + "_note"]) + "</div>" : ""; }).join("");
+          return '<div class="card"><div class="row"><span class="pill ' + (x.positive_score >= 4 ? "ok" : x.positive_score >= 3 ? "warn" : "bad") + '">' + x.positive_score + ' / 5</span><span class="faint small mono">' + esc(fmtCT(x.created_at, { dateStyle: "medium", timeStyle: "short" })) + "</span>" +
+            (x.positive_score >= 4 ? '<span class="tag">can appear on home page</span>' : "") + '</div><p style="font-size:16px;margin:10px 0 6px">“' + esc(x.comment) + "”</p>" + notes + "</div>";
+        }).join("") || '<p class="faint">None.</p>';
+      }
+      $("#rOnly").onchange = drawList; drawList();
+    } catch (e) { out.innerHTML = '<div class="note bad">' + esc(e.message) + "</div>"; }
+  }
+  $("#rLoad").onclick = load;
+  $("#rKey").addEventListener("keydown", function (e) { if (e.key === "Enter") load(); });
+  if (saved) load();
+};
+
+/* ================= NIGHTLY JOBS ================= */
+VIEWS.automation = async function (main) {
+  var list = await loadRuns();
+  main.innerHTML = pageHead("Nightly jobs", "The jobs that keep the site current. They run on their own; use <b>Run now</b> only when one failed or was missed. Times are Central.") +
+    '<div class="row" style="margin-bottom:12px"><span class="faint small">Checked ' + esc(fmtCT(new Date(), { hour: "numeric", minute: "2-digit" })) + '</span><span class="spacer"></span><button class="btn sm" id="jRefresh">Refresh</button><a class="btn sm ghost" href="https://github.com/' + REPO + '/actions" target="_blank" rel="noopener">All runs on GitHub ↗</a></div><div id="jCore"></div>' +
+    '<details class="card"><summary style="cursor:pointer"><b>Research studies</b> <span class="faint small">(one-off jobs you run by hand)</span></summary><div id="jOther" style="margin-top:12px"></div></details>';
+  $("#jRefresh").onclick = function () { show("automation"); };
+  function row(x) {
+    var st = runState(x.last), el = h('<div class="card"><div class="cardhead"><div><h3></h3><p></p></div><div class="row"><span class="pill ' + st.cls + '">' + (st.cls === "run" ? '<span class="spin"></span> ' : "") + st.label + "</span></div></div>" +
+      '<div class="small muted jl"></div><div class="row" style="margin-top:12px"><button class="btn sm primary">Run now</button><a class="btn sm ghost" target="_blank" rel="noopener">Open the latest run on GitHub ↗</a></div></div>');
+    $("h3", el).textContent = x.info.name; $(".cardhead p", el).textContent = x.info.what;
+    var lines = [];
+    if (x.last) lines.push((x.last.status === "completed" ? "Last run " : "Started ") + fmtCT(x.last.run_started_at || x.last.created_at) + " (" + ago(x.last.run_started_at || x.last.created_at) + ")" + (x.last.event === "schedule" ? ", on schedule" : x.last.event === "workflow_dispatch" ? ", started by hand" : ""));
+    if (x.lastDone && x.lastDone !== x.last) lines.push("Before that: " + runState(x.lastDone).label.toLowerCase() + " " + fmtCT(x.lastDone.run_started_at));
+    $(".jl", el).textContent = lines.join(" · ") || "No runs yet.";
+    var a = $("a", el); if (x.last) a.href = x.last.html_url; else a.remove();
+    var btn = $(".btn.primary", el);
+    if (x.running.length) { btn.disabled = true; btn.textContent = "Already running"; }
+    btn.onclick = async function () { if (await runJob(x)) setTimeout(function () { if (S.tab === "automation") show("automation"); }, 9000); };
+    return el;
+  }
+  list.filter(function (x) { return x.info.core; }).forEach(function (x) { $("#jCore").appendChild(row(x)); });
+  list.filter(function (x) { return !x.info.core; }).forEach(function (x) { $("#jOther").appendChild(row(x)); });
+};
+
+/* ================= FILES ================= */
+var AUTO_FILES = /^(value_screen\.json|screen_history\.json|screen_snapshot\.json|research\.json|video\.json|top5\.json|top-five-.*\.html)$/;
+VIEWS.files = async function (main) {
+  var tree = await loadTree(true);
+  main.innerHTML = pageHead("All files &amp; undo", "Every file on the site. Open one to edit it by hand, or use <b>History</b> to see earlier versions and put any of them back. The other screens are easier for everyday changes; this one is for everything else.") +
+    '<div class="files"><div><input type="search" id="fSearch" placeholder="Find a file…" style="margin-bottom:8px"><div class="filelist" id="fList"></div>' +
+    '<label class="btn sm" style="margin-top:10px">Upload a file…<input type="file" id="fUpload" class="hidden"></label></div><div id="fPane"><div class="card"><p class="faint">Pick a file on the left.</p></div></div></div>';
+  function drawList() {
+    var q = $("#fSearch").value.toLowerCase(), groups = {};
+    tree.filter(function (x) { return !q || x.path.toLowerCase().indexOf(q) > -1; }).forEach(function (x) {
+      var d = x.path.indexOf("/") > -1 ? x.path.slice(0, x.path.lastIndexOf("/")) : "Site pages & data"; (groups[d] = groups[d] || []).push(x);
+    });
+    var keys = Object.keys(groups).sort(function (a, b) { return a === "Site pages & data" ? -1 : b === "Site pages & data" ? 1 : a.localeCompare(b); });
+    $("#fList").innerHTML = keys.map(function (k) {
+      return '<div class="dir">' + esc(k) + "</div>" + groups[k].map(function (x) {
+        var n = x.path.split("/").pop();
+        return '<button data-p="' + escAttr(x.path) + '"><span>' + esc(n) + "</span>" + (AUTO_FILES.test(x.path) ? '<span class="tag auto">auto</span>' : "") + "</button>";
+      }).join("");
+    }).join("");
+    $$("#fList button").forEach(function (b) { b.onclick = function () { $$("#fList button").forEach(function (x) { x.classList.remove("on"); }); b.classList.add("on"); openFile(b.getAttribute("data-p")); }; });
+  }
+  $("#fSearch").oninput = drawList;
+  $("#fUpload").onchange = async function (e) {
+    var file = e.target.files[0]; if (!file) return;
+    var ask = h('<div><p class="muted" style="margin-top:0">Type a folder, or leave it empty for the top level. For book covers use <code>images/books</code>.</p><input type="text" placeholder="images/books"></div>');
+    var folder = await modal({ title: "Where should “" + file.name + "” go?", body: ask, buttons: [{ label: "Cancel", value: null }, { label: "Continue", value: "go", primary: true }] });
+    e.target.value = "";
+    if (!folder) return;
+    var dir = clean($("input", ask).value).replace(/^\/+|\/+$/g, "");
+    var path = (dir ? dir + "/" : "") + file.name.replace(/\s+/g, "-");
+    var buf = new Uint8Array(await file.arrayBuffer());
+    saveFlow(async function () {
+      var existing = tree.find(function (x) { return x.path === path; });
+      return { changes: [{ path: path, b64: bytesToB64(buf), before: existing ? "" : null, baseSha: existing ? existing.sha : null, label: Math.round(buf.length / 1024) + " KB" }], message: "Upload " + path, summary: "It will be at <code>" + esc(CFG.site + "/" + path) + "</code>." };
+    }, { after: function () { show("files"); } });
+  };
+  drawList();
+};
+async function openFile(path, ref) {
+  var pane = $("#fPane"); pane.innerHTML = '<div class="card"><div class="loading"><span class="spin"></span></div></div>';
+  var f = await readFile(path, ref);
+  var card = h('<div class="card"><div class="cardhead"><div><p class="eyebrow">' + (ref ? "Earlier version · " + esc(ref.slice(0, 7)) : "Current version") + '</p><h3 class="mono" style="font-size:18px;word-break:break-all"></h3></div><div class="row"><button class="btn sm" id="fHist">History</button>' +
+    (isPublic(path) ? '<a class="btn sm ghost" target="_blank" rel="noopener" href="' + CFG.site + "/" + escAttr(path) + '">View on site ↗</a>' : "") + "</div></div></div>");
+  $("h3", card).textContent = path;
+  if (AUTO_FILES.test(path) && !ref) card.appendChild(h('<div class="note">A nightly job writes this file. Hand edits work, but the next run may replace them.</div>'));
+  var body;
+  if (f.text == null) {
+    body = h('<div><p class="muted">' + (Math.round(f.size / 1024) || 1) + " KB · picture or other non-text file</p>" + (/\.(png|jpe?g|webp|gif|ico)$/i.test(path) ? '<img style="max-width:100%;max-height:360px;border:1px solid var(--rule);background:#000" src="data:image/' + (path.split(".").pop().replace("jpg", "jpeg")) + ";base64," + f.b64 + '">' : "") + "</div>");
+  } else if (f.size > 900000) {
+    body = h('<div class="note">This file is too big to edit comfortably in the browser (' + Math.round(f.size / 1024) + " KB). It's written by a nightly job, so it shouldn't need hand edits.</div>");
+  } else {
+    body = h('<div><textarea class="code" spellcheck="false"' + (ref ? " readonly" : "") + "></textarea><div class=\"row\" style=\"margin-top:10px\"><span class=\"jsonst small\"></span><span class=\"spacer\"></span></div></div>");
+    var ta = $("textarea", body); ta.value = f.text;
+    var jst = $(".jsonst", body);
+    if (/\.json$/.test(path)) { var chk = function () { try { JSON.parse(ta.value); jst.innerHTML = '<span style="color:var(--pass)">✓ Valid JSON</span>'; } catch (e) { jst.innerHTML = '<span style="color:var(--fail)">✖ Not valid JSON: ' + esc(e.message) + "</span>"; } }; ta.addEventListener("input", chk); chk(); }
+    var actRow = $(".row", body);
+    if (!ref) {
+      var sv = h('<button class="btn primary">Review &amp; publish</button>'); actRow.appendChild(sv);
+      sv.onclick = function () {
+        if (/\.json$/.test(path)) { try { JSON.parse(ta.value); } catch (e) { toast("That isn't valid JSON yet, so it would break the site. Fix it first.", "bad"); return; } }
+        saveFlow(async function () { var cur = await readFile(path); return { changes: [{ path: path, text: ta.value, before: cur.text, baseSha: f.sha }], message: "Edit " + path }; }, { after: function () { openFile(path); } });
+      };
+    }
+  }
+  card.appendChild(body);
+  if (ref) {
+    var rs = h('<div class="row" style="margin-top:12px"><button class="btn primary">Put this version back</button><button class="btn ghost">Back to current version</button></div>');
+    $(".btn.primary", rs).onclick = function () {
+      saveFlow(async function () {
+        var cur = null; try { cur = await readFile(path); } catch (e) {}
+        return { changes: [f.text == null ? { path: path, b64: f.b64, before: cur ? "" : null, baseSha: cur ? cur.sha : null, label: "earlier version" } : { path: path, text: f.text, before: cur ? cur.text : "", baseSha: cur ? cur.sha : null }],
+          message: "Restore " + path + " to version " + ref.slice(0, 7), summary: "Puts this earlier version back." };
+      }, { title: "Put this version back?", after: function () { openFile(path); } });
+    };
+    $(".btn.ghost", rs).onclick = function () { openFile(path); };
+    card.appendChild(rs);
+  }
+  pane.innerHTML = ""; pane.appendChild(card);
+  $("#fHist", card).onclick = function () { showHistory(path); };
+}
+async function showHistory(path) {
+  var list = await gh("/repos/" + REPO + "/commits?sha=" + CFG.branch + "&path=" + encodeURIComponent(path) + "&per_page=25");
+  var body = h('<div><p class="muted" style="margin-top:0">Every saved version of <code>' + esc(path) + '</code>, newest first. Open one to look at it, and put it back if you want.</p><div class="tablewrap"><table><tbody></tbody></table></div></div>');
+  list.forEach(function (c, i) {
+    var tr = h("<tr><td class='mono small' style='white-space:nowrap'>" + esc(fmtCT(c.commit.author.date)) + "</td><td>" + esc(c.commit.message.split("\n")[0].replace(CFG.prefix, "")) + (i === 0 ? ' <span class="tag">current</span>' : "") + '</td><td><button class="btn sm">Open</button></td></tr>');
+    $("button", tr).onclick = function () { $$(".scrim").forEach(function (s) { s.remove(); }); openFile(path, c.sha); };
+    $("tbody", body).appendChild(tr);
+  });
+  modal({ title: "History", body: body, buttons: [{ label: "Close", value: null }] });
+}
+
+/* =====================================================================
+   Sign in / boot
+   ===================================================================== */
+async function signIn(token, remember) {
+  S.token = token;
+  var user = await gh("/user").catch(function (e) { if (e.status === 401) throw e; return null; });
+  var repo = await gh("/repos/" + REPO);
+  S.login = user ? user.login : null;
+  S.readOnly = false;
+  if (repo.permissions && repo.permissions.push === false) S.readOnly = true;
+  setSaved(TOKEN_KEY, token, remember);
+}
+function enterApp() {
+  $("#gate").classList.add("hidden"); $("#shell").classList.remove("hidden");
+  var pill = $("#modePill");
+  pill.className = "pill " + (S.readOnly ? "warn" : "ok");
+  pill.textContent = S.readOnly ? "View only" : "Signed in" + (S.login ? " · " + S.login : "");
+  $("#signoutBtn").textContent = S.readOnly ? "Sign in" : "Sign out";
+  var tab = (location.hash || "").slice(1);
+  show(VIEWS[tab] ? tab : "overview");
+  // keep the "job running" warning current
+  clearInterval(S._runTimer);
+  S._runTimer = setInterval(function () { loadRuns().catch(function () {}); }, 90000);
+  loadRuns().catch(function () {});
+}
+function showGate(msg) {
+  $("#shell").classList.add("hidden"); $("#gate").classList.remove("hidden");
+  $("#gateMsg").innerHTML = msg ? '<span style="color:var(--fail)">' + esc(msg) + "</span>" : "";
+}
+async function promptSignIn() {
+  var body = h('<div><p class="muted" style="margin-top:0">You\'re in view-only mode. Paste your GitHub key to save changes. (No key yet? Sign out and follow the steps on the sign-in page.)</p><input type="password" placeholder="github_pat_…" autocomplete="off"><label class="check"><input type="checkbox" checked> Keep me signed in on this computer</label><p class="small err" style="color:var(--fail)"></p></div>');
+  var ok = await modal({ title: "Sign in to save", body: body, buttons: [{ label: "Cancel", value: false }, { label: "Sign in", value: true, primary: true }] });
+  if (!ok) return;
+  var tok = clean($("input[type=password]", body).value);
+  try { await signIn(tok, $("input[type=checkbox]", body).checked); enterApp(); toast("Signed in. You can save now.", "good"); }
+  catch (e) { S.token = null; S.readOnly = true; toast(esc(e.message), "bad"); }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  $$("#nav button").forEach(function (b) { b.onclick = function () { show(b.getAttribute("data-tab")); }; });
+  $("#signinBtn").onclick = async function () {
+    var tok = clean($("#tokenInput").value);
+    if (!tok) { $("#gateMsg").innerHTML = '<span style="color:var(--fail)">Paste your GitHub key first.</span>'; return; }
+    $("#gateMsg").innerHTML = '<span class="spin"></span> Checking with GitHub…';
+    try { await signIn(tok, $("#rememberInput").checked); $("#tokenInput").value = ""; enterApp(); }
+    catch (e) { S.token = null; showGate(e.message); }
+  };
+  $("#tokenInput").addEventListener("keydown", function (e) { if (e.key === "Enter") $("#signinBtn").click(); });
+  $("#lookBtn").onclick = function () { S.token = null; S.readOnly = true; enterApp(); };
+  $("#signoutBtn").onclick = function () {
+    if (S.readOnly) { showGate(); return; }
+    setSaved(TOKEN_KEY, null); S.token = null; S.readOnly = true; S.login = null; showGate();
+  };
+  var saved = getSaved(TOKEN_KEY);
+  if (saved) {
+    var inLocal = false; try { inLocal = !!(store("local") && store("local").getItem(TOKEN_KEY)); } catch (e) {}
+    signIn(saved, inLocal).then(enterApp).catch(function (e) {
+      setSaved(TOKEN_KEY, null); S.token = null; showGate(e.message);
+    });
+  } else showGate();
+});
+
+/* =====================================================================
+   Daily report: run the screen, and build the day's top-five note
+   straight from the screen file, in the same design as the hand-made
+   notes. Everything written is taken from the numbers; your own words
+   go in the optional boxes.
+   ===================================================================== */
+var PILLARS = [
+  ["cheapness", "Cheapness", "Cheap", "#c98500"],
+  ["quality", "Quality", "Qual", "#3987e5"],
+  ["safety", "Safety", "Safe", "#199e70"],
+  ["confirmation", "Confirmation", "Conf", "#9085e9"]
+];
+var SMALL_WORDS = /^(and|of|the|for|in|on|at|a|an|&)$/i;
+function titleCaseName(n) {
+  var s = clean(n).toLowerCase().replace(/(^|[\s\-\/(])([a-z])/g, function (m, p, c) { return p + c.toUpperCase(); });
+  s = s.split(" ").map(function (w, i) { return i && SMALL_WORDS.test(w) ? w.toLowerCase() : w; }).join(" ");
+  return s.replace(/\bInc\b\.?/g, "Inc.").replace(/\bCorp\b\.?/g, "Corp.").replace(/\bLtd\b\.?/g, "Ltd.").replace(/\bCo\b\.?$/g, "Co.").replace(/\bPlc\b/g, "plc").replace(/,\s*Inc\./, ", Inc.").replace(/\.\.$/, ".");
+}
+function num(x, d) { return x == null || isNaN(x) ? null : Number(x).toFixed(d == null ? 1 : d); }
+function money(x) { return "$" + Number(x).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function pct(x, d) { return (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(x).toFixed(d == null ? 1 : d) + "%"; }
+function longDate(iso) { var p = parseISO(iso); return p.d + " " + MONTHS[p.m - 1] + " " + p.y; } // 24 September 2026
+function h1Html(s) { return escText(s).replace(/\*([^*]+)\*/, "<em>$1</em>"); } // *words* become the italic half of the headline
+
+/* ---- sentences built only from the screen's own figures ---- */
+function pillarLine(key, r) {
+  var p = Math.round(r.pillars[key]), m = r.metrics || {}, bits = [];
+  if (key === "cheapness") {
+    if (m.ev_ebit != null) bits.push("enterprise value " + num(m.ev_ebit) + " times operating profit");
+    if (m.ev_fcf != null) bits.push(num(m.ev_fcf) + " times free cash flow");
+    if (m.shareholder_yield_pct != null && m.shareholder_yield_pct > 1) bits.push("a " + num(m.shareholder_yield_pct) + "% trailing shareholder yield");
+    return "Cheapness of " + p + (bits.length ? ": " + joinList(bits) : "") + ".";
+  }
+  if (key === "quality") {
+    if (m.roic_pct != null) bits.push(num(m.roic_pct) + "% return on invested capital");
+    if (m.accruals != null) bits.push(m.accruals < 0 ? "negative accruals, so profits are backed by cash" : "positive accruals, so reported profit runs ahead of cash");
+    return "Quality of " + p + (bits.length ? ": " + joinList(bits) : "") + ".";
+  }
+  if (key === "safety") {
+    if (m.net_debt_ebitda === -1) bits.push("net cash"); else if (m.net_debt_ebitda != null) bits.push("net debt " + num(m.net_debt_ebitda) + " times EBITDA");
+    if (m.interest_cover === 1000) bits.push("no meaningful interest cost"); else if (m.interest_cover != null) bits.push("interest covered " + num(m.interest_cover) + " times");
+    if (m.net_issuance_pct != null && Math.abs(m.net_issuance_pct) >= 0.5) bits.push("share count " + (m.net_issuance_pct < 0 ? "down " : "up ") + num(Math.abs(m.net_issuance_pct)) + "% over the year");
+    return "Safety of " + p + (bits.length ? ": " + joinList(bits) : "") + ".";
+  }
+  if (m.momentum_12_1_pct != null) bits.push((m.momentum_12_1_pct < 0 ? "down " : "up ") + num(Math.abs(m.momentum_12_1_pct)) + "% over twelve months");
+  if (m.price_vs_200d != null) bits.push("trading at " + Math.round(m.price_vs_200d * 100) + "% of its 200-day average");
+  return "Confirmation of " + p + (bits.length ? ": " + joinList(bits) : "") + ".";
+}
+function joinList(a) { return a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1]; }
+function missingInputs(r) {
+  var m = r.metrics || {}, names = { ev_ebit: "EV/EBIT", ev_fcf: "EV/free cash flow", ev_sales: "EV/revenue", shareholder_yield_pct: "shareholder yield", gross_profitability: "gross profitability", roic_pct: "return on capital", accruals: "accruals", net_debt_ebitda: "net debt/EBITDA", interest_cover: "interest cover", net_issuance_pct: "share issuance", momentum_12_1_pct: "12-month momentum", price_vs_200d: "200-day average" };
+  return Object.keys(names).filter(function (k) { return k in m && m[k] == null; }).map(function (k) { return names[k]; });
+}
+function factsRow(r) {
+  var m = r.metrics || {}, f = ["<span>Price <b>" + money(r.price) + "</b></span>", "<span>Score <b>" + num(r.score) + "</b></span>"];
+  if (m.ev_ebit != null) f.push("<span>EV/EBIT <b>" + num(m.ev_ebit) + "&times;</b></span>");
+  if (m.ev_fcf != null) f.push("<span>EV/FCF <b>" + num(m.ev_fcf) + "&times;</b></span>");
+  if (m.roic_pct != null) f.push("<span>ROIC <b>" + num(m.roic_pct) + "%</b></span>");
+  if (m.net_debt_ebitda === -1) f.push("<span>Net cash</span>"); else if (m.net_debt_ebitda != null) f.push("<span>Net debt/EBITDA <b>" + num(m.net_debt_ebitda) + "&times;</b></span>");
+  if (m.momentum_12_1_pct != null) f.push("<span>12-month <b>" + pct(m.momentum_12_1_pct).replace("−", "&minus;") + "</b></span>");
+  return '<div class="t5-facts">' + f.join("") + "</div>";
+}
+function barsRow(r, weights) {
+  return '<div class="t5-bars">' + PILLARS.map(function (P) {
+    var v = r.pillars[P[0]] || 0;
+    return '<div class="r"><span>' + P[1] + ' <span style="opacity:.55">' + Math.round((weights[P[0]] || 0) * 100) + '%</span></span><span class="t"><i style="width:' + v + "%;background:" + P[3] + '"></i></span><span class="v">' + Math.round(v) + "</span></div>";
+  }).join("") + "</div>";
+}
+
+/** Everything the page needs, computed from the screen file (+ yesterday's). */
+function buildReportData(vs, hist, names, prevTop5) {
+  var meta = vs._meta, asOf = meta.as_of, five = vs.ranked.slice(0, 5);
+  var sessions = (hist && hist.sessions || []).filter(function (s) { return s.session < asOf; });
+  var prev = sessions[sessions.length - 1] || null;
+  var prevBy = {}; if (prev) prev.top.forEach(function (x) { prevBy[x.symbol] = x; });
+  var prevFive = prev ? prev.top.slice(0, 5).map(function (x) { return x.symbol; }) : (prevTop5 || []);
+  var syms = five.map(function (r) { return r.symbol; });
+  var cos = five.map(function (r) {
+    var pr = prevBy[r.symbol] || null, ranked = r.pillars, order = PILLARS.map(function (P) { return P[0]; }).sort(function (a, b) { return ranked[b] - ranked[a]; });
+    return { r: r, symbol: r.symbol, display: names[r.symbol] || titleCaseName(r.name), prev: pr,
+      move: pr && pr.price ? (r.price / pr.price - 1) * 100 : null,
+      likes: order.slice(0, 2), dislike: order[3], missing: missingInputs(r) };
+  });
+  var entered = syms.filter(function (s) { return prevFive.length && prevFive.indexOf(s) < 0; });
+  var left = prevFive.filter(function (s) { return syms.indexOf(s) < 0; });
+  var top = cos[0], biggest = cos.filter(function (c) { return c.move != null; }).sort(function (a, b) { return Math.abs(b.move) - Math.abs(a.move); })[0];
+  return { meta: meta, asOf: asOf, cos: cos, prev: prev, entered: entered, left: left, top: top, biggest: biggest, prevNameOf: function (s) { return names[s] || (prevBy[s] ? titleCaseName(prevBy[s].name) : s); } };
+}
+function autoTexts(d) {
+  var n = Number(d.meta.universe).toLocaleString("en-US"), top = d.top, tn = top.display.replace(/,? (Inc\.|Corp\.|Ltd\.|plc|Co\.)$/, "");
+  var topBit = tn + " is first with a score of " + num(top.r.score) +
+    (top.prev ? (top.prev.rank === 1 ? ", as it was the session before" : ", up from #" + top.prev.rank + " the session before") : "") + ".";
+  var changeBit = d.entered.length ? joinList(d.entered.map(function (s) { var c = d.cos.find(function (x) { return x.symbol === s; }); return c.display.replace(/,? (Inc\.|Corp\.|Ltd\.)$/, ""); })) + (d.entered.length > 1 ? " join" : " joins") + " the five" +
+    (d.left.length ? ", and " + joinList(d.left.map(d.prevNameOf).map(function (x) { return x.replace(/,? (Inc\.|Corp\.|Ltd\.)$/, ""); })) + (d.left.length > 1 ? " drop" : " drops") + " out." : ".") :
+    (d.prev ? "The same five names as the session before." : "");
+  var moveBit = d.biggest && Math.abs(d.biggest.move) >= 2 ? " The biggest move among them: " + d.biggest.display.replace(/,? (Inc\.|Corp\.|Ltd\.)$/, "") + ", " + pct(d.biggest.move) + " on the day." : "";
+  var dek = n + " companies read from their own SEC filings and put in order on the close of " + longDate(d.asOf).replace(/ \d{4}$/, "") + ". What the screen likes in each of the five, and what the same arithmetic does not like.";
+  var lead = n + " US companies were ranked on the close of " + longDate(d.asOf) + ". " + topBit + " " + changeBit + moveBit;
+  return {
+    headline: "The five highest-ranked US companies on " + longDate(d.asOf),
+    h1: "The five at the top, *" + longDate(d.asOf) + ".*",
+    dek: dek, lead: clean(lead),
+    blurb: clean(topBit + " " + changeBit + " What the screen likes in each of the five, and what it doesn't."),
+    listDek: clean(n + " companies ranked on the close of " + longDate(d.asOf).replace(/ \d{4}$/, "") + ". " + topBit + " " + changeBit)
+  };
+}
+
+function paras(text) { return clean(text) ? text.split(/\n\s*\n/).map(function (p) { return "<p>\n" + escText(clean(p)) + "\n</p>"; }).join("\n") : ""; }
+
+function reportMain(d, t, extra) {
+  var w = d.meta.weights || { cheapness: .4, quality: .3, safety: .2, confirmation: .1 };
+  var wp = function (k) { return Math.round((w[k] || 0) * 100) + "%"; };
+  var fl = d.meta.floors || {};
+  var rows = d.cos.map(function (c) {
+    var r = c.r, low = PILLARS.map(function (P) { return P[0]; }).filter(function (k) { return r.pillars[k] < 40; });
+    return '<tr><td class="rk">' + r.rank + '</td><td class="sym">' + escText(r.symbol) + "<small>" + escText(c.display) + " &middot; " + escText(r.sector) + '</small></td><td class="num">' + money(r.price) + '</td><td class="num">' + num(r.score) + "</td>" +
+      PILLARS.map(function (P) { return '<td class="p' + (low.indexOf(P[0]) > -1 ? " lo" : "") + '">' + Math.round(r.pillars[P[0]]) + "</td>"; }).join("") + "</tr>";
+  }).join("\n");
+  var blocks = d.cos.map(function (c, i) {
+    var r = c.r, yest = c.prev ? "The session before it was #" + c.prev.rank + " at " + money(c.prev.price) + " with a score of " + num(c.prev.score) + (c.move != null ? "; today's close is " + pct(c.move) + " on that." : ".") : "New to the top of the board this session.";
+    var noteBits = [];
+    if (c.missing.length) noteBits.push("The filings did not supply " + joinList(c.missing) + ", so the score leans on fewer measures than usual.");
+    if ((r.metrics || {}).shareholder_yield_pct > 15) noteBits.push("The shareholder yield is a trailing twelve-month figure, divided by today's market value: a lower price raises it without a dollar more being returned.");
+    return '<div class="t5-co">\n<h2>' + r.rank + " &middot; " + escText(c.display) + " &mdash; " + escText(r.sector) + "</h2>\n" + factsRow(r) + "\n" + barsRow(r, w) + "\n" +
+      '<div class="t5-take">\n<div class="up"><b>What the screen likes</b><p>' + escText(c.likes.map(function (k) { return pillarLine(k, r); }).join(" ")) + "</p></div>\n" +
+      '<div class="dn"><b>What it doesn&rsquo;t</b><p>' + escText(pillarLine(c.dislike, r)) + "</p></div>\n</div>\n" +
+      (noteBits.length ? '<div class="t5-note"><p>' + escText(noteBits.join(" ")) + "</p></div>\n" : "") +
+      "<p>\n" + escText(yest) + "\n</p>\n" + paras(extra.companies[c.symbol] || "") + "\n</div>";
+  }).join("\n\n");
+  var words = (t.lead + " " + JSON.stringify(extra)).split(/\s+/).length + 1100;
+  return { words: words, html:
+'<main>\n<header class="article-head">\n<div class="wrap head-grid">\n<div>\n<p class="eyebrow">Daily Screen &middot; The Five At The Top</p>\n<h1>' + h1Html(t.h1) + "</h1>\n" +
+'<p class="dek">\n' + escText(t.dek) + '\n</p>\n</div>\n<dl class="story-meta">\n<div><dt>Screen date</dt><dd>' + fmtLong(d.asOf) + "</dd></div>\n<div><dt>Companies ranked</dt><dd>" + Number(d.meta.universe).toLocaleString("en-US") +
+"</dd></div>\n<div><dt>Reading time</dt><dd>" + Math.max(3, Math.round(words / 230)) + " minutes</dd></div>\n</dl>\n</div>\n</header>\n<article>\n<div class=\"wrap article-grid\">\n" +
+'<aside class="rail" aria-label="Article classification">\n<strong>Daily screen</strong>\n<div class="rail-line"></div>\n' + d.cos.map(function (c) { return escText(c.symbol); }).join("<br />") + "\n</aside>\n<div class=\"prose\">\n\n" +
+'<p class="lead">\n' + escText(t.lead) + "\n</p>\n" + paras(extra.intro) + "\n\n" +
+"<h2>How to read the four numbers</h2>\n<p>\nEvery company gets four scores, and each is a percentile against other companies <em>in its own sector</em>, on the same day. Cheapness 98 means the company looks cheaper than 98% of its sector on enterprise value against operating profit, free cash flow and sales, plus what it returns to shareholders. It does not mean cheap against the market.\n</p>\n" +
+"<p>\nThe four combine into one composite: cheapness " + wp("cheapness") + ", quality " + wp("quality") + ", safety " + wp("safety") + ", confirmation " + wp("confirmation") + ". To be ranked at all a company must trade above $" + (fl.price || 3) + ", be worth $" + Math.round((fl.market_cap || 3e8) / 1e6) + " million, and turn over $" + Math.round((fl.dollar_volume || 2e6) / 1e6) + " million of stock a day. Banks, insurers and property trusts are excluded, because enterprise-value measures do not describe those balance sheets honestly. This session " + Number(d.meta.universe).toLocaleString("en-US") + " companies were ranked" + (d.meta.unranked ? " and " + d.meta.unranked + " were left out for want of data" : "") + ".\n</p>\n\n" +
+'<h2>The five</h2>\n<div class="t5-wrap">\n<table class="t5">\n<thead>\n<tr><th>#</th><th>Company</th><th>Price</th><th>Score</th><th>Cheap</th><th>Qual</th><th>Safe</th><th>Conf</th></tr>\n</thead>\n<tbody>\n' + rows + "\n</tbody>\n</table>\n</div>\n" +
+"<p>\nEverything except the price comes from each company&rsquo;s most recent SEC filings, which can lag a quarter behind the news.\n</p>\n\n" + blocks + "\n\n" +
+(clean(extra.closing) ? "<h2>What this session showed</h2>\n" + paras(extra.closing) + "\n" : "") +
+"<p>\nThe standing limit: in testing, this ranking ordered the universe &mdash; the bottom decile performed consistently worse than the top &mdash; but the top decile itself performed about in line with the market. A high rank buys a shorter reading list. It does not buy a return.\n</p>\n" +
+"<p>\nSources: The Vance Report&rsquo;s own screen file for " + longDate(d.asOf) + ", built from SEC company facts and Nasdaq closing prices; the method is at\n<a href=\"vance-value-screener.html\">how the Vance Value Screener works</a>. Educational research, not investment advice.\n</p>\n" +
+'<p>\n<a class="back" href="blog.html"\n><span aria-hidden="true">←</span> All field notes</a\n>\n</p>\n<div class="endmark"></div>\n</div>\n</div>\n</article>\n</main>' };
+}
+
+function reportHead(d, t, page, published, words) {
+  var url = "https://thevancereport.com/" + page, desc = t.dek;
+  var ld = { "@context": "https://schema.org", "@graph": [
+    { "@type": "Article", headline: t.headline, description: desc, datePublished: published, dateModified: published, inLanguage: "en-US", articleSection: "Daily screen",
+      keywords: "Vance Value Screener, daily stock screen, " + d.cos.map(function (c) { return c.symbol; }).join(", ") + ", value investing, SEC filings, sector percentile", wordCount: words,
+      author: { "@type": "Organization", name: "The Vance Report", url: "https://thevancereport.com/" },
+      publisher: { "@type": "Organization", name: "The Vance Report", url: "https://thevancereport.com/", logo: { "@type": "ImageObject", url: "https://thevancereport.com/apple-touch-icon.png" } },
+      mainEntityOfPage: { "@type": "WebPage", "@id": url }, image: "https://thevancereport.com/og-card.png", isAccessibleForFree: true,
+      about: d.cos.map(function (c) { return { "@type": "Corporation", name: c.display, tickerSymbol: c.symbol }; }) },
+    { "@type": "BreadcrumbList", itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://thevancereport.com/" },
+      { "@type": "ListItem", position: 2, name: "Field Notes", item: "https://thevancereport.com/blog.html" },
+      { "@type": "ListItem", position: 3, name: "The five at the top, " + longDate(d.asOf), item: url }] }] };
+  var A = escAttr;
+  return "<title>" + escText(t.headline) + " — The Vance Report</title>\n" +
+    '<meta\nname="description"\ncontent="' + A(desc) + '"\n/>\n<link rel="canonical" href="' + url + '" />\n<meta name="robots" content="index, follow, max-image-preview:large" />\n' +
+    '<meta property="og:type" content="article" />\n<meta property="og:site_name" content="The Vance Report" />\n<meta property="og:title" content="' + A(t.headline) + '" />\n' +
+    '<meta\nproperty="og:description"\ncontent="' + A(desc) + '"\n/>\n<meta property="og:url" content="' + url + '" />\n<meta property="og:image" content="https://thevancereport.com/og-card.png" />\n' +
+    '<meta property="article:published_time" content="' + published + '" />\n<meta property="article:section" content="Daily screen" />\n<meta name="twitter:card" content="summary_large_image" />\n' +
+    '<meta name="twitter:title" content="' + A(t.headline) + '" />\n<meta\nname="twitter:description"\ncontent="' + A(desc) + '"\n/>\n<meta name="twitter:image" content="https://thevancereport.com/og-card.png" />\n' +
+    '<script type="application/ld+json">\n' + JSON.stringify(ld, null, 2).replace(/<\//g, "<\\/") + "\n<\/script>\n";
+}
+
+/** Put generated head + main into the latest note page, keeping its design, nav and footer. */
+function assemblePage(template, headBlock, mainHtml) {
+  var a = template.indexOf("<title>"), b = template.indexOf('<link rel="preconnect"', a);
+  var m1 = template.indexOf("<main"), m2 = template.indexOf("</main>");
+  if (a < 0 || b < 0 || m1 < 0 || m2 < 0) throw new Error("The latest top-five page doesn't have the layout the report builder expects. Ask Claude to update the control room.");
+  var out = template.slice(0, a) + headBlock + template.slice(b, m1) + mainHtml + template.slice(m2 + 7);
+  return out.replace(/<figure class="(t5-video|note-video)"[\s\S]*?<\/figure>\n?/g, "");
+}
+
+/* ================= DAILY REPORT screen ================= */
+VIEWS.report = async function (main) {
+  main.innerHTML = pageHead("Daily report", "Run the daily screen, then turn its top five into the day's note: the note page, the home-page box, the Field Notes entry and the sitemap, all in one step.") +
+    '<div id="rpJob"></div><div id="rpBuild"><div class="card"><div class="loading"><span class="spin"></span> Reading the latest screen…</div></div></div>';
+  // 1. the screen job
+  loadRuns().then(function (list) {
+    var x = list.find(function (i) { return /value_daily\.yml$/.test(i.wf.path); });
+    if (!x) { $("#rpJob").innerHTML = ""; return; }
+    var st = runState(x.last);
+    var card = h('<div class="card"><div class="cardhead"><div><p class="eyebrow">Step 1</p><h3>The daily screen</h3><p>Runs by itself every weeknight. Run it by hand only if tonight\'s run was missed or failed. It takes about an hour, and it only publishes once the official closing prices are out (after about 7 PM Central).</p></div><span class="pill ' + st.cls + '">' + (st.cls === "run" ? '<span class="spin"></span> ' : "") + st.label + "</span></div>" +
+      '<div class="small muted">' + (x.last ? "Last run " + esc(fmtCT(x.last.run_started_at || x.last.created_at)) + " (" + esc(ago(x.last.run_started_at || x.last.created_at)) + ")" : "") + '</div><div class="row" style="margin-top:12px"><button class="btn primary sm">Run the screen now</button>' + (x.last ? '<a class="btn sm ghost" target="_blank" rel="noopener" href="' + x.last.html_url + '">Watch it on GitHub ↗</a>' : "") + "</div></div>");
+    var btn = $(".btn.primary", card);
+    if (x.running.length) { btn.disabled = true; btn.textContent = "Running now…"; }
+    btn.onclick = async function () { if (await runJob(x)) setTimeout(function () { if (S.tab === "report") show("report"); }, 9000); };
+    $("#rpJob").innerHTML = ""; $("#rpJob").appendChild(card);
+  }).catch(function (e) { $("#rpJob").innerHTML = '<div class="note bad">' + esc(e.message) + "</div>"; });
+
+  // 2. the note builder
+  var vs = await siteJSON("value_screen.json"), t5 = await siteJSON("top5.json");
+  var hist = null; try { hist = await siteJSON("screen_history.json"); } catch (e) {}
+  var tree = await loadTree(true);
+  var notes = tree.map(function (x) { return x.path; }).filter(function (p) { return /^top-five-\d{4}-\d{2}-\d{2}\.html$/.test(p); }).sort();
+  var asOf = vs._meta.as_of, page = "top-five-" + asOf + ".html", exists = notes.indexOf(page) > -1;
+  var template = await readFile(notes[notes.length - 1]);
+  // company display names from earlier notes ("Charles River Labs" rather than the SEC's truncated name)
+  var names = {};
+  for (var i = Math.max(0, notes.length - 3); i < notes.length; i++) {
+    var src = notes[i] === template.path ? template.text : (await readFile(notes[i])).text;
+    src.replace(/<td class="sym">([A-Z.\-]+)<small>([^<]*?) &middot;/g, function (m, s, n) { names[s] = n.replace(/&amp;/g, "&"); return m; });
+  }
+  var d = buildReportData(vs, hist, names, (t5.names || []).map(function (n) { return n.symbol; }));
+  var t = autoTexts(d);
+  var box = $("#rpBuild");
+  var card = h('<div class="card"><div class="cardhead"><div><p class="eyebrow">Step 2</p><h3>Create the note for ' + esc(fmtLong(asOf)) + "</h3><p>The note is written from the screen's own numbers: the table, the four bars, what the screen likes and doesn't for each company, and how each moved since the session before. Add your own words in the optional boxes; leave them empty and the note still reads complete.</p></div></div></div>");
+  if (exists) card.appendChild(h('<div class="note bad"><b>A note for this screen already exists</b> (<a href="' + CFG.site + "/" + page + '" target="_blank" rel="noopener">' + esc(page) + " ↗</a>). Creating it again replaces that page with a newly built one, which drops any analysis written into it by hand. Usually you want to leave it alone.</div>"));
+  else if (t5.date === asOf) card.appendChild(h('<div class="note">The home-page box already shows this screen.</div>'));
+  var prevNote = t5.date && t5.date < asOf ? '<div class="note">The home page currently shows the <b>' + esc(fmtLong(t5.date)) + "</b> note. This replaces it with " + esc(fmtLong(asOf)) + "'s (the older note stays in Field Notes).</div>" : "";
+  if (prevNote) card.appendChild(h(prevNote));
+  card.appendChild(h('<div class="tablewrap" style="margin-bottom:14px"><table><thead><tr><th>#</th><th>Company</th><th>Price</th><th>Score</th><th>Since the session before</th></tr></thead><tbody>' + d.cos.map(function (c) {
+    return "<tr><td class='mono'>" + c.r.rank + "</td><td><b>" + esc(c.symbol) + '</b> <span class="muted small">' + esc(c.r.sector) + "</span></td><td class='mono'>" + esc(money(c.r.price)) + "</td><td class='mono'>" + esc(num(c.r.score)) + "</td><td class='small muted'>" +
+      (c.prev ? "was #" + c.prev.rank + (c.move != null ? ", price " + esc(pct(c.move)) : "") : '<span class="pill run">new to the top</span>') + "</td></tr>";
+  }).join("") + "</tbody></table></div>"));
+  var f = h("<div>" +
+    field("Headline", ti("rpH1", t.h1), "Words between *stars* are shown in italics, like the other notes.") +
+    field("Opening paragraph", '<textarea class="rpLead" rows="3">' + esc(t.lead) + "</textarea>", "Written from the numbers. Rewrite it however you like.") +
+    field("Home-page summary", '<textarea class="rpBlurb" rows="2">' + esc(t.blurb) + "</textarea>", "Shown in the box on the home page and in the Field Notes list.") +
+    field("Your take (optional)", '<textarea class="rpIntro" rows="3" placeholder="Anything you want to say after the opening. Leave empty to skip."></textarea>') +
+    '<details style="margin-bottom:12px"><summary class="muted" style="cursor:pointer">Add your own note to any of the five (optional)</summary><div style="margin-top:10px">' +
+      d.cos.map(function (c) { return field(c.r.rank + " · " + esc(c.symbol) + " name shown", ti("rpName", c.display) .replace('class="rpName"', 'class="rpName" data-s="' + escAttr(c.symbol) + '"')) + field(esc(c.symbol) + ": your note", '<textarea class="rpCo" data-s="' + escAttr(c.symbol) + '" rows="2" placeholder="Optional. Something the numbers can\'t see: news, a caveat, context."></textarea>'); }).join("") +
+    "</div></details>" +
+    field("Closing thoughts (optional)", '<textarea class="rpClose" rows="3" placeholder="Optional closing section."></textarea>') +
+    '<div class="row"><button class="btn ghost" id="rpPreview">Preview the note</button><button class="btn primary" id="rpGo">' + (exists ? "Rebuild and publish" : "Create and publish the note") + "</button></div></div>");
+  card.appendChild(f);
+  box.innerHTML = ""; box.appendChild(card);
+
+  function collect() {
+    $$(".rpName", f).forEach(function (el) { var c = d.cos.find(function (x) { return x.symbol === el.getAttribute("data-s"); }); c.display = clean(el.value) || c.display; });
+    var extra = { intro: $(".rpIntro", f).value, closing: $(".rpClose", f).value, companies: {} };
+    $$(".rpCo", f).forEach(function (el) { extra.companies[el.getAttribute("data-s")] = el.value; });
+    var tt = Object.assign({}, t, { h1: clean($(".rpH1", f).value) || t.h1, lead: clean($(".rpLead", f).value) || t.lead, blurb: clean($(".rpBlurb", f).value) || t.blurb });
+    var published = isoCT();
+    var mainPart = reportMain(d, tt, extra);
+    var html = assemblePage(template.text, reportHead(d, tt, page, published, mainPart.words), mainPart.html);
+    return { html: html, t: tt, published: published, words: mainPart.words };
+  }
+  $("#rpPreview").onclick = function () {
+    try {
+      var out = collect();
+      var w = window.open("", "_blank");
+      if (!w) { toast("Your browser blocked the preview window. Allow pop-ups for this site and try again.", "bad"); return; }
+      w.document.open(); w.document.write(out.html.replace(/<head>/, '<head><base href="' + CFG.site + '/">')); w.document.close();
+    } catch (e) { toast(esc(e.message), "bad"); }
+  };
+  $("#rpGo").onclick = function () {
+    saveFlow(async function () {
+      var out = collect(), today = out.published;
+      var cur5 = await readFile("top5.json"), j5 = JSON.parse(cur5.text);
+      var j5new = { _about: j5._about, date: asOf, published: today, page: page, universe: d.meta.universe, blurb: out.t.blurb, video_id: null,
+        names: d.cos.map(function (c) { return { symbol: c.symbol, rank: c.r.rank, score: c.r.score, price: c.r.price }; }) };
+      if (j5.date === asOf && j5.video_id) { j5new.video_id = j5.video_id; if (j5.duration) j5new.duration = j5.duration; if (j5.orientation) j5new.orientation = j5.orientation; }
+      var changes = [
+        exists ? Object.assign({ path: page, text: out.html }, await (async function () { var pf = await readFile(page); return { before: pf.text, baseSha: pf.sha }; })()) : { path: page, text: out.html, before: "", baseSha: null },
+        { path: "top5.json", text: jsonOut(j5new), before: cur5.text, baseSha: cur5.sha }
+      ];
+      var bl = await readFile("blog.html"), list = parseNotes(bl.text).filter(function (n) { return n.href !== page; });
+      list.unshift({ key: uid(), href: page, date: today, title: out.t.headline, dek: autoTexts(d).listDek, tags: ["Daily screen", "Top five", "Sector percentiles"], read: Math.max(3, Math.round(out.words / 230)) + " min" });
+      changes.push({ path: "blog.html", text: writeNotes(bl.text, list, today), before: bl.text, baseSha: bl.sha });
+      var sm = await readFile("sitemap.xml"), xml = sitemapTouch(sitemapAdd(sm.text, page, today, { freq: "never", priority: "0.6" }), "blog.html", today);
+      changes.push({ path: "sitemap.xml", text: xml, before: sm.text, baseSha: sm.sha });
+      return { changes: changes, message: "Top-five note for " + fmtShort(asOf),
+        summary: "Publishes <b>" + esc(page) + "</b>, points the home-page box at it, adds it to the top of Field Notes and to the sitemap. When the video is up on YouTube, add it on the Videos screen." };
+    }, { title: "Review and publish the note", after: function () { show("report"); } });
+  };
+};
+
+</script>
+</body>
+</html>
