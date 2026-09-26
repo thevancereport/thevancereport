@@ -716,7 +716,7 @@ function videoField(opts) {
 var JOBS = {
   "value_daily.yml": { name: "Daily screen", order: 1, core: true, what: "Ranks every company from the day's closing prices and updates the site's numbers and the top five. It tries several times each weeknight from about 7:10 to 10:45 PM Central, and each try stops early if the day is already done or the closing prices aren't ready yet.", runWarn: "It takes about an hour. <b>Don't publish anything from this dashboard until it finishes</b>, or its last step fails and the run is wasted. It only publishes if the day's official closing prices are available." },
   "daily_alert.yml": { name: "Daily alert email", order: 2, core: true, what: "Writes the daily email to subscribers after the screen publishes.", runWarn: "<b>If sending is switched on, this emails every subscriber.</b> Only run it if tonight's email didn't go out." },
-  "daily_video.yml": { name: "Daily video", order: 3, core: true, what: "Builds the daily briefing video.", runWarn: "It takes a while and may save files to the repo when it finishes." },
+  "daily_video.yml": { name: "Daily video", order: 3, core: true, what: "Builds tonight's top-five video with the narrator voice, uploads it to YouTube and puts it on the site. It starts by itself after the screen publishes.", runWarn: "It takes about 15 minutes and posts to YouTube if YouTube is connected. It won't make a second video for the same night unless you use Run workflow on GitHub with Force ticked." },
   "daily_update.yml": { name: "Daily financial data sync", order: 4, core: true, what: "Refreshes the research data file every weekday afternoon.", runWarn: "" },
   "pairs_study.yml": { name: "Pairs study", order: 10, what: "One-off research study. Results are in the run's log.", runWarn: "" },
   "premise_check.yml": { name: "Premise check", order: 11, what: "One-off research study. Results are in the run's log.", runWarn: "" },
@@ -1662,13 +1662,13 @@ function buildReportData(vs, hist, names, prevTop5) {
   return { meta: meta, asOf: asOf, cos: cos, prev: prev, entered: entered, left: left, top: top, biggest: biggest, prevNameOf: function (s) { return names[s] || (prevBy[s] ? titleCaseName(prevBy[s].name) : s); } };
 }
 function autoTexts(d) {
-  var n = Number(d.meta.universe).toLocaleString("en-US"), top = d.top, tn = top.display.replace(/,? (Inc\.|Corp\.|Ltd\.|plc|Co\.)$/, "");
+  var n = Number(d.meta.universe).toLocaleString("en-US"), top = d.top, tn = top.display.replace(/,? (Inc\.?|Corp\.?|Ltd\.?|plc|Co\.?)$/, "");
   var topBit = tn + " is first with a score of " + num(top.r.score) +
     (top.prev ? (top.prev.rank === 1 ? ", as it was the session before" : ", up from #" + top.prev.rank + " the session before") : "") + ".";
-  var changeBit = d.entered.length ? joinList(d.entered.map(function (s) { var c = d.cos.find(function (x) { return x.symbol === s; }); return c.display.replace(/,? (Inc\.|Corp\.|Ltd\.)$/, ""); })) + (d.entered.length > 1 ? " join" : " joins") + " the five" +
-    (d.left.length ? ", and " + joinList(d.left.map(d.prevNameOf).map(function (x) { return x.replace(/,? (Inc\.|Corp\.|Ltd\.)$/, ""); })) + (d.left.length > 1 ? " drop" : " drops") + " out." : ".") :
+  var changeBit = d.entered.length ? joinList(d.entered.map(function (s) { var c = d.cos.find(function (x) { return x.symbol === s; }); return c.display.replace(/,? (Inc\.?|Corp\.?|Ltd\.?)$/, ""); })) + (d.entered.length > 1 ? " join" : " joins") + " the five" +
+    (d.left.length ? ", and " + joinList(d.left.map(d.prevNameOf).map(function (x) { return x.replace(/,? (Inc\.?|Corp\.?|Ltd\.?)$/, ""); })) + (d.left.length > 1 ? " drop" : " drops") + " out." : ".") :
     (d.prev ? "The same five names as the session before." : "");
-  var moveBit = d.biggest && Math.abs(d.biggest.move) >= 2 ? " The biggest move among them: " + d.biggest.display.replace(/,? (Inc\.|Corp\.|Ltd\.)$/, "") + ", " + pct(d.biggest.move) + " on the day." : "";
+  var moveBit = d.biggest && Math.abs(d.biggest.move) >= 2 ? " The biggest move among them: " + d.biggest.display.replace(/,? (Inc\.?|Corp\.?|Ltd\.?)$/, "") + ", " + pct(d.biggest.move) + " on the day." : "";
   var dek = n + " companies read from their own SEC filings and put in order on the close of " + longDate(d.asOf).replace(/ \d{4}$/, "") + ". What the screen likes in each of the five, and what the same arithmetic does not like.";
   var lead = n + " US companies were ranked on the close of " + longDate(d.asOf) + ". " + topBit + " " + changeBit + moveBit;
   return {
@@ -1771,6 +1771,8 @@ VIEWS.report = async function (main) {
   // 2. the note builder
   var vs = await siteJSON("value_screen.json"), t5 = await siteJSON("top5.json");
   var hist = null; try { hist = await siteJSON("screen_history.json"); } catch (e) {}
+  var dv = null; try { dv = await siteJSON("daily_video.json"); } catch (e) {}
+  if (dv && dv.date !== vs._meta.as_of) dv = null;
   var tree = await loadTree(true);
   var notes = tree.map(function (x) { return x.path; }).filter(function (p) { return /^top-five-\d{4}-\d{2}-\d{2}\.html$/.test(p); }).sort();
   var asOf = vs._meta.as_of, page = "top-five-" + asOf + ".html", exists = notes.indexOf(page) > -1;
@@ -1797,6 +1799,7 @@ VIEWS.report = async function (main) {
     field("Headline", ti("rpH1", t.h1), "Words between *stars* are shown in italics, like the other notes.") +
     field("Opening paragraph", '<textarea class="rpLead" rows="3">' + esc(t.lead) + "</textarea>", "Written from the numbers. Rewrite it however you like.") +
     field("Home-page summary", '<textarea class="rpBlurb" rows="2">' + esc(t.blurb) + "</textarea>", "Shown in the box on the home page and in the Field Notes list.") +
+    (dv ? '<label class="check"><input type="checkbox" class="rpVid"' + (dv.visible ? " checked" : "") + '> Put tonight\'s automatic video on the note (<a href="https://youtu.be/' + escAttr(dv.video_id) + '" target="_blank" rel="noopener">' + esc(dv.duration || "") + " video ↗</a>)" + (dv.visible ? "" : ". YouTube is still holding it private: make it public in YouTube Studio first, then tick this") + "</label>" : "") +
     field("Your take (optional)", '<textarea class="rpIntro" rows="3" placeholder="Anything you want to say after the opening. Leave empty to skip."></textarea>') +
     '<details style="margin-bottom:12px"><summary class="muted" style="cursor:pointer">Add your own note to any of the five (optional)</summary><div style="margin-top:10px">' +
       d.cos.map(function (c) { return field(c.r.rank + " · " + esc(c.symbol) + " name shown", ti("rpName", c.display) .replace('class="rpName"', 'class="rpName" data-s="' + escAttr(c.symbol) + '"')) + field(esc(c.symbol) + ": your note", '<textarea class="rpCo" data-s="' + escAttr(c.symbol) + '" rows="2" placeholder="Optional. Something the numbers can\'t see: news, a caveat, context."></textarea>'); }).join("") +
@@ -1814,7 +1817,9 @@ VIEWS.report = async function (main) {
     var published = isoCT();
     var mainPart = reportMain(d, tt, extra);
     var html = assemblePage(template.text, reportHead(d, tt, page, published, mainPart.words), mainPart.html);
-    return { html: html, t: tt, published: published, words: mainPart.words };
+    var useVid = dv && $(".rpVid", f) && $(".rpVid", f).checked;
+    if (useVid) html = setNotePageVideo(html, dv.video_id, dv.duration).html;
+    return { html: html, t: tt, published: published, words: mainPart.words, vid: useVid ? dv : null };
   }
   $("#rpPreview").onclick = function () {
     try {
@@ -1830,7 +1835,8 @@ VIEWS.report = async function (main) {
       var cur5 = await readFile("top5.json"), j5 = JSON.parse(cur5.text);
       var j5new = { _about: j5._about, date: asOf, published: today, page: page, universe: d.meta.universe, blurb: out.t.blurb, video_id: null,
         names: d.cos.map(function (c) { return { symbol: c.symbol, rank: c.r.rank, score: c.r.score, price: c.r.price }; }) };
-      if (j5.date === asOf && j5.video_id) { j5new.video_id = j5.video_id; if (j5.duration) j5new.duration = j5.duration; if (j5.orientation) j5new.orientation = j5.orientation; }
+      if (out.vid) { j5new.video_id = out.vid.video_id; j5new.duration = out.vid.duration; }
+      else if (j5.date === asOf && j5.video_id) { j5new.video_id = j5.video_id; if (j5.duration) j5new.duration = j5.duration; if (j5.orientation) j5new.orientation = j5.orientation; }
       var changes = [
         exists ? Object.assign({ path: page, text: out.html }, await (async function () { var pf = await readFile(page); return { before: pf.text, baseSha: pf.sha }; })()) : { path: page, text: out.html, before: "", baseSha: null },
         { path: "top5.json", text: jsonOut(j5new), before: cur5.text, baseSha: cur5.sha }
