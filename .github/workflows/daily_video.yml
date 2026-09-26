@@ -106,6 +106,10 @@ jobs:
           set -eo pipefail
           python3 scripts/top5_video.py build --out build
           python3 -c "import json; m=json.load(open('build/meta.json')); assert m['narrated'], 'built without narration'; assert m['duration_seconds'] > 60, 'too short'"
+          # Hear it, don't just trust it: a silent voice file would still count as "narrated".
+          MEAN=$(ffmpeg -hide_banner -nostats -i build/briefing.mp4 -vn -af volumedetect -f null - 2>&1 | sed -n 's/.*mean_volume: \(-\?[0-9.]*\) dB.*/\1/p')
+          echo "Sound level: ${MEAN} dB (speech is usually -30 to -15)" | tee -a "$GITHUB_STEP_SUMMARY"
+          python3 -c "import sys; m=float('${MEAN:--99}'); sys.exit(0 if m > -40 else 'the video is silent or nearly silent (mean %.1f dB); not uploading' % m)"
           python3 -c "import json; m=json.load(open('build/meta.json')); print('## ' + m['title']); print(); print('Length ' + m['duration'])" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
