@@ -1567,9 +1567,19 @@ document.addEventListener("DOMContentLoaded", function () {
   var saved = getSaved(TOKEN_KEY);
   if (saved) {
     var inLocal = false; try { inLocal = !!(store("local") && store("local").getItem(TOKEN_KEY)); } catch (e) {}
-    signIn(saved, inLocal).then(enterApp).catch(function (e) {
-      setSaved(TOKEN_KEY, null); S.token = null; showGate(e.message);
-    });
+    (async function boot(tries) {
+      try { await signIn(saved, inLocal); enterApp(); }
+      catch (e) {
+        if (e.status === 401) { // GitHub says the key itself is no longer valid: only then forget it
+          setSaved(TOKEN_KEY, null); S.token = null; showGate("Your GitHub key has expired or was deleted. Paste a new one.");
+          return;
+        }
+        if (tries < 3) { await sleep(2000 * (tries + 1)); return boot(tries + 1); }
+        // GitHub unreachable or slow: keep the key and carry on signed in; saves retry when GitHub answers
+        S.token = saved; S.readOnly = false; enterApp();
+        toast("Couldn't reach GitHub just now, so some panels may be empty. Your key is still saved; reload in a minute.", "bad", 0);
+      }
+    })(0);
   } else showGate();
 });
 
