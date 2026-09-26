@@ -1,31 +1,34 @@
-name: Daily briefing video
+name: Daily video
 
-# Runs after the screener has written research.json. Building a video from a
-# stale screen is worse than not publishing one, so this job reads the file
-# from the repo rather than regenerating it, and stops if it is not from today.
-
-# PAUSED 20 September 2026. The briefing is built from research.json, which
-# describes the retired cash-plus-drop screen, not the ranking the site runs
-# now. Left on, it would post a retired-screen briefing to the channel after
-# every data sync and overwrite video.json with it. The automatic trigger is
-# removed rather than the file, so the pipeline and its history stay intact
-# for the rebuild on the current screen's vocabulary (issues #26 and #31).
-# It can still be run by hand from the Actions tab.
+# Builds tonight's top-five video straight after the daily screen publishes,
+# narrates it with the free piper voice, uploads it to YouTube and puts it on
+# the site. Everything it says comes from value_screen.json.
 #
-# To restore:  put these three lines back under "on:"
-#   workflow_run:
-#     workflows: ["Daily Financial Data Sync"]
-#     types: [completed]
+# The screen's schedule is a ladder of up to five runs a night, and every run
+# that stops early still "succeeds". So this job checks for itself that the
+# screen file is new, and that tonight's video has not already been made.
+#
+# YouTube: set the repository secrets YT_CLIENT_ID, YT_CLIENT_SECRET and
+# YT_REFRESH_TOKEN (VIDEO_SETUP.md). Without them the video is still built and
+# attached to the run, just not uploaded. Privacy comes from the repository
+# variable YT_PRIVACY (public unless set).
+#
+# The previous briefing job (research.json, retired screen) is replaced by
+# this one; its scripts stay in scripts/ for reference.
+
 on:
+  workflow_run:
+    workflows: ["Daily value screen"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       privacy:
         description: "YouTube privacy for this run"
         type: choice
-        default: private
-        options: [private, unlisted, public]
-      allow_stale:
-        description: "Build even if research.json is not from today"
+        default: public
+        options: [public, unlisted, private]
+      force:
+        description: "Make it again even if tonight's video exists"
         type: boolean
         default: false
 
@@ -37,147 +40,114 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-publish:
-    # Skip when the screener failed: no point narrating yesterday's numbers.
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+  video:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
-          fetch-depth: 0
 
-      - name: Check research.json is current
-        id: freshness
+      - name: Is there a new screen without a video?
+        id: check
+        env:
+          FORCE: ${{ inputs.force }}
         run: |
-          set -euo pipefail
-          GEN=$(python3 -c "import json;print(json.load(open('research.json'))['_meta']['generated_at'])")
-          echo "generated_at=$GEN"
-          python3 - "$GEN" <<'PY'
-          import sys, datetime
-          gen = datetime.datetime.fromisoformat(sys.argv[1].replace("Z", "+00:00"))
-          age = (datetime.datetime.now(datetime.timezone.utc) - gen).total_seconds() / 3600
-          print(f"research.json is {age:.1f}h old")
-          open("AGE", "w").write(f"{age:.1f}")
+          python3 - <<'PY'
+          import json, os, datetime as dt
+          m = json.load(open("value_screen.json"))["_meta"]
+          as_of, gen = m["as_of"], m.get("generated_at", "")
+          age = (dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(gen.replace("Z", "+00:00"))).total_seconds() / 3600 if gen else 999
+          done = ""
+          if os.path.exists("daily_video.json"):
+              done = json.load(open("daily_video.json")).get("date", "")
+          force = os.environ.get("FORCE") == "true"
+          go = force or (done != as_of and age < 20)
+          why = ("forced" if force else "tonight's video already exists" if done == as_of
+                 else f"screen file is {age:.0f}h old" if age >= 20 else "new screen")
+          print(f"screen {as_of}, generated {age:.1f}h ago, last video {done or 'none'}: {why}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"go={'yes' if go else 'no'}\nas_of={as_of}\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(f"Screen {as_of}: {'building the video' if go else 'nothing to do'} ({why}).\n")
           PY
-          AGE=$(cat AGE)
-          STALE=$(python3 -c "print('yes' if float('$AGE') > 26 else 'no')")
-          echo "stale=$STALE" >> "$GITHUB_OUTPUT"
-
-      - name: Stop on stale data
-        if: steps.freshness.outputs.stale == 'yes' && inputs.allow_stale != true
-        run: |
-          echo "::warning::research.json is more than 26h old - not publishing a briefing."
-          exit 1
 
       - uses: actions/setup-python@v5
+        if: steps.check.outputs.go == 'yes'
         with:
           python-version: "3.11"
 
-      # The runner already ships Chrome, so do not apt-install a browser:
-      # on Ubuntu 24.04 `chromium-browser` is a snap shim that fails in CI.
-      # Only ffmpeg and the typefaces are actually needed, and a missing
-      # typeface is a cosmetic problem, not a reason to abandon the run.
-      - name: Install ffmpeg and the site's typefaces
-        id: deps
+      - name: Install ffmpeg, fonts and the voice
+        if: steps.check.outputs.go == 'yes'
         run: |
           set -eo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg
-          sudo apt-get install -y -qq fonts-ibm-plex \
-            || echo "::warning::fonts-ibm-plex unavailable; slides fall back to DejaVu"
-          fc-cache -f >/dev/null 2>&1 || true
-          pip install --quiet requests
-
-          BROWSER=""
-          for c in "$(command -v google-chrome || true)" \
-                   "$(command -v google-chrome-stable || true)" \
-                   "$(command -v chromium || true)" \
-                   "$(command -v chromium-browser || true)"; do
-            if [ -n "$c" ] && [ -x "$c" ]; then BROWSER="$c"; break; fi
+          pip install --quiet pillow numpy requests piper-tts
+          mkdir -p build-fonts voice
+          G=https://raw.githubusercontent.com/google/fonts/main/ofl
+          for f in instrumentserif/InstrumentSerif-Regular.ttf instrumentserif/InstrumentSerif-Italic.ttf \
+                   ibmplexmono/IBMPlexMono-Regular.ttf ibmplexmono/IBMPlexMono-Medium.ttf; do
+            curl -fsSL --retry 3 -o "build-fonts/$(basename $f)" "$G/$f" || echo "::warning::font $f unavailable; using a fallback"
           done
-          if [ -z "$BROWSER" ]; then
-            sudo apt-get install -y -qq chromium
-            BROWSER="$(command -v chromium)"
-          fi
-          echo "using browser: $BROWSER"
-          "$BROWSER" --version || true
-          echo "browser=$BROWSER" >> "$GITHUB_OUTPUT"
-
-      - name: Install piper and the narration voice
-        run: |
-          set -eo pipefail
-          pip install --quiet piper-tts
-          mkdir -p voice
-          BASE=https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high
-          curl -fsSL --retry 3 -o voice/en_US-ryan-high.onnx      "$BASE/en_US-ryan-high.onnx"
-          curl -fsSL --retry 3 -o voice/en_US-ryan-high.onnx.json "$BASE/en_US-ryan-high.onnx.json"
-          ls -la voice
-          # A truncated model produces silence rather than an error, so check.
+          V=https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high
+          curl -fsSL --retry 3 -o voice/en_US-ryan-high.onnx "$V/en_US-ryan-high.onnx"
+          curl -fsSL --retry 3 -o voice/en_US-ryan-high.onnx.json "$V/en_US-ryan-high.onnx.json"
+          # a truncated model speaks silence rather than failing, so check its size
           test "$(stat -c%s voice/en_US-ryan-high.onnx)" -gt 10000000
 
       - name: Build the video
+        if: steps.check.outputs.go == 'yes'
         env:
           PIPER_VOICE: voice/en_US-ryan-high.onnx
-          CHROMIUM_PATH: ${{ steps.deps.outputs.browser }}
+          FONT_DIR: build-fonts
         run: |
           set -eo pipefail
-          python3 scripts/build_video.py --out build
-          python3 - <<'PY'
-          import json
-          m = json.load(open("build/meta.json"))
-          print(m)
-          assert m["narrated"], "built without narration - refusing to publish"
-          assert m["duration_seconds"] > 30, "suspiciously short build"
-          PY
+          python3 scripts/top5_video.py build --out build
+          python3 -c "import json; m=json.load(open('build/meta.json')); assert m['narrated'], 'built without narration'; assert m['duration_seconds'] > 60, 'too short'"
+          python3 -c "import json; m=json.load(open('build/meta.json')); print('## ' + m['title']); print(); print('Length ' + m['duration'])" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
+        if: steps.check.outputs.go == 'yes'
         with:
-          name: briefing-${{ github.run_number }}
+          name: video-${{ steps.check.outputs.as_of }}
           path: |
             build/briefing.mp4
             build/briefing.srt
+            build/thumbnail.png
+            build/title.txt
             build/description.txt
           retention-days: 14
 
-      # Not-yet-configured and broken are different states and should look
-      # different. With no secrets at all the run stays green and says so --
-      # the video is still attached above. With secrets present, a failed
-      # upload fails the run.
       - name: Upload to YouTube
-        id: publish
+        if: steps.check.outputs.go == 'yes'
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-          YT_PRIVACY: ${{ inputs.privacy || vars.YT_PRIVACY || 'private' }}
+          YT_PRIVACY: ${{ inputs.privacy || vars.YT_PRIVACY || 'public' }}
         run: |
-          if [ -z "${YT_REFRESH_TOKEN}" ]; then
-            echo "::warning::No YouTube credentials configured - built the video but did not publish it. Download it from this run's artifacts; see VIDEO_SETUP.md."
-            echo "published=no" >> "$GITHUB_OUTPUT"
+          if [ -z "$YT_REFRESH_TOKEN" ]; then
+            echo "::notice::YouTube isn't connected yet, so the video was built but not uploaded. Download it from this run's Artifacts. VIDEO_SETUP.md explains the one-time setup."
+            echo "YouTube not connected: download the video from **Artifacts** below." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          python3 scripts/upload_youtube.py --build build --out video.json
-          echo "published=yes" >> "$GITHUB_OUTPUT"
+          python3 scripts/top5_video.py publish --build build
+          python3 -c "import json; p=json.load(open('build/published.json')); print('YouTube: https://youtu.be/%s (%s)' % (p['video_id'], 'on the site' if p['visible'] else 'held private by YouTube, so not on the site'))" >> "$GITHUB_STEP_SUMMARY"
 
-      # The link-preview card is rebuilt every run and names today's tickers,
-      # so it is committed whether or not the video was published.
-      - name: Commit video.json and the social card
+      - name: Put it on the site
+        if: steps.check.outputs.go == 'yes'
         run: |
           set -eo pipefail
-          cp -f build/og-card.png og-card.png 2>/dev/null || true
-          git config user.name  "github-actions[bot]"
+          python3 scripts/top5_video.py site --build build
+          git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- og-card.png 2>/dev/null || true
-          if [ "${{ steps.publish.outputs.published }}" = "yes" ]; then
-            git add -- video.json
-          fi
-          if git diff --cached --quiet; then
-            echo "nothing changed"; exit 0
-          fi
-          STAMP=$(python3 -c "import json;print(json.load(open('build/meta.json'))['run_date'])")
-          git commit -m "Daily briefing $STAMP [skip ci]"
-          git push
+          git add -- daily_video.json top5.json top-five-*.html 2>/dev/null || true
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "Daily video for ${{ steps.check.outputs.as_of }}"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 10
+          done
+          echo "::error::couldn't push after three tries"; exit 1
