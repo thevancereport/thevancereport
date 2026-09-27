@@ -73,6 +73,26 @@ jobs:
               f.write(f"Screen {as_of}: {'building the video' if go else 'nothing to do'} ({why}).\n")
           PY
 
+      # Tonight's note goes up first and on its own, so a problem with the
+      # video never holds up the note. It does nothing if the note exists.
+      - name: Publish tonight's top-five note
+        run: |
+          set -eo pipefail
+          python3 scripts/top5_note.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- top-five-*.html top5.json blog.html sitemap.xml
+          if git diff --cached --quiet; then echo "note already published"; exit 0; fi
+          AS_OF=$(python3 -c "import json;print(json.load(open('value_screen.json'))['_meta']['as_of'])")
+          git commit -m "The five at the top, ${AS_OF}"
+          OK=no
+          for i in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then OK=yes; break; fi
+            sleep 10
+          done
+          [ "$OK" = yes ] || { echo "::error::couldn't push the note"; exit 1; }
+          echo "Note published: https://thevancereport.com/top-five-${AS_OF}.html" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/setup-python@v5
         if: steps.check.outputs.go == 'yes'
         with:
