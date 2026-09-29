@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-09-25",
-  "published": "2026-09-26",
-  "page": "top-five-2026-09-25.html",
-  "universe": 1171,
-  "blurb": "Yelp stays first and the same five names hold, with Charles River Labs and BorgWarner swapping places. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "EAx0Qv87dlU",
-  "duration": "4:05",
+  "date": "2026-09-28",
+  "published": "2026-09-28",
+  "page": "top-five-2026-09-28.html",
+  "universe": 1168,
+  "blurb": "Yelp is first with a score of 80.4, as it was the session before. Pacira Biosciences joins the five, and Borgwarner drops out. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
       "symbol": "YELP",
       "rank": 1,
-      "score": 80.18,
-      "price": 18.03
+      "score": 80.37,
+      "price": 17.59
     },
     {
       "symbol": "NRDS",
       "rank": 2,
-      "score": 79.55,
-      "price": 8.5
+      "score": 79.45,
+      "price": 8.52
     },
     {
       "symbol": "CRCT",
       "rank": 3,
-      "score": 78.1,
-      "price": 6.14
+      "score": 78.21,
+      "price": 6.33
     },
     {
       "symbol": "CRL",
       "rank": 4,
-      "score": 77.49,
-      "price": 292.84
+      "score": 77.32,
+      "price": 294.59
     },
     {
-      "symbol": "BWA",
+      "symbol": "PCRX",
       "rank": 5,
-      "score": 76.78,
-      "price": 61.32
+      "score": 76.7,
+      "price": 25.39
     }
   ]
 }
