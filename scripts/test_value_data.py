@@ -144,6 +144,55 @@ for on in (D(2023, 6, 1), D(2023, 12, 31), D(2024, 1, 31), D(2024, 2, 1), D(2024
                     bad.append((on, field, value, filed))
 check("no value predates its filing", bad, [])
 
+print("\ndebt and interest under other tags (30 Sep 2026 fix)")
+BS = D(2026, 8, 5)     # filed
+PE = D(2026, 6, 30)    # balance-sheet date
+co = {
+    "assets": [(BS, PE, 0, 8000.0)],
+    "cash": [(BS, PE, 0, 192.0)],
+    # the Charles River shape: only the tiny current slice under the old tag,
+    # the bonds under LongTermDebtAndCapitalLeaseObligations
+    "st_debt": [(BS, PE, 0, 5.0)],
+    "debt_lt_cl": [(BS, PE, 0, 2620.0)],
+    "debt_st_cl": [(BS, PE, 0, 7.0)],
+    "interest_expense_nonop": [(D(2026, 2, 20), D(2025, 12, 31), 4, 120.0)],
+}
+g = vd.figures_for(7, {7: co}, D(2026, 9, 29))
+check("bonds filed under another tag are found", g["total_debt"], 2627.0)
+check("interest filed under another tag is found", g["interest_expense"], 120.0)
+
+# a total and its parts must not be added together
+both = {"assets": [(BS, PE, 0, 1.0)],
+        "debt_lt_total": [(BS, PE, 0, 1000.0)],
+        "lt_debt": [(BS, PE, 0, 950.0)], "st_debt": [(BS, PE, 0, 50.0)]}
+check("a total and its parts are not double counted",
+      vd.figures_for(8, {8: both}, D(2026, 9, 29))["total_debt"], 1000.0)
+
+# short-term borrowings sit on top of long-term debt
+st = {"assets": [(BS, PE, 0, 1.0)], "debt_lt_total": [(BS, PE, 0, 1000.0)],
+      "st_borrow": [(BS, PE, 0, 200.0)]}
+check("short-term borrowings are added", vd.figures_for(9, {9: st}, D(2026, 9, 29))["total_debt"], 1200.0)
+
+# a tag the company stopped using years ago must not come back
+stale = {"assets": [(BS, PE, 0, 1.0)],
+         "debt_senior_notes": [(D(2021, 2, 1), D(2020, 12, 31), 0, 900.0)],
+         "lt_debt": [(BS, PE, 0, 100.0)]}
+check("a long-abandoned tag is ignored", vd.figures_for(10, {10: stale}, D(2026, 9, 29))["total_debt"], 100.0)
+
+# a company that reports no borrowing at all still reads as None (debt-free)
+none = {"assets": [(BS, PE, 0, 1.0)], "cash": [(BS, PE, 0, 50.0)]}
+check("no debt tags at all is None", vd.figures_for(11, {11: none}, D(2026, 9, 29))["total_debt"], None)
+
+# debt must respect the filing date like everything else
+check("debt filed later is not visible earlier",
+      vd.figures_for(7, {7: co}, D(2026, 8, 4))["total_debt"], None)
+
+# cash interest paid is used only when no expense tag is reported
+paid = {"interest_paid": [(D(2026, 2, 20), D(2025, 12, 31), 4, 30.0)]}
+check("interest paid is the fallback", vd.figures_for(12, {12: paid}, D(2026, 9, 29))["interest_expense"], 30.0)
+paid["interest_expense_debt"] = [(D(2026, 2, 20), D(2025, 12, 31), 4, 25.0)]
+check("an expense tag beats interest paid", vd.figures_for(12, {12: paid}, D(2026, 9, 29))["interest_expense"], 25.0)
+
 print("\n" + "=" * 60)
 if fails:
     print(f"{len(fails)} FAILURES")

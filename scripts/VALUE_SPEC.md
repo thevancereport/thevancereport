@@ -199,3 +199,13 @@ data**. No real result had been computed under either rule at the time of the
 change. The new gate is not looser: it still rejects a table where one good
 decile sits above a random middle, which is the failure mode §5.1 was written
 to catch, and that case is in the test suite.
+
+**30 Sep 2026 — reading debt and interest from the filings (a data fix, not a rule change).**
+
+*The rule is unchanged:* net debt / EBITDA and interest coverage, exactly as in §3.
+
+*What was wrong:* the data step read debt from only three XBRL tags (LongTermDebtNoncurrent, LongTermDebtCurrent, ShortTermBorrowings) and interest from only one (InterestExpense). Many companies file the same numbers under other standard tags. When a company's bonds were under, say, LongTermDebtAndCapitalLeaseObligations, the screen saw no debt, subtracted cash, and scored the company as holding **net cash**; when interest was under InterestExpenseNonoperating, a missing figure scored as **no interest cost at all**. On the 29 Sep 2026 screen 678 of 1,169 names read as net cash and 635 as paying no interest, including Charles River Laboratories (about $2.6bn of debt), Pediatrix and FirstEnergy. That inflated the Safety pillar for exactly the names it should have marked down.
+
+*The fix:* value_data.py now also reads LongTermDebt, LongTermDebtAndCapitalLeaseObligations (and its current part and its including-current-maturities total), DebtLongtermAndShorttermCombinedAmount, LongTermLineOfCredit, ConvertibleLongTermNotesPayable, ConvertibleNotesPayable, SeniorNotes, LongTermNotesPayable and CommercialPaper for debt, and InterestExpenseNonoperating, InterestExpenseDebt and InterestAndDebtExpense for interest (cash InterestPaidNet only as a last resort). Because these tags overlap, it takes the **largest complete reading** rather than adding them, and ignores any tag not reported on the company's latest balance sheet. In value_core.py, a company with debt on the books but no interest figure now scores interest coverage as missing rather than as best-in-class. The look-ahead guard is unchanged and applies to every new tag.
+
+*Consequence:* rankings from 30 Sep 2026 onward are not comparable name-for-name with earlier ones, and the backtest should be re-run on the corrected data before its result is quoted again. Found while checking why Charles River and Pediatrix showed net cash.
