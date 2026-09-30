@@ -479,8 +479,26 @@
 .sc-stats span { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--paper-faint); }
 .sc-stats b { display: block; margin-top: 8px; font-family: var(--serif); font-weight: 400; font-size: 30px; color: var(--paper); font-variant-numeric: tabular-nums; }
 .sc-stats small { display: block; margin-top: 4px; font-family: var(--mono); font-size: 11.5px; color: var(--paper-faint); }
-table.t5.sc { min-width: 760px; }
-table.t5.sc td.sym { font-size: 21px; }
+/* Fit the whole table on the screen: no sideways scrolling. */
+.t5-wrap.sc-wrap { overflow: visible; }
+table.t5.sc { min-width: 0; width: 100%; font-size: 13px; }
+table.t5.sc th { font-size: 10px; letter-spacing: .1em; padding: 0 8px 10px 0; white-space: normal; vertical-align: bottom; }
+table.t5.sc td { padding: 12px 8px 12px 0; }
+table.t5.sc td.sym { font-size: 18px; }
+table.t5.sc td.sym small { font-size: 10px; letter-spacing: .06em; line-height: 1.35; white-space: normal; }
+table.t5.sc td.num { white-space: nowrap; }
+table.t5.sc td.sub small { display: block; color: var(--paper-faint); font-size: 10.5px; }
+/* Phones: one card per company instead of a table. */
+@media (max-width: 760px) {
+  table.t5.sc thead { display: none; }
+  table.t5.sc, table.t5.sc tbody, table.t5.sc tr, table.t5.sc td { display: block; width: 100%; }
+  table.t5.sc tr { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px 12px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+  table.t5.sc td { padding: 0; border: 0; white-space: normal; }
+  table.t5.sc td.sym { grid-column: 1 / -1; }
+  table.t5.sc td[data-l]::before { content: attr(data-l); display: block; font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--paper-faint); margin-bottom: 3px; }
+  table.t5.sc td.muted { grid-column: 1 / -1; }
+}
 table.t5 .up { color: #9cc27d; }
 table.t5 .dn { color: #cc8a50; }
 table.t5 td.muted { color: var(--paper-faint); font-size: 12.5px; }
@@ -530,7 +548,7 @@ Updated nightly<br>Nothing removed<br>vs the S&amp;P 500
 <div class="sc-stats" id="sc-stats"></div>
 
 <h2>Every company, since it reached the top ten</h2>
-<div class="t5-wrap">
+<div class="t5-wrap sc-wrap">
 <table class="t5 sc">
 <thead>
 <tr><th>Company</th><th>Entered</th><th>Rank then&nbsp;/&nbsp;now</th><th>From</th><th>Latest</th><th>Change</th><th>S&amp;P&nbsp;500</th><th>Difference</th></tr>
@@ -638,17 +656,17 @@ From October the screen’s ten highest-ranked companies go into a paper portfol
     document.getElementById("sc-body").innerHTML = order.map(function (r) {
       var now = r.rank_now ? "#" + r.rank_now : "out";
       var head = "<td class=\"sym\">" + esc(r.symbol) + "<small>" + esc(r.name) + " &middot; " + esc(r.sector || "") + "</small></td>" +
-        "<td class=\"num\">" + dshort(r.entered) + "</td><td class=\"num\">#" + esc(r.entry_rank) + " &rarr; " + now + "</td>";
+        "<td class=\"num\" data-l=\"Entered\">" + dshort(r.entered) + "</td><td class=\"num\" data-l=\"Rank then / now\">#" + esc(r.entry_rank) + " &rarr; " + now + "</td>";
       if (!isNum(r.return_pct)) {
         var why = r.status === "new" ? "Entered on the latest screen; measured from the next close." : "No price after it entered.";
         return "<tr>" + head + "<td class=\"muted\" colspan=\"5\">" + why + "</td></tr>";
       }
       return "<tr>" + head +
-        "<td class=\"num\">" + money(r.from_price) + "<small style=\"display:block;color:var(--paper-faint);font-size:11px\">" + dshort(r.from) + "</small></td>" +
-        "<td class=\"num\">" + money(r.to_price) + (r.status === "stopped" ? "<small style=\"display:block;color:var(--paper-faint);font-size:11px\">last priced " + dshort(r.to) + "</small>" : "") + "</td>" +
-        "<td class=\"num " + cls(r.return_pct) + "\">" + sp(r.return_pct) + "</td>" +
-        "<td class=\"num\">" + sp(r.spy_pct) + "</td>" +
-        "<td class=\"num " + cls(r.vs_spy_pct) + "\">" + pts(r.vs_spy_pct) + "</td></tr>";
+        "<td class=\"num sub\" data-l=\"From\">" + money(r.from_price) + "<small>" + dshort(r.from) + "</small></td>" +
+        "<td class=\"num sub\" data-l=\"Latest\">" + money(r.to_price) + (r.status === "stopped" ? "<small>last priced " + dshort(r.to) + "</small>" : "") + "</td>" +
+        "<td class=\"num " + cls(r.return_pct) + "\" data-l=\"Change\">" + sp(r.return_pct) + "</td>" +
+        "<td class=\"num\" data-l=\"S&amp;P 500\">" + sp(r.spy_pct) + "</td>" +
+        "<td class=\"num " + cls(r.vs_spy_pct) + "\" data-l=\"Difference\">" + pts(r.vs_spy_pct) + "</td></tr>";
     }).join("");
     document.getElementById("sc-note").innerHTML = "Sorted by change since the first tradeable close. Closing prices, dividends not included. Rank now is on the " + dlong(d.as_of) + " screen; \u201cout\u201d means it is no longer in the ranked universe.";
   }
