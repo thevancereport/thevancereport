@@ -1,0 +1,75 @@
+name: Track record
+
+# After each night's screen: updates scorecard.json (every company that has
+# reached the top ten, against the S&P 500) and vance_index.json (the Vance
+# Index, a paper portfolio run by the fixed rules in scripts/track_record.py).
+#
+# It only ever commits when the screen has published a session it has not
+# seen, which means the night's screen is already in, so it cannot collide
+# with the screen's own commit.
+
+on:
+  workflow_run:
+    workflows: ["Daily value screen"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: track-record
+  cancel-in-progress: false
+
+jobs:
+  record:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Test the arithmetic
+        working-directory: scripts
+        run: python test_track_record.py
+
+      - name: Is there a new session?
+        id: check
+        run: |
+          python3 - <<'PY'
+          import json, os
+          as_of = json.load(open("value_screen.json"))["_meta"]["as_of"]
+          last = None
+          if os.path.exists("vance_index.json"):
+              last = json.load(open("vance_index.json")).get("last_session")
+          go = last is None or as_of > last
+          print(f"screen {as_of}, recorded through {last}: {'updating' if go else 'nothing new'}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"go={'yes' if go else 'no'}\nas_of={as_of}\n")
+          PY
+
+      - name: Update the scorecard and the index
+        if: steps.check.outputs.go == 'yes'
+        run: python3 scripts/track_record.py
+
+      - name: Commit
+        if: steps.check.outputs.go == 'yes'
+        run: |
+          set -eo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- scorecard.json vance_index.json
+          if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
+          git commit -m "Track record for ${{ steps.check.outputs.as_of }}"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 10
+          done
+          echo "::error::couldn't push after three tries"; exit 1
