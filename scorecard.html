@@ -492,8 +492,8 @@ table.t5.sc td.sub small { display: block; color: var(--paper-faint); font-size:
 @media (max-width: 760px) {
   table.t5.sc thead { display: none; }
   table.t5.sc, table.t5.sc tbody, table.t5.sc tr, table.t5.sc td { display: block; width: 100%; }
-  table.t5.sc tr { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px 12px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
-  table.t5.sc td { padding: 0; border: 0; white-space: normal; }
+  table.t5.sc tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+  table.t5.sc td { padding: 0; border: 0; white-space: normal; min-width: 0; overflow-wrap: anywhere; }
   table.t5.sc td.sym { grid-column: 1 / -1; }
   table.t5.sc td[data-l]::before { content: attr(data-l); display: block; font-family: var(--mono); font-size: 9.5px;
     letter-spacing: .12em; text-transform: uppercase; color: var(--paper-faint); margin-bottom: 3px; }

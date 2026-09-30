@@ -15,6 +15,97 @@
 (function () {
   "use strict";
 
+  // Bigger small print (30 Sep 2026). The labels, captions and table text
+  // on every page were set at 10-14px while the pages had room to spare.
+  // Anything under 15px is drawn 50% larger, up to 18px (just above the
+  // 17.5px body text), so headlines and body text keep their sizes and the
+  // hierarchy stays. Done here, once, because every page loads this file.
+  // The menu bar itself is left alone: at 50% larger it no longer fits on
+  // one line.
+  var SMALL_PX = 15, GROW = 1.5, CAP_PX = 18;
+  var already = window.__vrGrown;
+  window.__vrGrown = true;
+  var seen = typeof WeakSet === "function" ? new WeakSet() : null;
+
+  function toPx(v) {
+    var m = /^\s*([\d.]+)(px|rem)\s*$/.exec(String(v || ""));
+    if (!m) return null;
+    return m[2] === "rem" ? parseFloat(m[1]) * 16 : parseFloat(m[1]);
+  }
+  function growStyle(st) {
+    var px = toPx(st.fontSize);
+    if (px && px < SMALL_PX) {
+      st.setProperty("font-size", Math.min(Math.round(px * GROW * 10) / 10, CAP_PX) + "px",
+                     st.getPropertyPriority("font-size"));
+    }
+  }
+  function growRules(rules) {
+    for (var i = 0; i < rules.length; i++) {
+      var r = rules[i];
+      if (r.style && r.style.fontSize) growStyle(r.style);
+      if (r.cssRules) growRules(r.cssRules);
+    }
+  }
+  function growSheets() {
+    var sheets = document.styleSheets;
+    for (var i = 0; i < sheets.length; i++) {
+      var s = sheets[i];
+      if (seen && seen.has(s)) continue;
+      var owner = s.ownerNode;
+      if (owner && owner.id === "vr-nav-css") { if (seen) seen.add(s); continue; }
+      var rules;
+      try { rules = s.cssRules; } catch (e) { continue; }   // another site's stylesheet (fonts)
+      if (!rules) continue;
+      growRules(rules);
+      if (seen) seen.add(s);
+    }
+  }
+  function growInline(root) {
+    if (!root || root.nodeType !== 1) return;
+    var els = [root].concat(Array.prototype.slice.call(root.querySelectorAll('[style*="font-size"]')));
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.hasAttribute("data-vr-grown") || !/font-size/.test(el.getAttribute("style") || "")) continue;
+      if (el.closest && el.closest(".vr-nav")) continue;
+      growStyle(el.style);
+      el.setAttribute("data-vr-grown", "");
+    }
+  }
+  // Article pages: use the width the page has. Tables and charts get the
+  // wider column; running text stays at a comfortable reading width.
+  var roomy = document.createElement("style");
+  roomy.id = "vr-roomy-css";
+  roomy.textContent =
+    "@media (min-width:1100px){" +
+      ".article-grid{grid-template-columns:160px minmax(0,1000px)!important}" +
+      ".article-grid>.prose>p,.article-grid>.prose>h2,.article-grid>.prose>h3," +
+      ".article-grid>.prose>ul,.article-grid>.prose>ol,.article-grid>.prose>blockquote" +
+      "{max-width:720px}" +
+    "}";
+  if (!already) (document.head || document.documentElement).appendChild(roomy);
+
+  if (!already) {
+  growSheets();
+  document.addEventListener("DOMContentLoaded", function () {
+    growSheets();
+    growInline(document.body);
+    if (typeof MutationObserver === "function") {
+      new MutationObserver(function (muts) {
+        for (var i = 0; i < muts.length; i++) {
+          var added = muts[i].addedNodes;
+          for (var j = 0; j < added.length; j++) {
+            var n = added[j];
+            if (n.nodeName === "STYLE" || n.nodeName === "LINK") growSheets();
+            else growInline(n);
+          }
+        }
+      }).observe(document.body, { childList: true, subtree: true });
+    }
+  });
+  window.addEventListener("load", growSheets);
+  }
+
+
   var ITEMS = [
     { key: "index",         href: "index.html",         label: "Today\u2019s screen" },
     { key: "how",           href: "vance-value-screener.html", label: "How it works" },
@@ -74,6 +165,7 @@
     "}";
 
   var style = document.createElement("style");
+  style.id = "vr-nav-css";   // the menu keeps its own sizes
   style.textContent = CSS;
 
   var links = ITEMS.map(function (it) {
