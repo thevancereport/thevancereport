@@ -1,41 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-09-28",
-  "published": "2026-09-28",
-  "page": "top-five-2026-09-28.html",
-  "universe": 1168,
-  "blurb": "Yelp is first with a score of 80.4, as it was the session before. Pacira Biosciences joins the five, and Borgwarner drops out. What the screen likes in each of the five, and what it doesn't.",
+  "date": "2026-09-29",
+  "published": "2026-09-29",
+  "page": "top-five-2026-09-29.html",
+  "universe": 1169,
+  "blurb": "Yelp is first with a score of 80.0, as it was the session before. Progyny joins the five, and Pacira Biosciences drops out. What the screen likes in each of the five, and what it doesn't.",
   "video_id": null,
   "names": [
     {
       "symbol": "YELP",
       "rank": 1,
-      "score": 80.37,
-      "price": 17.59
+      "score": 79.95,
+      "price": 18.28
     },
     {
       "symbol": "NRDS",
       "rank": 2,
-      "score": 79.45,
-      "price": 8.52
+      "score": 79.53,
+      "price": 8.54
     },
     {
       "symbol": "CRCT",
       "rank": 3,
       "score": 78.21,
-      "price": 6.33
+      "price": 6.41
     },
     {
       "symbol": "CRL",
       "rank": 4,
-      "score": 77.32,
-      "price": 294.59
+      "score": 77.29,
+      "price": 295.96
     },
     {
-      "symbol": "PCRX",
+      "symbol": "PGNY",
       "rank": 5,
-      "score": 76.7,
-      "price": 25.39
+      "score": 77.07,
+      "price": 24.79
     }
   ]
 }
