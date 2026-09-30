@@ -1249,6 +1249,214 @@
      "price": 40.01
     }
    ]
+  },
+  {
+   "session": "2026-09-29",
+   "prices_through": "2026-09-29",
+   "generated_at": "2026-09-30T02:27:02.447138+00:00",
+   "universe": 1169,
+   "top": [
+    {
+     "rank": 1,
+     "symbol": "YELP",
+     "name": "YELP INC",
+     "sector": "Consumer Services",
+     "score": 79.95,
+     "price": 18.28
+    },
+    {
+     "rank": 2,
+     "symbol": "NRDS",
+     "name": "NERDWALLET, INC.",
+     "sector": "Technology",
+     "score": 79.53,
+     "price": 8.54
+    },
+    {
+     "rank": 3,
+     "symbol": "CRCT",
+     "name": "CRICUT, INC.",
+     "sector": "Industrials",
+     "score": 78.21,
+     "price": 6.41
+    },
+    {
+     "rank": 4,
+     "symbol": "CRL",
+     "name": "CHARLES RIVER LABORATORIES INTERNATIONAL, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 77.29,
+     "price": 295.96
+    },
+    {
+     "rank": 5,
+     "symbol": "PGNY",
+     "name": "PROGYNY, INC.",
+     "sector": "Healthcare Services",
+     "score": 77.07,
+     "price": 24.79
+    },
+    {
+     "rank": 6,
+     "symbol": "PCRX",
+     "name": "PACIRA BIOSCIENCES, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 76.65,
+     "price": 25.65
+    },
+    {
+     "rank": 7,
+     "symbol": "BWA",
+     "name": "BORGWARNER INC",
+     "sector": "Autos & Transport Equipment",
+     "score": 76.4,
+     "price": 60.94
+    },
+    {
+     "rank": 8,
+     "symbol": "NUTX",
+     "name": "NUTEX HEALTH, INC.",
+     "sector": "Business Services",
+     "score": 75.92,
+     "price": 210.1
+    },
+    {
+     "rank": 9,
+     "symbol": "FE",
+     "name": "FIRSTENERGY CORP",
+     "sector": "Utilities",
+     "score": 75.84,
+     "price": 43.64
+    },
+    {
+     "rank": 10,
+     "symbol": "MD",
+     "name": "PEDIATRIX MEDICAL GROUP, INC.",
+     "sector": "Healthcare Services",
+     "score": 75.78,
+     "price": 26.06
+    },
+    {
+     "rank": 11,
+     "symbol": "USLM",
+     "name": "UNITED STATES LIME & MINERALS INC",
+     "sector": "Metals & Mining",
+     "score": 75.72,
+     "price": 110.5
+    },
+    {
+     "rank": 12,
+     "symbol": "COLL",
+     "name": "COLLEGIUM PHARMACEUTICAL, INC",
+     "sector": "Biotech & Pharma",
+     "score": 75.51,
+     "price": 22.23
+    },
+    {
+     "rank": 13,
+     "symbol": "WFRD",
+     "name": "WEATHERFORD INTERNATIONAL PLC",
+     "sector": "Industrials",
+     "score": 75.38,
+     "price": 80.41
+    },
+    {
+     "rank": 14,
+     "symbol": "REPX",
+     "name": "RILEY EXPLORATION PERMIAN, INC.",
+     "sector": "Energy",
+     "score": 75.3,
+     "price": 39.79
+    },
+    {
+     "rank": 15,
+     "symbol": "EXEL",
+     "name": "EXELIXIS, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 75.23,
+     "price": 58.65
+    },
+    {
+     "rank": 16,
+     "symbol": "COLM",
+     "name": "COLUMBIA SPORTSWEAR CO",
+     "sector": "Textiles & Apparel",
+     "score": 74.99,
+     "price": 58.34
+    },
+    {
+     "rank": 17,
+     "symbol": "ADBE",
+     "name": "ADOBE INC.",
+     "sector": "Technology",
+     "score": 74.64,
+     "price": 233.17
+    },
+    {
+     "rank": 18,
+     "symbol": "ANIP",
+     "name": "ANI PHARMACEUTICALS INC",
+     "sector": "Biotech & Pharma",
+     "score": 73.78,
+     "price": 72.62
+    },
+    {
+     "rank": 19,
+     "symbol": "VMC",
+     "name": "VULCAN MATERIALS CO",
+     "sector": "Metals & Mining",
+     "score": 73.76,
+     "price": 242.75
+    },
+    {
+     "rank": 20,
+     "symbol": "PBYI",
+     "name": "PUMA BIOTECHNOLOGY, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 73.74,
+     "price": 9.78
+    },
+    {
+     "rank": 21,
+     "symbol": "PRGS",
+     "name": "PROGRESS SOFTWARE CORP /MA",
+     "sector": "Technology",
+     "score": 73.46,
+     "price": 39.44
+    },
+    {
+     "rank": 22,
+     "symbol": "MTDR",
+     "name": "MATADOR RESOURCES CO",
+     "sector": "Energy",
+     "score": 73.41,
+     "price": 50.69
+    },
+    {
+     "rank": 23,
+     "symbol": "GNTX",
+     "name": "GENTEX CORP",
+     "sector": "Autos & Transport Equipment",
+     "score": 73.39,
+     "price": 22.13
+    },
+    {
+     "rank": 24,
+     "symbol": "HRMY",
+     "name": "HARMONY BIOSCIENCES HOLDINGS, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 73.11,
+     "price": 39.29
+    },
+    {
+     "rank": 25,
+     "symbol": "CART",
+     "name": "MAPLEBEAR INC.",
+     "sector": "Business Services",
+     "score": 73.09,
+     "price": 43.49
+    }
+   ]
   }
  ],
  "entry_rank": 10,
@@ -1338,7 +1546,8 @@
    "2026-09-23": 17.73,
    "2026-09-24": 18.37,
    "2026-09-25": 18.03,
-   "2026-09-28": 17.59
+   "2026-09-28": 17.59,
+   "2026-09-29": 18.28
   },
   "NRDS": {
    "2026-09-21": 9.08,
@@ -1346,7 +1555,8 @@
    "2026-09-23": 8.1,
    "2026-09-24": 8.2,
    "2026-09-25": 8.5,
-   "2026-09-28": 8.52
+   "2026-09-28": 8.52,
+   "2026-09-29": 8.54
   },
   "CRCT": {
    "2026-09-21": 5.65,
@@ -1354,7 +1564,8 @@
    "2026-09-23": 5.89,
    "2026-09-24": 5.92,
    "2026-09-25": 6.14,
-   "2026-09-28": 6.33
+   "2026-09-28": 6.33,
+   "2026-09-29": 6.41
   },
   "CRL": {
    "2026-09-21": 279.01,
@@ -1362,7 +1573,8 @@
    "2026-09-23": 277.33,
    "2026-09-24": 294.44,
    "2026-09-25": 292.84,
-   "2026-09-28": 294.59
+   "2026-09-28": 294.59,
+   "2026-09-29": 295.96
   },
   "NUTX": {
    "2026-09-21": 201.48,
@@ -1370,7 +1582,8 @@
    "2026-09-23": 201.86,
    "2026-09-24": 204.59,
    "2026-09-25": 220.11,
-   "2026-09-28": 212.74
+   "2026-09-28": 212.74,
+   "2026-09-29": 210.1
   },
   "PGNY": {
    "2026-09-21": 26.86,
@@ -1378,7 +1591,8 @@
    "2026-09-23": 25.83,
    "2026-09-24": 25.97,
    "2026-09-25": 25.44,
-   "2026-09-28": 25.52
+   "2026-09-28": 25.52,
+   "2026-09-29": 24.79
   },
   "FE": {
    "2026-09-21": 44.97,
@@ -1386,7 +1600,8 @@
    "2026-09-23": 43.65,
    "2026-09-24": 43.19,
    "2026-09-25": 43.3,
-   "2026-09-28": 43.02
+   "2026-09-28": 43.02,
+   "2026-09-29": 43.64
   },
   "PCRX": {
    "2026-09-21": 24.11,
@@ -1394,7 +1609,8 @@
    "2026-09-23": 24.63,
    "2026-09-24": 25.56,
    "2026-09-25": 25.12,
-   "2026-09-28": 25.39
+   "2026-09-28": 25.39,
+   "2026-09-29": 25.65
   },
   "BWA": {
    "2026-09-21": 63.32,
@@ -1402,7 +1618,8 @@
    "2026-09-23": 60.55,
    "2026-09-24": 58.48,
    "2026-09-25": 61.32,
-   "2026-09-28": 61.07
+   "2026-09-28": 61.07,
+   "2026-09-29": 60.94
   },
   "COLL": {
    "2026-09-21": 23.04,
@@ -1410,13 +1627,15 @@
    "2026-09-23": 22.45,
    "2026-09-24": 22.64,
    "2026-09-25": 22.53,
-   "2026-09-28": 22.63
+   "2026-09-28": 22.63,
+   "2026-09-29": 22.23
   },
   "MD": {
    "2026-09-22": 26.35,
    "2026-09-24": 25.66,
    "2026-09-25": 26.31,
-   "2026-09-28": 25.93
+   "2026-09-28": 25.93,
+   "2026-09-29": 26.06
   }
  }
 }
