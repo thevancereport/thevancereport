@@ -57,6 +57,11 @@ card = tr.scorecard(history, spy, {"AAA": 1}, "2026-09-23",
 rows = {r["symbol"]: r for r in card["companies"]}
 near("a name that fell out of the universe is still measured", rows["DDD"]["return_pct"], -50.0)
 check("and the fall counts in the average", card["summary"]["measured"], 3)
+gap = {"sessions": history["sessions"],
+       "entries": {"EEE": {"entered": "2026-09-21", "entry_rank": 5, "name": "EEE", "sector": "Z"}},
+       "prices": {"EEE": {"2026-09-21": 9.0, "2026-09-23": 10.0}}}
+row = tr.scorecard(gap, spy, {}, "2026-09-23")["companies"][0]
+check("a gap on the next session starts at the first close we have", (row["from"], row.get("late_start")), ("2026-09-23", True))
 
 print("\nindex")
 def ranked(prices, caps=None):

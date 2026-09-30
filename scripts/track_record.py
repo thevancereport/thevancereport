@@ -157,13 +157,16 @@ def scorecard(history, spy, today_ranks, as_of, outside=None):
             row["status"] = "new"      # first tradeable close is tomorrow's
             rows.append(row)
             continue
-        start = after[0]
-        priced = sorted(d for d in p if d >= start)
-        if start not in p or not priced:
-            row["status"] = "no price"  # left the ranked universe before it could be measured
+        priced = sorted(d for d in p if d > entered)
+        if not priced:
+            row["status"] = "no price"  # never priced after it entered
             rows.append(row)
             continue
-        last = priced[-1]
+        # Normally the next session. If a data gap left that session unpriced,
+        # the first close we do have, and the row says so.
+        start, last = priced[0], priced[-1]
+        if start != after[0]:
+            row["late_start"] = True
         row.update({
             "from": start, "from_price": p[start],
             "to": last, "to_price": p[last],
