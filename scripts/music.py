@@ -3,13 +3,14 @@
 Lay a music bed under a finished, narrated video, in place.
 
     python3 scripts/music.py build/briefing.mp4 --date 2026-10-01
-    python3 scripts/music.py build/short.mp4    --date 2026-10-01
+    python3 scripts/music.py build/short.mp4    --date 2026-10-01 --slot 1
 
 The tracks are the files in assets/music/ (mp3, m4a, wav, ogg). Only put music
 there that is licensed for use in monetised videos with no attribution, such
 as YouTube Audio Library tracks marked "Attribution not required", or Content
-ID will claim the videos. The track rotates by date, so each weeknight uses
-the next one.
+ID will claim the videos. The track rotates by date, and --slot offsets it,
+so the full video (slot 0) and the short (slot 1) use different tracks and
+swap them each night.
 
 The bed is levelled to sit well under the voice, ducks further whenever the
 voice speaks, fades in and out, and loops if the video is longer than the
@@ -36,8 +37,8 @@ def seconds(p: Path) -> float:
     return float(r.stdout.strip() or 0)
 
 
-def pick(tracks: list[Path], date: str) -> Path:
-    n = dt.date.fromisoformat(date).toordinal()
+def pick(tracks: list[Path], date: str, slot: int = 0) -> Path:
+    n = dt.date.fromisoformat(date).toordinal() + slot
     return tracks[n % len(tracks)]
 
 
@@ -46,6 +47,7 @@ def main() -> int:
     ap.add_argument("video")
     ap.add_argument("--date", default=dt.date.today().isoformat())
     ap.add_argument("--dir", default=str(ROOT / "assets" / "music"))
+    ap.add_argument("--slot", type=int, default=0, help="0 for the full video, 1 for the short")
     a = ap.parse_args()
     video = Path(a.video)
     if not video.exists():
@@ -56,7 +58,7 @@ def main() -> int:
     if not tracks:
         print(f"no music in {folder}; {video.name} goes out without a bed")
         return 0
-    track = pick(tracks, a.date)
+    track = pick(tracks, a.date, a.slot)
     total = seconds(video)
     if total <= 0:
         sys.exit(f"could not read the length of {video}")
