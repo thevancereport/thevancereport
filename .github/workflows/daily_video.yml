@@ -175,3 +175,53 @@ jobs:
             sleep 10
           done
           echo "::error::couldn't push after three tries"; exit 1
+
+      # The vertical short for Instagram, from the same screen file and voice.
+      # A problem here never holds up the note, the video or the site.
+      - name: Build the vertical short
+        if: steps.check.outputs.go == 'yes'
+        continue-on-error: true
+        env:
+          PIPER_VOICE: voice/en_US-ryan-high.onnx
+          FONT_DIR: build-fonts
+        run: |
+          set -eo pipefail
+          python3 scripts/top5_short.py --out build
+          python3 -c "import json; m=json.load(open('build/short.json')); assert m['narrated'], 'short built without narration'"
+          python3 -c "import json; m=json.load(open('build/short.json')); print('Short: %.0f seconds, vertical' % m['duration_seconds'])" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: steps.check.outputs.go == 'yes'
+        continue-on-error: true
+        with:
+          name: short-${{ steps.check.outputs.as_of }}
+          path: build/short.mp4
+          retention-days: 14
+          if-no-files-found: ignore
+
+      # Facebook gets the full video, Instagram the short as a Reel. If either
+      # file is missing it falls back to a link post and the thumbnail picture.
+      # social.json remembers what went out, so a re-run never posts twice.
+      - name: Post to Facebook and Instagram
+        if: steps.check.outputs.go == 'yes'
+        continue-on-error: true
+        env:
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+        run: |
+          set -eo pipefail
+          REEL=""
+          if [ -f build/short.json ] && python3 -c "import json,sys; sys.exit(0 if json.load(open('build/short.json'))['narrated'] else 1)"; then
+            REEL="--reel build/short.mp4"
+          fi
+          git pull --rebase origin main || true
+          python3 scripts/social_post.py --video build/briefing.mp4 $REEL
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- social.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "nothing to record"; exit 0; fi
+          git commit -m "Social posts recorded"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 10
+          done
+          echo "::error::couldn't push social.json after three tries"; exit 1
