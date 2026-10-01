@@ -108,4 +108,10 @@
     <changefreq>never</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://thevancereport.com/top-five-2026-09-30.html</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>never</changefreq>
+    <priority>0.6</priority>
+  </url>
 </urlset>
