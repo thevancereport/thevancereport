@@ -20,6 +20,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -121,7 +122,13 @@ def main():
     if a.dry_run:
         return 0
 
-    token = os.environ.get("META_PAGE_TOKEN", "").strip()
+    # The secret may have been pasted with extra text around the token (quotes,
+    # a label, the Page ID). Meta tokens are one unbroken run starting "EAA".
+    raw = os.environ.get("META_PAGE_TOKEN", "")
+    m = re.search(r"EAA[A-Za-z0-9]{20,}", raw)
+    token = m.group(0) if m else raw.strip()
+    if raw.strip() and m and token != raw.strip():
+        print("::notice::META_PAGE_TOKEN had extra text around the token; using the token alone.")
     if not token:
         print("::notice::META_PAGE_TOKEN is not set; nothing posted.")
         return 0
