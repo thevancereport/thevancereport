@@ -1,18 +1,18 @@
 {
  "_about": "Every company that has reached the screen's top ten, measured from the close of the session after it got there (the first price a reader could have had), against the S&P 500 over the same days. Closing prices, dividends not included. Written by scripts/track_record.py after each screen. Past results do not predict future ones.",
- "as_of": "2026-09-29",
+ "as_of": "2026-09-30",
  "first_session": "2026-09-21",
  "summary": {
-  "companies": 11,
-  "measured": 10,
-  "up": 5,
+  "companies": 16,
+  "measured": 11,
+  "up": 6,
   "down": 5,
-  "average_pct": 0.45,
-  "median_pct": -0.08,
-  "average_vs_spy_pct": 1.64,
+  "average_pct": 0.35,
+  "median_pct": 0.27,
+  "average_vs_spy_pct": 1.67,
   "beat_spy": 6,
   "best": "CRCT",
-  "worst": "PGNY"
+  "worst": "COLL"
  },
  "companies": [
   {
@@ -21,15 +21,15 @@
    "sector": "Consumer Services",
    "entered": "2026-09-21",
    "entry_rank": 1,
-   "rank_now": 1,
+   "rank_now": 3,
    "from": "2026-09-22",
    "from_price": 18.96,
-   "to": "2026-09-29",
-   "to_price": 18.28,
-   "return_pct": -3.59,
-   "spy_pct": -1.19,
+   "to": "2026-09-30",
+   "to_price": 18.5,
+   "return_pct": -2.43,
+   "spy_pct": -1.39,
    "status": "tracked",
-   "vs_spy_pct": -2.4
+   "vs_spy_pct": -1.04
   },
   {
    "symbol": "NRDS",
@@ -40,12 +40,12 @@
    "rank_now": 2,
    "from": "2026-09-22",
    "from_price": 8.53,
-   "to": "2026-09-29",
-   "to_price": 8.54,
-   "return_pct": 0.12,
-   "spy_pct": -1.19,
+   "to": "2026-09-30",
+   "to_price": 8.78,
+   "return_pct": 2.93,
+   "spy_pct": -1.39,
    "status": "tracked",
-   "vs_spy_pct": 1.31
+   "vs_spy_pct": 4.32
   },
   {
    "symbol": "CRCT",
@@ -53,15 +53,15 @@
    "sector": "Industrials",
    "entered": "2026-09-21",
    "entry_rank": 3,
-   "rank_now": 3,
+   "rank_now": 1,
    "from": "2026-09-22",
    "from_price": 5.81,
-   "to": "2026-09-29",
-   "to_price": 6.41,
-   "return_pct": 10.33,
-   "spy_pct": -1.19,
+   "to": "2026-09-30",
+   "to_price": 6.38,
+   "return_pct": 9.81,
+   "spy_pct": -1.39,
    "status": "tracked",
-   "vs_spy_pct": 11.52
+   "vs_spy_pct": 11.2
   },
   {
    "symbol": "CRL",
@@ -69,15 +69,15 @@
    "sector": "Biotech & Pharma",
    "entered": "2026-09-21",
    "entry_rank": 4,
-   "rank_now": 4,
+   "rank_now": 20,
    "from": "2026-09-22",
    "from_price": 285.11,
-   "to": "2026-09-29",
-   "to_price": 295.96,
-   "return_pct": 3.81,
-   "spy_pct": -1.19,
+   "to": "2026-09-30",
+   "to_price": 295.01,
+   "return_pct": 3.47,
+   "spy_pct": -1.39,
    "status": "tracked",
-   "vs_spy_pct": 5.0
+   "vs_spy_pct": 4.86
   },
   {
    "symbol": "NUTX",
@@ -85,15 +85,15 @@
    "sector": "Business Services",
    "entered": "2026-09-21",
    "entry_rank": 5,
-   "rank_now": 8,
+   "rank_now": 7,
    "from": "2026-09-22",
    "from_price": 208.82,
-   "to": "2026-09-29",
-   "to_price": 210.1,
-   "return_pct": 0.61,
-   "spy_pct": -1.19,
+   "to": "2026-09-30",
+   "to_price": 211.66,
+   "return_pct": 1.36,
+   "spy_pct": -1.39,
    "status": "tracked",
-   "vs_spy_pct": 1.8
+   "vs_spy_pct": 2.75
   },
   {
    "symbol": "PGNY",
@@ -101,15 +101,15 @@
    "sector": "Healthcare Services",
    "entered": "2026-09-21",
    "entry_rank": 6,
-   "rank_now": 5,
+   "rank_now": 4,
    "from": "2026-09-22",
    "from_price": 26.24,
-   "to": "2026-09-29",
-   "to_price": 24.79,
-   "return_pct": -5.53,
-   "spy_pct": -1.19,
+   "to": "2026-09-30",
+   "to_price": 25.19,
+   "return_pct": -4.0,
+   "spy_pct": -1.39,
    "status": "tracked",
-   "vs_spy_pct": -4.34
+   "vs_spy_pct": -2.61
   },
   {
    "symbol": "FE",
@@ -117,15 +117,15 @@
    "sector": "Utilities",
    "entered": "2026-09-21",
    "entry_rank": 7,
-   "rank_now": 9,
+   "rank_now": 193,
    "from": "2026-09-22",
    "from_price": 44.73,
-   "to": "2026-09-29",
-   "to_price": 43.64,
-   "return_pct": -2.44,
-   "spy_pct": -1.19,
+   "to": "2026-09-30",
+   "to_price": 43.33,
+   "return_pct": -3.13,
+   "spy_pct": -1.39,
    "status": "tracked",
-   "vs_spy_pct": -1.25
+   "vs_spy_pct": -1.74
   },
   {
    "symbol": "PCRX",
@@ -133,15 +133,15 @@
    "sector": "Biotech & Pharma",
    "entered": "2026-09-21",
    "entry_rank": 8,
-   "rank_now": 6,
+   "rank_now": 12,
    "from": "2026-09-22",
    "from_price": 24.7,
-   "to": "2026-09-29",
-   "to_price": 25.65,
-   "return_pct": 3.85,
-   "spy_pct": -1.19,
+   "to": "2026-09-30",
+   "to_price": 25.05,
+   "return_pct": 1.42,
+   "spy_pct": -1.39,
    "status": "tracked",
-   "vs_spy_pct": 5.04
+   "vs_spy_pct": 2.81
   },
   {
    "symbol": "BWA",
@@ -149,15 +149,15 @@
    "sector": "Autos & Transport Equipment",
    "entered": "2026-09-21",
    "entry_rank": 9,
-   "rank_now": 7,
+   "rank_now": 40,
    "from": "2026-09-22",
    "from_price": 61.11,
-   "to": "2026-09-29",
-   "to_price": 60.94,
-   "return_pct": -0.28,
-   "spy_pct": -1.19,
+   "to": "2026-09-30",
+   "to_price": 60.11,
+   "return_pct": -1.64,
+   "spy_pct": -1.39,
    "status": "tracked",
-   "vs_spy_pct": 0.91
+   "vs_spy_pct": -0.25
   },
   {
    "symbol": "COLL",
@@ -165,15 +165,15 @@
    "sector": "Biotech & Pharma",
    "entered": "2026-09-21",
    "entry_rank": 10,
-   "rank_now": 12,
+   "rank_now": 18,
    "from": "2026-09-22",
    "from_price": 22.78,
-   "to": "2026-09-29",
-   "to_price": 22.23,
-   "return_pct": -2.41,
-   "spy_pct": -1.19,
+   "to": "2026-09-30",
+   "to_price": 21.82,
+   "return_pct": -4.21,
+   "spy_pct": -1.39,
    "status": "tracked",
-   "vs_spy_pct": -1.22
+   "vs_spy_pct": -2.82
   },
   {
    "symbol": "MD",
@@ -181,8 +181,61 @@
    "sector": "Healthcare Services",
    "entered": "2026-09-22",
    "entry_rank": 10,
+   "rank_now": 28,
+   "late_start": true,
+   "from": "2026-09-24",
+   "from_price": 25.66,
+   "to": "2026-09-30",
+   "to_price": 25.73,
+   "return_pct": 0.27,
+   "spy_pct": -0.59,
+   "status": "tracked",
+   "vs_spy_pct": 0.86
+  },
+  {
+   "symbol": "CWCO",
+   "name": "Consolidated Water",
+   "sector": "Utilities",
+   "entered": "2026-09-30",
+   "entry_rank": 5,
+   "rank_now": 5,
+   "status": "new"
+  },
+  {
+   "symbol": "COLM",
+   "name": "Columbia Sportswear",
+   "sector": "Textiles & Apparel",
+   "entered": "2026-09-30",
+   "entry_rank": 6,
+   "rank_now": 6,
+   "status": "new"
+  },
+  {
+   "symbol": "CART",
+   "name": "Maplebear",
+   "sector": "Business Services",
+   "entered": "2026-09-30",
+   "entry_rank": 8,
+   "rank_now": 8,
+   "status": "new"
+  },
+  {
+   "symbol": "USLM",
+   "name": "United States Lime & Minerals",
+   "sector": "Metals & Mining",
+   "entered": "2026-09-30",
+   "entry_rank": 9,
+   "rank_now": 9,
+   "status": "new"
+  },
+  {
+   "symbol": "GNTX",
+   "name": "Gentex",
+   "sector": "Autos & Transport Equipment",
+   "entered": "2026-09-30",
+   "entry_rank": 10,
    "rank_now": 10,
-   "status": "no price"
+   "status": "new"
   }
  ]
 }
