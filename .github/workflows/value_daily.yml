@@ -71,7 +71,14 @@ jobs:
     timeout-minutes: 120
 
     steps:
+      # ref: main, not the commit the schedule fired on. A rung that waited in
+      # the concurrency group behind a slow earlier rung would otherwise check
+      # out the repository as it was before that rung published, miss the
+      # guard below, rank the whole evening again and then fail to push
+      # (30 Sep 2026, run #36; also #25 and #30).
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
@@ -250,6 +257,24 @@ jobs:
           name: value-screen
           path: value_screen.json
           if-no-files-found: warn
+
+      # Anything else that reached main during the run (a note, a social
+      # post record) is brought in first, so the push below is a fast-forward.
+      # If main changed the screen files themselves, the pop fails and the run
+      # stops rather than overwrite them.
+      - name: Catch up with main
+        if: ${{ steps.guard.outputs.run == 'true' && steps.settled.outputs.run == 'true' && inputs.commit != 'false' }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- value_screen.json screen_history.json; then
+            git pull --ff-only origin main
+          else
+            git stash push -- value_screen.json screen_history.json
+            git pull --ff-only origin main
+            git stash pop
+          fi
 
       - name: Commit it
         if: ${{ steps.guard.outputs.run == 'true' && steps.settled.outputs.run == 'true' && inputs.commit != 'false' }}
