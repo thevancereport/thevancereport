@@ -1,0 +1,137 @@
+name: Backfill a note
+
+# Writes the top-five note for an earlier night that never got one, from the
+# screen file exactly as it stood that night. It goes into Field Notes in date
+# order with a line saying it was published late, and the home-page box
+# (top5.json) is left alone. Run it by hand with the date, e.g. 2026-09-24.
+# Then run "Backfill a video" for the same date if the note should have one.
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Screen date to write the note for (YYYY-MM-DD)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-video
+  cancel-in-progress: false
+
+jobs:
+  note:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build the note from that night's screen
+        env:
+          DAY: ${{ inputs.date }}
+        run: |
+          set -eo pipefail
+          python3 - <<'PY'
+          import datetime as dt, json, os, re, shutil, subprocess, sys, zoneinfo
+          from pathlib import Path
+          day = os.environ["DAY"].strip()
+          if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day):
+              sys.exit(f"'{day}' is not a date like 2026-09-24")
+          page = f"top-five-{day}.html"
+          if Path(page).exists():
+              sys.exit(f"{page} already exists; nothing to do")
+
+          # the last version of the screen written for that date
+          commits = subprocess.run(["git", "log", "--format=%H", "--", "value_screen.json"],
+                                   capture_output=True, text=True, check=True).stdout.split()
+          for c in commits:
+              try:
+                  vs = subprocess.run(["git", "show", f"{c}:value_screen.json"], capture_output=True, text=True, check=True).stdout
+                  if json.loads(vs)["_meta"]["as_of"] == day:
+                      break
+              except Exception:
+                  continue
+          else:
+              sys.exit(f"no version of value_screen.json is for {day}")
+          print(f"using value_screen.json from {c[:7]}")
+
+          snap = Path("snap"); snap.mkdir()
+          (snap / "value_screen.json").write_text(vs, encoding="utf-8")
+          h = subprocess.run(["git", "show", f"{c}:screen_history.json"], capture_output=True, text=True)
+          if h.returncode == 0:
+              (snap / "screen_history.json").write_text(h.stdout, encoding="utf-8")
+          for f in Path(".").glob("top-five-*.html"):
+              shutil.copy(f, snap / f.name)
+          for f in ("blog.html", "sitemap.xml", "top5.json"):
+              shutil.copy(f, snap / f)
+
+          published = dt.datetime.now(zoneinfo.ZoneInfo("America/Chicago")).date().isoformat()
+          subprocess.run([sys.executable, "scripts/top5_note.py", "--root", str(snap), "--published", published], check=True)
+
+          # the note itself, with a line saying it is late
+          note = (snap / page).read_text(encoding="utf-8")
+          def long(iso):
+              d = dt.date.fromisoformat(iso)
+              return f"{d.day} {d.strftime('%B %Y')}"
+          late = (f'<p class="note-late"><em>Published late, on {long(published)}. The ranking and every price '
+                  f'below are as of the close of {long(day)}, exactly as the screen produced them that night.</em></p>\n')
+          mark = '<div class="prose">'
+          if mark in note:
+              i = note.index(mark) + len(mark)
+              note = note[:i] + "\n" + late + note[i:].lstrip("\n")
+          Path(page).write_text(note, encoding="utf-8")
+
+          # Field Notes: the entry goes where its date belongs, not at the top
+          made = (snap / "blog.html").read_text(encoding="utf-8")
+          a = made.index('<ul class="post-list">') + len('<ul class="post-list">')
+          li_start = made.index("<li>", a)
+          li_end = made.index("</li>", li_start) + len("</li>")
+          ls = made.rfind("\n", 0, li_start) + 1
+          entry = made[ls:li_end]
+          blog = Path("blog.html").read_text(encoding="utf-8")
+          if f'href="{page}"' not in blog:
+              lst = blog.index('<ul class="post-list">')
+              end = blog.index("</ul>", lst)
+              pos = None
+              for m in re.finditer(r'(?m)^[ \t]*<li>\s*<a class="post-item" href="top-five-(\d{4}-\d{2}-\d{2})\.html"', blog[lst:end]):
+                  if m.group(1) < day:
+                      pos = lst + m.start()
+                      break
+              if pos is None:
+                  pos = end
+                  entry = entry + "\n"
+                  blog = blog[:pos] + entry + blog[pos:]
+              else:
+                  blog = blog[:pos] + entry + "\n" + blog[pos:]
+              count = blog[lst:blog.index("</ul>", lst)].count("<li")
+              blog = re.sub(r"(<dt>\s*Published\s*</dt>\s*<dd>)[^<]*(</dd>)",
+                            rf"\g<1>{count} {'note' if count == 1 else 'notes'}\g<2>", blog, count=1)
+              Path("blog.html").write_text(blog, encoding="utf-8")
+
+          shutil.copy(snap / "sitemap.xml", "sitemap.xml")
+          shutil.rmtree(snap)
+          print(f"wrote {page}, published {published}")
+          PY
+
+      - name: Commit
+        run: |
+          set -eo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "top-five-${{ inputs.date }}.html" blog.html sitemap.xml
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "The five at the top, ${{ inputs.date }} (published late)"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && { echo "Published https://thevancereport.com/top-five-${{ inputs.date }}.html" >> "$GITHUB_STEP_SUMMARY"; exit 0; }
+            sleep 10
+          done
+          echo "::error::couldn't push after three tries"; exit 1
