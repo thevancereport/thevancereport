@@ -48,6 +48,23 @@ INSTANT_TAGS = {
     "LongTermDebtNoncurrent": "lt_debt",
     "LongTermDebtCurrent": "st_debt",
     "ShortTermBorrowings": "st_borrow",
+    # Companies label the same borrowing in different ways. Reading only the
+    # three tags above scored a company that files its bonds under, say,
+    # LongTermDebtAndCapitalLeaseObligations as debt-free (Charles River,
+    # Pediatrix, FirstEnergy, ...). These are the other common ways to say it;
+    # figures_for() takes the largest complete reading, so one tag never gets
+    # added to another tag that already contains it. (Fixed 30 Sep 2026.)
+    "LongTermDebt": "debt_lt_total",
+    "LongTermDebtAndCapitalLeaseObligations": "debt_lt_cl",
+    "LongTermDebtAndCapitalLeaseObligationsCurrent": "debt_st_cl",
+    "LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities": "debt_cl_total",
+    "DebtLongtermAndShorttermCombinedAmount": "debt_combined",
+    "LongTermLineOfCredit": "debt_loc",
+    "ConvertibleLongTermNotesPayable": "debt_convertible",
+    "ConvertibleNotesPayable": "debt_convertible_alt",
+    "SeniorNotes": "debt_senior_notes",
+    "LongTermNotesPayable": "debt_notes",
+    "CommercialPaper": "debt_cp",
     "EntityCommonStockSharesOutstanding": "shares",
     "CommonStockSharesOutstanding": "shares_alt",
 }
@@ -65,6 +82,13 @@ DURATION_TAGS = {
     "PaymentsForRepurchaseOfCommonStock": "buybacks",
     "PaymentsOfDividendsCommonStock": "dividends",
     "InterestExpense": "interest_expense",
+    # Same problem as debt: many filers report interest under one of these
+    # instead, and a missing interest figure used to read as "no interest
+    # cost at all". (Fixed 30 Sep 2026.)
+    "InterestExpenseNonoperating": "interest_expense_nonop",
+    "InterestExpenseDebt": "interest_expense_debt",
+    "InterestAndDebtExpense": "interest_and_debt_expense",
+    "InterestPaidNet": "interest_paid",
 }
 
 WANTED = set(INSTANT_TAGS) | set(DURATION_TAGS)
@@ -222,6 +246,85 @@ def ttm(series, on, max_stale_days=420):
     return None
 
 
+def latest_dated(series, on):
+    """Like latest_instant, but also says which balance-sheet date it is from."""
+    best = None
+    for filed, ddate, qtrs, value in series or ():
+        if filed > on:
+            continue
+        if best is None or ddate > best[1] or (ddate == best[1] and filed < best[0]):
+            best = (filed, ddate, qtrs, value)
+    return None if best is None else (best[1], best[3])
+
+
+# Long-term debt can be reported as a total, or as a non-current part plus a
+# current part, under several names. Each tuple is one complete way of saying
+# it; the parts inside a tuple are added, the tuples are alternatives.
+LONG_DEBT_READINGS = (
+    ("lt_debt", "st_debt"),
+    ("debt_lt_total",),
+    ("debt_lt_cl", "debt_st_cl"),
+    ("debt_cl_total",),
+    ("debt_convertible",),
+    ("debt_convertible_alt",),
+    ("debt_senior_notes",),
+    ("debt_notes",),
+    ("debt_loc",),
+)
+SHORT_DEBT_FIELDS = ("st_borrow", "debt_cp")
+
+# A figure only counts if it is from the same balance sheet as the company's
+# latest one. A tag the company stopped using years ago must not come back.
+DEBT_MAX_LAG_DAYS = 120
+
+
+def total_debt(f, on):
+    """Total borrowings at `on`, or None if the company reports none at all.
+
+    Takes the largest complete reading rather than adding every tag, because
+    the tags overlap: LongTermDebt already contains LongTermDebtCurrent, and
+    adding both would count the same bonds twice.
+    """
+    dated = {}
+    for fields in LONG_DEBT_READINGS + (SHORT_DEBT_FIELDS, ("debt_combined",)):
+        for field in fields:
+            hit = latest_dated(f.get(field), on)
+            if hit is not None:
+                dated[field] = hit
+    if not dated:
+        return None
+    ref = latest_dated(f.get("assets"), on)
+    newest = max(d for d, _v in dated.values())
+    anchor = ref[0] if ref is not None and ref[0] > newest else newest
+    fresh = {k: v for k, (d, v) in dated.items()
+             if (anchor - d).days <= DEBT_MAX_LAG_DAYS}
+    if not fresh:
+        return None
+    long_part = max((sum(fresh[k] for k in reading if k in fresh)
+                     for reading in LONG_DEBT_READINGS
+                     if any(k in fresh for k in reading)), default=0.0)
+    short_part = sum(fresh[k] for k in SHORT_DEBT_FIELDS if k in fresh)
+    # some filers give one all-in figure; it can stand in for the sum
+    return max(long_part + short_part, fresh.get("debt_combined", 0.0))
+
+
+INTEREST_FIELDS = ("interest_expense", "interest_expense_nonop",
+                   "interest_expense_debt", "interest_and_debt_expense")
+
+
+def interest_expense(f, on):
+    """Interest cost over the trailing year, whichever tag the company uses.
+
+    The largest current reading wins: the tags overlap rather than add up.
+    Cash interest paid is the last resort, used only when nothing else is
+    reported, because it is a close cousin of the expense, not the same thing.
+    """
+    vals = [v for v in (ttm(f.get(k), on) for k in INTEREST_FIELDS) if v is not None]
+    if vals:
+        return max(vals)
+    return ttm(f.get("interest_paid"), on)
+
+
 def figures_for(cik, facts, on):
     """Everything value_core needs for one company at one date, or None."""
     f = facts.get(cik)
@@ -238,18 +341,12 @@ def figures_for(cik, facts, on):
         shares = latest_instant(f.get("shares_alt"), on)
     g["shares"] = shares
 
-    debt = 0.0
-    seen_debt = False
-    for field in ("lt_debt", "st_debt", "st_borrow"):
-        v = latest_instant(f.get(field), on)
-        if v is not None:
-            debt += v
-            seen_debt = True
-    g["total_debt"] = debt if seen_debt else None
+    g["total_debt"] = total_debt(f, on)
 
     for field in ("gross_profit", "ebit", "net_income", "dda", "cfo", "capex",
-                  "buybacks", "dividends", "interest_expense"):
+                  "buybacks", "dividends"):
         g[field] = ttm(f.get(field), on)
+    g["interest_expense"] = interest_expense(f, on)
 
     rev = ttm(f.get("revenue"), on)
     if rev is None:

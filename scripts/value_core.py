@@ -299,6 +299,10 @@ def compute_metrics(f):
     interest = _num(f.get("interest_expense"))
     if ebit is None:
         out["interest_cover"] = MISSING
+    elif interest is None and (debt or 0.0) > 0:
+        # Borrowings on the books but no interest figure found: the cost is
+        # unknown, not zero, so it is not scored as free. (Fixed 30 Sep 2026.)
+        out["interest_cover"] = MISSING
     elif interest is None or interest <= 0:
         out["interest_cover"] = 1000.0 if ebit > 0 else INVALID   # no debt cost
     else:
