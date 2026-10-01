@@ -4,15 +4,21 @@ Runs at the end of the Daily video job, once the note and the video are
 public. One post per platform per screen date: social.json remembers what was
 posted, so a re-run never posts twice.
 
-Facebook gets the text and a link to the note (Facebook draws the preview card
-from the page's own tags). Instagram must have a picture and cannot hold a
-clickable link, so it gets the video's thumbnail and "link in bio".
+Facebook gets the text and a link to the note. Instagram cannot hold a
+clickable link, so it says "link in bio".
+
+In the nightly job the videos are on hand, so:
+  --video build/briefing.mp4   Facebook gets the full video, uploaded to the Page
+  --reel  build/short.mp4      Instagram gets the vertical short as a Reel
+Without them (a run by hand) Facebook gets a link post and Instagram the
+YouTube thumbnail as a picture.
 
 Needs the repository secret META_PAGE_TOKEN: a Page token for the Arden K. Vance
 Page, made from an extended user token, so it does not expire. Without it the
 step says so and does nothing.
 
   python3 scripts/social_post.py            # post, if not already posted
+  python3 scripts/social_post.py --video build/briefing.mp4 --reel build/short.mp4
   python3 scripts/social_post.py --dry-run  # print what would be posted
 """
 
@@ -56,7 +62,7 @@ def compose(t5, dv):
     title = (dv or {}).get("title") or ""
     names = title.split(": ", 1)[1] if ": " in title and (dv or {}).get("date") == day else \
         ", ".join(n["symbol"] for n in t5.get("names", []))
-    head = f"The five at the top, {long_date(day)}: {names}."
+    head = f"The five at the top, {long_date(day)}: {names.rstrip('.')}."
     blurb = (t5.get("blurb") or "").strip()
     fb = "\n\n".join(x for x in [head, blurb, f"The note and the video: {url}", NOT_ADVICE] if x)
     ig = "\n\n".join(x for x in [head, blurb,
@@ -84,6 +90,46 @@ def call(method, path, params, token):
         raise RuntimeError(f"{path}: HTTP {e.code}: {msg[:300]}") from None
 
 
+def fb_video(path, text, title, token):
+    """Upload a video file to the Page. Returns the video id."""
+    import requests  # only the nightly job (which has it) posts video
+    with open(path, "rb") as fh:
+        r = requests.post(f"https://graph-video.facebook.com/v23.0/{PAGE_ID}/videos", timeout=900,
+                          data={"description": text, "title": title, "access_token": token},
+                          files={"source": (Path(path).name, fh, "video/mp4")})
+    if r.status_code != 200:
+        raise RuntimeError(f"video upload: HTTP {r.status_code}: {r.text[:300]}")
+    return r.json().get("id")
+
+
+def ig_reel(path, caption, token):
+    """Upload a vertical video as a Reel: make the container, send the file,
+    wait for Instagram to process it, publish. Returns the media id."""
+    import requests
+    c = call("POST", f"{IG_ID}/media", {"media_type": "REELS", "upload_type": "resumable",
+                                         "caption": caption, "share_to_feed": "true"}, token)
+    cid = c["id"]
+    size = os.path.getsize(path)
+    with open(path, "rb") as fh:
+        r = requests.post(f"https://rupload.facebook.com/ig-api-upload/v23.0/{cid}", timeout=900, data=fh,
+                          headers={"Authorization": f"OAuth {token}", "offset": "0", "file_size": str(size)})
+    if r.status_code != 200:
+        raise RuntimeError(f"reel upload: HTTP {r.status_code}: {r.text[:300]}")
+    wait_ready(cid, token, tries=60, every=10)
+    return call("POST", f"{IG_ID}/media_publish", {"creation_id": cid}, token).get("id")
+
+
+def wait_ready(cid, token, tries=20, every=6):
+    for _ in range(tries):
+        s = call("GET", cid, {"fields": "status_code,status"}, token)
+        if s.get("status_code") == "FINISHED":
+            return
+        if s.get("status_code") in ("ERROR", "EXPIRED"):
+            raise RuntimeError(f"Instagram could not process it: {s.get('status') or s.get('status_code')}")
+        time.sleep(every)
+    raise RuntimeError("Instagram was still processing it after the wait")
+
+
 def thumb_url(video_id):
     """A JPEG Instagram can fetch. YouTube's largest frame, else the standard one."""
     for name in ("maxresdefault.jpg", "hqdefault.jpg"):
@@ -101,6 +147,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--root", default=str(ROOT))
+    ap.add_argument("--video", help="the full video, for the Facebook Page")
+    ap.add_argument("--reel", help="the vertical short, for Instagram")
     a = ap.parse_args()
     root = Path(a.root)
 
@@ -118,7 +166,10 @@ def main():
     state = load(state_p, {}) or {}
     done = state.get(day, {})
 
-    print("FACEBOOK:\n" + fb_text + "\n\nINSTAGRAM (image " + (image or "none") + "):\n" + ig_text + "\n")
+    fb_video_file = a.video if a.video and Path(a.video).exists() else None
+    reel_file = a.reel if a.reel and Path(a.reel).exists() else None
+    print("FACEBOOK (" + ("video " + fb_video_file if fb_video_file else "link post") + "):\n" + fb_text +
+          "\n\nINSTAGRAM (" + ("reel " + reel_file if reel_file else "image " + (image or "none")) + "):\n" + ig_text + "\n")
     if a.dry_run:
         return 0
 
@@ -135,30 +186,40 @@ def main():
 
     problems = []
     if not done.get("facebook"):
-        try:
-            r = call("POST", f"{PAGE_ID}/feed", {"message": fb_text, "link": url}, token)
-            done["facebook"] = r.get("id")
-            print("Facebook post:", done["facebook"])
-        except Exception as e:  # noqa: BLE001
-            problems.append(f"Facebook: {e}")
+        if fb_video_file:
+            try:
+                title = (dv.get("title") if dv.get("date") == day else None) or f"The five at the top, {long_date(day)}"
+                text = fb_text.replace("The note and the video: ", "The full note, with every figure: ")
+                done["facebook"] = fb_video(fb_video_file, text, title[:250], token)
+                done["facebook_kind"] = "video"
+                print("Facebook video:", done["facebook"])
+            except Exception as e:  # noqa: BLE001
+                problems.append(f"Facebook video: {e}; posting the link instead")
+        if not done.get("facebook"):
+            try:
+                r = call("POST", f"{PAGE_ID}/feed", {"message": fb_text, "link": url}, token)
+                done["facebook"] = r.get("id")
+                print("Facebook post:", done["facebook"])
+            except Exception as e:  # noqa: BLE001
+                problems.append(f"Facebook: {e}")
     else:
         print("Facebook already posted for", day)
 
     if not done.get("instagram"):
-        if not image:
+        if reel_file:
+            try:
+                done["instagram"] = ig_reel(reel_file, ig_text, token)
+                done["instagram_kind"] = "reel"
+                print("Instagram reel:", done["instagram"])
+            except Exception as e:  # noqa: BLE001
+                problems.append(f"Instagram reel: {e}; posting the picture instead")
+        if not done.get("instagram") and not image:
             problems.append("Instagram: no video thumbnail yet, so nothing to post (Instagram needs a picture)")
-        else:
+        elif not done.get("instagram"):
             try:
                 c = call("POST", f"{IG_ID}/media", {"image_url": image, "caption": ig_text}, token)
-                cid = c["id"]
-                for _ in range(20):           # Instagram fetches the picture first
-                    s = call("GET", cid, {"fields": "status_code"}, token)
-                    if s.get("status_code") == "FINISHED":
-                        break
-                    if s.get("status_code") == "ERROR":
-                        raise RuntimeError("Instagram could not process the picture")
-                    time.sleep(6)
-                r = call("POST", f"{IG_ID}/media_publish", {"creation_id": cid}, token)
+                wait_ready(c["id"], token)    # Instagram fetches the picture first
+                r = call("POST", f"{IG_ID}/media_publish", {"creation_id": c["id"]}, token)
                 done["instagram"] = r.get("id")
                 print("Instagram post:", done["instagram"])
             except Exception as e:  # noqa: BLE001
