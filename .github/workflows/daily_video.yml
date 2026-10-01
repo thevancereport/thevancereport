@@ -132,8 +132,8 @@ jobs:
           python3 -c "import sys; m=float('${MEAN:--99}'); sys.exit(0 if m > -40 else 'the video is silent or nearly silent (mean %.1f dB); not uploading' % m)"
           python3 -c "import json; m=json.load(open('build/meta.json')); print('## ' + m['title']); print(); print('Length ' + m['duration'])" >> "$GITHUB_STEP_SUMMARY"
 
-      # Music under the voice, from assets/music/ (a different track each
-      # night). With no tracks there, or if the mix fails, the video goes out
+      # Music under the voice, from assets/music/. The short (below) takes the
+      # other track, and the two swap each night. With no tracks there, or if the mix fails, the video goes out
       # as built.
       - name: Add the music bed
         if: steps.check.outputs.go == 'yes'
@@ -195,7 +195,7 @@ jobs:
         run: |
           set -eo pipefail
           python3 scripts/top5_short.py --out build
-          python3 scripts/music.py build/short.mp4 --date "${{ steps.check.outputs.as_of }}" || echo "::warning::no music on the short"
+          python3 scripts/music.py build/short.mp4 --date "${{ steps.check.outputs.as_of }}" --slot 1 || echo "::warning::no music on the short"
           python3 -c "import json; m=json.load(open('build/short.json')); assert m['narrated'], 'short built without narration'"
           python3 -c "import json; m=json.load(open('build/short.json')); print('Short: %.0f seconds, vertical' % m['duration_seconds'])" >> "$GITHUB_STEP_SUMMARY"
 
