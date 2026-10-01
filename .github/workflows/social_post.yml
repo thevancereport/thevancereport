@@ -1,0 +1,58 @@
+name: Social post
+
+# Posts the current note (top5.json) to the Facebook Page and Instagram, by
+# hand. The nightly Daily video job does the same thing on its own once the
+# note and the video are up. "Dry run" prints the posts without sending them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only show what would be posted"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-video
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Post
+        env:
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python3 scripts/social_post.py --dry-run | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            python3 scripts/social_post.py
+          fi
+
+      - name: Remember what was posted
+        if: inputs.dry_run != true
+        run: |
+          set -eo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- social.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "nothing to record"; exit 0; fi
+          git commit -m "Social posts recorded"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 10
+          done
+          echo "::error::couldn't push after three tries"; exit 1
