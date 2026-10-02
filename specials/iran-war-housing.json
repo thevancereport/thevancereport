@@ -1,0 +1,173 @@
+{
+  "_about": "A special-report video. Pushing this file builds it on GitHub (special_video.yml): narrated with the piper voice, music from assets/music, uploaded to YouTube, put on the report page, and attached to a GitHub release for download. Every figure is from the report page, which lists the sources.",
+  "slug": "iran-war-housing",
+  "page": "iran-war-housing-market.html",
+  "date": "2026-10-01",
+  "title": "The Iran War and the US Housing Market: Mortgage Rates, Opendoor, and What Recovery Looks Like",
+  "description": "Seven months after the first strikes on Iran, the 30-year mortgage rate has gone from 5.98% to 7.28%. How the war reaches American housing through oil and bond yields, the strain on Opendoor (OPEN), Lennar and the housing supply chain, and the order a recovery would come in.\n\nThe full report, with every source: https://thevancereport.com/iran-war-housing-market.html\n\nEducational research only, not investment advice. The Vance Report is not a registered investment adviser or broker-dealer. Narrated with a synthetic voice.",
+  "tags": ["Iran war", "housing market", "mortgage rates", "Opendoor", "OPEN stock", "Lennar", "homebuilders", "oil prices", "Federal Reserve", "real estate", "The Vance Report"],
+  "slides": [
+    {
+      "kind": "title",
+      "chapter": "Intro",
+      "kicker": "SPECIAL REPORT · THE VANCE REPORT",
+      "title": "The war comes home",
+      "title2": "through the mortgage rate.",
+      "sub": "The Iran war and the US housing market",
+      "say": "This is a Vance Report special. Seven months after the first strikes on Iran, the war is being felt most in American housing. In the rate on a thirty-year loan. In builders cutting prices. And in companies like Opendoor, whose business depends on homes selling quickly. In the next few minutes: how the strain travels, who is carrying it, and what a recovery would actually look like."
+    },
+    {
+      "kind": "stat",
+      "chapter": "The turn that didn't happen",
+      "kicker": "30-YEAR MORTGAGE RATE · FREDDIE MAC",
+      "big": "5.98%  →  7.28%",
+      "label": "Last week of February  →  October 1, 2026",
+      "lines": ["The first time under 6% in four years.", "Two days later, the first strikes on Iran."],
+      "say": "In the last week of February, the average thirty-year mortgage rate slipped to 5.98 percent. It was the first time in four years that a buyer could borrow for under six percent, and for an industry that had spent four years waiting, it looked like the turn. Two days later, the United States and Israel struck Iran. On October first, Freddie Mac put the same rate at 7.28 percent. Nothing about a house in Ohio or Arizona changed in between. What changed was the price of money, and the war moved it."
+    },
+    {
+      "kind": "points",
+      "chapter": "The shock",
+      "kicker": "01 · THE SHOCK",
+      "head": "Oil first, then everything priced off it.",
+      "points": [
+        ["Feb 28", "First strikes. Brent crude closes at $72.48."],
+        ["Mar 4", "Iran closes the Strait of Hormuz."],
+        ["Late April", "Brent peaks near $126."],
+        ["April · June", "A ceasefire, then a tentative deal."],
+        ["Sep 2", "Fighting resumes after a monthlong lull."],
+        ["Sep 25", "Brent at $103.64, still about 43% above where it began."]
+      ],
+      "say": "The strikes began on February twenty-eighth. On March fourth, Iran closed the Strait of Hormuz. Brent crude, which closed at seventy-two dollars and forty-eight cents on the day of the first strikes, reached about one hundred and twenty-six dollars at its peak in late April. A ceasefire in April, and a tentative agreement in June, gave markets a pause. But after a monthlong lull, the fighting resumed in early September. On September twenty-fifth, Brent stood at one hundred and three dollars, still about forty-three percent above where it began."
+    },
+    {
+      "kind": "flow",
+      "chapter": "How oil reaches a mortgage",
+      "kicker": "02 · THE CHANNEL",
+      "head": "How a barrel of oil reaches a mortgage.",
+      "steps": ["Oil", "Inflation expectations", "10-year Treasury yield", "30-year mortgage rate"],
+      "notes": ["Brent $72 → $126", "Fuel, freight, materials", "3.97% → 4.46% by Mar 27", "Runs about 2 points above the yield"],
+      "say": "Mortgage rates do not follow the Federal Reserve's overnight rate so much as the ten-year Treasury yield, and that yield moves with what investors expect inflation to do. Higher oil feeds straight into fuel, freight and building materials, so the war raised those expectations. The ten-year yield, about 3.97 percent in late February, reached 4.46 percent by late March. And all year, the mortgage rate has run about two percentage points above it. When the war eased, rates eased within days. When it flared, they rose."
+    },
+    {
+      "kind": "bars",
+      "chapter": "Rates through the war",
+      "kicker": "30-YEAR MORTGAGE RATE · FREDDIE MAC",
+      "head": "The war, in one line.",
+      "unit": "%",
+      "min": 5.5,
+      "max": 7.5,
+      "bars": [["Feb 26", 5.98, "pre-war"], ["Mar 26", 6.38, ""], ["June", 6.47, "tentative deal"], ["Sep 3", 6.71, ""], ["Sep 24", 7.03, "after Fed hike"], ["Oct 1", 7.28, ""]],
+      "say": "Here is the war in one line. Five point nine eight percent before the strikes. Six point three eight a month in. Back down to six point four seven in June, when a deal looked close. Then the fighting resumed, and on September sixteenth the Federal Reserve raised its benchmark rate by a quarter point, to a range of three and three quarters to four percent, its first increase since 2023. The mortgage rate went to seven point oh three, and then seven point two eight, close to its highest level in three years."
+    },
+    {
+      "kind": "stat",
+      "chapter": "What it costs a buyer",
+      "kicker": "ON A $360,000 LOAN · PRINCIPAL AND INTEREST",
+      "big": "+$309 a month",
+      "label": "$2,154 at 5.98%  →  $2,463 at 7.28%",
+      "lines": ["About $3,700 a year. More than $110,000 over 30 years.", "Income needed (28% guideline): about $92,000  →  about $106,000"],
+      "say": "What does that mean at the kitchen table? On a three hundred and sixty thousand dollar loan, the move from 5.98 to 7.28 percent adds about three hundred and nine dollars to the monthly payment. That is roughly thirty-seven hundred dollars a year, and more than a hundred and ten thousand over the life of the loan. At the usual guideline of spending no more than twenty-eight percent of income on the payment, the household income needed for that same loan rose from about ninety-two thousand dollars to about one hundred and six thousand. Many buyers did not lose interest in a home. They lost the ability to qualify for the one they wanted."
+    },
+    {
+      "kind": "grid",
+      "chapter": "A market that froze",
+      "kicker": "03 · THE STRAIN",
+      "head": "A market that froze rather than fell.",
+      "cells": [["3.98M", "Existing-home sales, August (annual rate), down 2.0%"], ["4.9 months", "Supply of homes for sale, the most in over a decade"], ["$429,100", "Median sale price, still up 1.6% on the year"], ["32", "Builder confidence (NAHB), lowest in a year"], ["38%", "Builders cutting prices in September"], ["−2.7%", "Building permits in August"]],
+      "say": "The numbers show a market slowing down, not collapsing. Existing home sales ran at an annual pace of three point nine eight million in August, against a long-run norm of about five point two million. Homes for sale reached four point nine months of supply, the most in more than a decade. Prices have not given way: the median sale price was up one point six percent on the year. Builders are feeling it more sharply. Their confidence index fell to thirty-two in September, the lowest in a year, thirty-eight percent of them cut prices, and building permits, which point to construction a few quarters ahead, fell in August."
+    },
+    {
+      "kind": "company",
+      "chapter": "Opendoor (OPEN)",
+      "kicker": "04 · THE MOST EXPOSED MODEL",
+      "name": "Opendoor",
+      "line": "OPEN · buys homes, holds them, resells them",
+      "facts": [["Revenue, Q2", "$883M  (−44%)"], ["Homes sold", "2,339  (−46%)"], ["Homes bought", "4,378  (+149%)"], ["In inventory", "5,459 homes · $1.85B"], ["Net loss, Q2", "$162M"], ["Share price, Oct 1", "$2.41"]],
+      "quote": "“The last two weeks of August were among the worst we have seen for housing in years.” — Kaz Nejatian, CEO, Sept 10",
+      "say": "Which brings us to Opendoor, ticker O-P-E-N. Opendoor buys homes directly from sellers, makes repairs, and resells them. It earns a thin spread on each one, and it pays to hold every house in the meantime. That makes it one of the purest bets on how fast homes sell. In the second quarter its revenue fell forty-four percent to eight hundred and eighty-three million dollars, and homes sold fell forty-six percent. At the same time it bought four thousand three hundred and seventy-eight homes, up one hundred and forty-nine percent, leaving five thousand four hundred and fifty-nine homes, worth one point eight five billion dollars, in inventory. It lost one hundred and sixty-two million dollars in the quarter."
+    },
+    {
+      "kind": "points",
+      "chapter": "Opendoor under strain",
+      "kicker": "OPENDOOR · THE STRAIN",
+      "head": "When buyers slow, every house costs more to hold.",
+      "points": [
+        ["Sep 10", "Break-even target pushed back 6 to 8 weeks."],
+        ["Outlook", "Q3 revenue growth cut to 10–15%, from “at least 20%”."],
+        ["Debt", "$1.76B of non-recourse debt secured on its homes; $896M cash."],
+        ["Shares", "$2.41 on Oct 1, from $3.85 in late July; about half this year."],
+        ["Our screen", "Below the $3 price floor, so not in the nightly ranking."]
+      ],
+      "say": "Then August got worse. On September tenth, chief executive Kaz Nejatian said the last two weeks of August were among the worst the company had seen for housing in years. Opendoor pushed back its break-even target by six to eight weeks, and lowered its third-quarter outlook to revenue growth of ten to fifteen percent, from at least twenty. In his words: we're making lots of progress, but rebuilds are bumpy. The shares closed at two dollars and forty-one cents on October first, down from three eighty-five in late July. At that price Opendoor sits below the three dollar floor of the Vance Value Screener, so it does not appear in our nightly ranking."
+    },
+    {
+      "kind": "company",
+      "chapter": "The builders",
+      "kicker": "05 · PAYING BUYERS TO BUY",
+      "name": "Lennar",
+      "line": "LEN · quarter to August 31, 2026",
+      "facts": [["Incentives", "about 12% of price"], ["Gross margin", "15.8%  (17.5% a year ago)"], ["New orders", "−9%"], ["Average price", "$372,000  (−3%)"]],
+      "quote": "Rates are “responding as inflation remains above the Fed's target, driven by geopolitical tension and higher oil prices.” — Stuart Miller, executive chairman",
+      "say": "Large builders have a tool Opendoor lacks. They can buy down a customer's mortgage rate. Lennar, one of the two biggest, has been doing a great deal of it. In its latest quarter it spent about twelve percent of the sale price on incentives. Its gross margin on homes fell to fifteen point eight percent, from seventeen and a half a year earlier, and new orders fell nine percent. Executive chairman Stuart Miller tied it directly to the war: rates are responding as inflation remains above the Fed's target, driven by geopolitical tension and higher oil prices. He also said the underlying shortage of homes still supports demand, and that matters for any recovery."
+    },
+    {
+      "kind": "table",
+      "chapter": "Down the supply chain",
+      "kicker": "06 · VANCE VALUE SCREENER · CLOSE OF OCT 1",
+      "head": "Down the chain: housing's suppliers.",
+      "cols": ["Company", "Rank of 1,162", "Score", "Past year"],
+      "rows": [["Builders FirstSource (BLDR)", "593", "49.5", "−48.2%"], ["Lowe's (LOW)", "699", "46.3", "−20.4%"], ["Home Depot (HD)", "721", "45.7", "−21.1%"], ["Louisiana-Pacific (LPX)", "796", "43.6", "−22.5%"], ["CoStar Group (CSGP)", "1,070", "31.9", "−62.1%"]],
+      "say": "The strain shows up in the companies that supply and serve housing, which our screen does rank. On the close of October first, out of eleven hundred and sixty-two companies, every one of these sat in the bottom half, and each had fallen sharply over the past year. Builders FirstSource, which supplies lumber and components to builders, is a good example. The screen finds it fairly cheap, about fourteen times operating profit. But it carries net debt of three point four times earnings before interest, tax and depreciation, covers its interest only two point eight times, and its price has nearly halved. Cheap and stressed is exactly what a long housing slowdown produces."
+    },
+    {
+      "kind": "steps",
+      "chapter": "What recovery looks like",
+      "kicker": "07 · THE RECOVERY, IN ORDER",
+      "head": "What a recovery would look like.",
+      "steps": [
+        ["First", "A deal that holds", "Strait of Hormuz reopened, blockade lifted"],
+        ["Days", "Oil and bond yields fall", "10-year back toward 4% points to mortgages near 6%"],
+        ["Weeks", "Buyers return", "In June, applications jumped 10.8% in one week"],
+        ["Quarters", "Companies heal", "Smaller incentives; homes sell faster"],
+        ["Last", "The Fed cuts", "Only once inflation has clearly fallen"]
+      ],
+      "say": "So what would a recovery look like? This year has already shown us, twice. After the April ceasefire, mortgage rates fell within a week, and after the June agreement they fell again. First, a deal that holds: the plan discussed in New York in late September would have Iran reopen the Strait of Hormuz and the United States lift its blockade. Second, within days, oil and bond yields fall. With mortgages running about two points above the ten-year yield, a return toward four percent points to mortgage rates near six percent again. Third, within weeks, buyers return. In June, mortgage applications jumped almost eleven percent in a single week. And with nearly five months of supply on the market, they would come back to a market where they can negotiate, not a bidding war."
+    },
+    {
+      "kind": "points",
+      "chapter": "Who benefits first",
+      "kicker": "THE RECOVERY · THE COMPANIES",
+      "head": "Then, over a quarter or two, the companies.",
+      "points": [
+        ["Builders", "Incentives shrink from about 12%; margins rebuild from about 16%."],
+        ["Opendoor", "Homes sell faster and cost less to hold."],
+        ["The bet", "4,378 homes bought in Q2 become revenue, or price cuts."],
+        ["The Fed", "Last to move: it cuts only after inflation clearly falls."],
+        ["History", "1990 Gulf War: oil +75%, home sales −4.3% that year. A stall, then a resumption."]
+      ],
+      "say": "Fourth, over one or two quarters, the companies. For builders, the first sign would be smaller incentives, and margins rebuilding from around sixteen percent. For Opendoor, homes selling faster and costing less to hold. The homes it bought in the second quarter were a bet on exactly this. In a firmer market they become revenue. In a weaker one, they become price cuts. And last, the Federal Reserve, which would cut only after inflation has clearly come down. History suggests a pause rather than a permanent loss. When oil rose about seventy-five percent around the 1990 Gulf War, existing home sales fell about four percent that year. The market stalled, then resumed."
+    },
+    {
+      "kind": "points",
+      "chapter": "The risks and what to watch",
+      "kicker": "08 · THE RISKS",
+      "head": "What would keep the strain in place, and what to watch.",
+      "points": [
+        ["Talks", "Sep 25: a proposal from Iran rejected; renewed bombing after the midterms reported possible."],
+        ["Supply", "Houthi attacks on Saudi Arabia."],
+        ["The Fed", "Willing to raise again if inflation does not ease."],
+        ["Watch", "Brent · 10-year yield · Freddie Mac every Thursday · builder confidence · Opendoor's next report"]
+      ],
+      "say": "The risks are real. On September twenty-fifth, the President rejected a peace proposal from Iran, and the Wall Street Journal reported that he anticipates renewed bombing after the November midterms. Houthi attacks threaten supply, and the Fed has shown it will raise rates again if inflation does not ease. A longer war means higher rates for longer, more incentives from builders, and more time for companies like Opendoor to carry homes they would rather sell. Five numbers will show which way this is going: the price of Brent crude, the ten-year Treasury yield, Freddie Mac's rate every Thursday, the builders' confidence index, and Opendoor's next quarterly report."
+    },
+    {
+      "kind": "outro",
+      "chapter": "The full report",
+      "kicker": "THE FULL REPORT, WITH EVERY SOURCE",
+      "head": "thevancereport.com",
+      "lines": ["A new top-five note every weeknight.", "Educational research only — not investment advice."],
+      "say": "The full report, with every figure and every source, is free on the vance report dot com, alongside a new note on the screen's top five every weeknight. This is educational research, not investment advice, and nothing here predicts where any share price will go. Thanks for watching."
+    }
+  ]
+}
