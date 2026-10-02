@@ -786,6 +786,66 @@
         </div>
       </header>
 
+      <!-- ============ HERO ============ -->
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <div style="font-family: var(--serif); font-size: 34px; color: var(--paper); letter-spacing: 0.02em; margin-bottom: 12px;">
+              <span style="border: 1px solid var(--amber); color: var(--amber); font-family: var(--mono); font-size: 17.5px; padding: 2px 8px; margin-right: 12px; vertical-align: middle;">VR</span>The Vance Report
+            </div>
+            <p class="eyebrow">The Vance Value Screener</p>
+            <h1>1,100+ US&nbsp;companies, ranked every&nbsp;weeknight. Free.</h1>
+            <p class="hero-lede">
+              We read each company&rsquo;s own SEC filings and score how
+              <b>cheap</b>, how <b>profitable</b> and how <b>financially safe</b>
+              it is, compared with others in its industry. Then we put all
+              <span id="hero-universe-count">&mdash;</span> in order, so you know
+              where to start looking. A high rank is a reason to look, not a
+              reason to buy. Data as of <b id="hero-run-date">&mdash;</b>.
+            </p>
+            <div class="cta-row">
+              <form class="hero-signup" id="heroSignup" novalidate>
+                <p hidden aria-hidden="true"><label>Do not fill this out: <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
+                <label class="vr-sr" for="heroEmail">Email address</label>
+                <input type="email" id="heroEmail" name="email" autocomplete="email" placeholder="you@example.com" required />
+                <button type="submit" class="btn-cta" id="heroSubmit">Get it free</button>
+                <p class="hero-note" id="heroNote" role="status">The top of the ranking and what changed, by email after each close. Unsubscribe any time.</p>
+              </form>
+              <a class="report-link" href="report.html">View Daily Inbox Report <span aria-hidden="true">&#8599;</span></a>
+            </div>
+          </div>
+
+          <div class="hero-side">
+            <div style="border: 1px solid var(--rule); background: var(--ink-2); padding: 24px;">
+              <div style="font-size: 14.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); margin-bottom: 16px; border-bottom: 1px solid var(--rule-soft); padding-bottom: 8px;">
+                Daily Screen Summary &ndash; end of day <span id="summary-card-date">&mdash;</span>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <div style="font-size: 14.5px; color: var(--paper-faint); text-transform: uppercase;">Companies ranked</div>
+                  <div style="font-size: 23px; font-weight: 600; color: var(--pass);" id="summary-qualified-count">&mdash;</div>
+                </div>
+                <div>
+                  <div style="font-size: 14.5px; color: var(--paper-faint); text-transform: uppercase;">In the top decile</div>
+                  <div style="font-size: 23px; font-weight: 600; color: var(--paper);" id="summary-avg-cushion">&mdash;</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ============ TESTIMONIALS (hero side card) ============ -->
+            <div class="testimonial-card" id="testimonials" hidden>
+              <div class="th-head">
+                <h2>Help Us Improve</h2>
+                <a href="reviews.html">Leave a review &rarr;</a>
+              </div>
+              <div class="testimonial-list" id="testimonialResults">
+                <div class="state-msg" style="padding: 6px 0;">Loading reviews&hellip;</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ============ MARKETS NOW (live widgets from TradingView; free embed, attribution below) ============ -->
       <section class="markets" aria-label="Markets now">
         <div class="mk-tape"><div class="tradingview-widget-container "><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
@@ -962,66 +1022,6 @@
             <div class="vt-scale" aria-hidden="true"><span>&minus;3%</span><i></i><span>+3%</span></div>
           </div>
           <p class="mk-credit">Live charts and quotes by <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">TradingView</a>; movers and top-ten quotes from Nasdaq, may be delayed. Today&rsquo;s moves are shown for context only; the Vance ranking is built from the last close, and a rank is not a recommendation.</p>
-        </div>
-      </section>
-
-      <!-- ============ HERO ============ -->
-      <section class="hero">
-        <div class="wrap hero-grid">
-          <div>
-            <div style="font-family: var(--serif); font-size: 34px; color: var(--paper); letter-spacing: 0.02em; margin-bottom: 12px;">
-              <span style="border: 1px solid var(--amber); color: var(--amber); font-family: var(--mono); font-size: 17.5px; padding: 2px 8px; margin-right: 12px; vertical-align: middle;">VR</span>The Vance Report
-            </div>
-            <p class="eyebrow">The Vance Value Screener</p>
-            <h1>1,100+ US&nbsp;companies, ranked every&nbsp;weeknight. Free.</h1>
-            <p class="hero-lede">
-              We read each company&rsquo;s own SEC filings and score how
-              <b>cheap</b>, how <b>profitable</b> and how <b>financially safe</b>
-              it is, compared with others in its industry. Then we put all
-              <span id="hero-universe-count">&mdash;</span> in order, so you know
-              where to start looking. A high rank is a reason to look, not a
-              reason to buy. Data as of <b id="hero-run-date">&mdash;</b>.
-            </p>
-            <div class="cta-row">
-              <form class="hero-signup" id="heroSignup" novalidate>
-                <p hidden aria-hidden="true"><label>Do not fill this out: <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
-                <label class="vr-sr" for="heroEmail">Email address</label>
-                <input type="email" id="heroEmail" name="email" autocomplete="email" placeholder="you@example.com" required />
-                <button type="submit" class="btn-cta" id="heroSubmit">Get it free</button>
-                <p class="hero-note" id="heroNote" role="status">The top of the ranking and what changed, by email after each close. Unsubscribe any time.</p>
-              </form>
-              <a class="report-link" href="report.html">View Daily Inbox Report <span aria-hidden="true">&#8599;</span></a>
-            </div>
-          </div>
-
-          <div class="hero-side">
-            <div style="border: 1px solid var(--rule); background: var(--ink-2); padding: 24px;">
-              <div style="font-size: 14.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); margin-bottom: 16px; border-bottom: 1px solid var(--rule-soft); padding-bottom: 8px;">
-                Daily Screen Summary &ndash; end of day <span id="summary-card-date">&mdash;</span>
-              </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-                <div>
-                  <div style="font-size: 14.5px; color: var(--paper-faint); text-transform: uppercase;">Companies ranked</div>
-                  <div style="font-size: 23px; font-weight: 600; color: var(--pass);" id="summary-qualified-count">&mdash;</div>
-                </div>
-                <div>
-                  <div style="font-size: 14.5px; color: var(--paper-faint); text-transform: uppercase;">In the top decile</div>
-                  <div style="font-size: 23px; font-weight: 600; color: var(--paper);" id="summary-avg-cushion">&mdash;</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ============ TESTIMONIALS (hero side card) ============ -->
-            <div class="testimonial-card" id="testimonials" hidden>
-              <div class="th-head">
-                <h2>Help Us Improve</h2>
-                <a href="reviews.html">Leave a review &rarr;</a>
-              </div>
-              <div class="testimonial-list" id="testimonialResults">
-                <div class="state-msg" style="padding: 6px 0;">Loading reviews&hellip;</div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
