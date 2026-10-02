@@ -1,0 +1,176 @@
+name: Special report video
+
+# Builds the video for a special report from its script in specials/, the same
+# way the daily video is built: piper voice, music from assets/music. Then it
+# uploads it to YouTube, puts it at the top of the report page, and attaches
+# the mp4 to the "videos" release so it can be downloaded. It runs when a new
+# script is pushed; specials/<slug>.published.json records that it is done, so
+# later edits to the script never upload it twice.
+#
+# It also copies the most recent daily videos and shorts into the "videos"
+# release, so every video can be downloaded without signing in.
+
+on:
+  push:
+    branches: [main]
+    paths: ["specials/*.json", "!specials/*.published.json"]
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: "Script file, e.g. specials/iran-war-housing.json"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: daily-video
+  cancel-in-progress: false
+
+jobs:
+  special:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Which script?
+        id: spec
+        env:
+          INPUT_SPEC: ${{ inputs.spec }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -eo pipefail
+          if [ -n "$INPUT_SPEC" ]; then SPEC="$INPUT_SPEC"; else
+            SPEC=$(git diff --name-only "$BEFORE" HEAD -- 'specials/*.json' | grep -v '\.published\.json$' | head -1 || true)
+          fi
+          if [ -z "$SPEC" ] || [ ! -f "$SPEC" ]; then echo "no script to build"; echo "go=no" >> "$GITHUB_OUTPUT"; exit 0; fi
+          DONE="${SPEC%.json}.published.json"
+          if [ -f "$DONE" ]; then echo "$SPEC is already published ($DONE)"; echo "go=no" >> "$GITHUB_OUTPUT"; exit 0; fi
+          SLUG=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['slug'])" "$SPEC")
+          DATE=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['date'])" "$SPEC")
+          { echo "go=yes"; echo "spec=$SPEC"; echo "done=$DONE"; echo "slug=$SLUG"; echo "date=$DATE"; } >> "$GITHUB_OUTPUT"
+          echo "Building $SPEC" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-python@v5
+        if: steps.spec.outputs.go == 'yes'
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg, fonts and the voice
+        if: steps.spec.outputs.go == 'yes'
+        run: |
+          set -eo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          pip install --quiet pillow numpy requests piper-tts
+          mkdir -p build-fonts voice
+          G=https://raw.githubusercontent.com/google/fonts/main/ofl
+          for f in instrumentserif/InstrumentSerif-Regular.ttf instrumentserif/InstrumentSerif-Italic.ttf \
+                   ibmplexmono/IBMPlexMono-Regular.ttf ibmplexmono/IBMPlexMono-Medium.ttf; do
+            curl -fsSL --retry 3 -o "build-fonts/$(basename $f)" "$G/$f" || echo "::warning::font $f unavailable; using a fallback"
+          done
+          V=https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high
+          curl -fsSL --retry 3 -o voice/en_US-ryan-high.onnx "$V/en_US-ryan-high.onnx"
+          curl -fsSL --retry 3 -o voice/en_US-ryan-high.onnx.json "$V/en_US-ryan-high.onnx.json"
+          test "$(stat -c%s voice/en_US-ryan-high.onnx)" -gt 10000000
+
+      - name: Build the video
+        if: steps.spec.outputs.go == 'yes'
+        env:
+          PIPER_VOICE: voice/en_US-ryan-high.onnx
+          FONT_DIR: build-fonts
+        run: |
+          set -eo pipefail
+          python3 scripts/special_video.py "${{ steps.spec.outputs.spec }}" --out build-special
+          python3 -c "import json; m=json.load(open('build-special/meta.json')); assert m['narrated'], 'built without narration'; assert m['duration_seconds'] > 120, 'too short'"
+          MEAN=$(ffmpeg -hide_banner -nostats -i build-special/briefing.mp4 -vn -af volumedetect -f null - 2>&1 | sed -n 's/.*mean_volume: \(-\?[0-9.]*\) dB.*/\1/p')
+          echo "Sound level: ${MEAN} dB" | tee -a "$GITHUB_STEP_SUMMARY"
+          python3 -c "import sys; m=float('${MEAN:--99}'); sys.exit(0 if m > -40 else 'the video is silent (mean %.1f dB); not uploading' % m)"
+          python3 scripts/music.py build-special/briefing.mp4 --date "${{ steps.spec.outputs.date }}" || echo "::warning::no music bed"
+          python3 -c "import json; m=json.load(open('build-special/meta.json')); print('## ' + m['title']); print(); print('Length ' + m['duration'])" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: steps.spec.outputs.go == 'yes'
+        with:
+          name: special-${{ steps.spec.outputs.slug }}
+          path: |
+            build-special/briefing.mp4
+            build-special/thumbnail.png
+            build-special/description.txt
+          retention-days: 30
+
+      - name: Upload to YouTube
+        if: steps.spec.outputs.go == 'yes'
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          YT_PRIVACY: public
+        run: |
+          set -eo pipefail
+          python3 scripts/top5_video.py publish --build build-special
+          python3 -c "import json; p=json.load(open('build-special/published.json')); print('YouTube: https://youtu.be/%s (%s)' % (p['video_id'], 'public' if p['visible'] else 'held private by YouTube'))" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Attach it to the downloads release
+        if: steps.spec.outputs.go == 'yes'
+        continue-on-error: true
+        run: |
+          set -eo pipefail
+          gh release view videos >/dev/null 2>&1 || gh release create videos --title "Video downloads" \
+            --notes "Every Vance Report video as an mp4: special reports, daily top-five videos and the vertical shorts. Educational research only, not investment advice."
+          cp build-special/briefing.mp4 "special-${{ steps.spec.outputs.slug }}.mp4"
+          gh release upload videos "special-${{ steps.spec.outputs.slug }}.mp4" --clobber
+          echo "Download: https://github.com/${{ github.repository }}/releases/download/videos/special-${{ steps.spec.outputs.slug }}.mp4" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Put it on the report page
+        if: steps.spec.outputs.go == 'yes'
+        run: |
+          set -eo pipefail
+          python3 scripts/special_video.py "${{ steps.spec.outputs.spec }}" --out build-special --page
+          cp build-special/published.json "${{ steps.spec.outputs.done }}"
+          PAGE=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['page'])" "${{ steps.spec.outputs.spec }}")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$PAGE" "${{ steps.spec.outputs.done }}"
+          git commit -m "Special report video: ${{ steps.spec.outputs.slug }}"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 10
+          done
+          echo "::error::couldn't push after three tries"; exit 1
+
+  # The daily videos and shorts kept as run artifacts (14 days) are copied to
+  # the "videos" release too, under daily-<date>.mp4 and short-<date>.mp4.
+  daily-downloads:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Copy recent daily videos to the downloads release
+        run: |
+          set -eo pipefail
+          R=${{ github.repository }}
+          gh release view videos -R "$R" >/dev/null 2>&1 || gh release create videos -R "$R" --title "Video downloads" \
+            --notes "Every Vance Report video as an mp4: special reports, daily top-five videos and the vertical shorts. Educational research only, not investment advice."
+          HAVE=$(gh release view videos -R "$R" --json assets -q '.assets[].name' || true)
+          for ID in $(gh run list -R "$R" --workflow daily_video.yml --status success -L 10 --json databaseId -q '.[].databaseId'); do
+            rm -rf dl && mkdir dl
+            gh run download "$ID" -R "$R" -p 'video-*' -p 'short-*' -D dl 2>/dev/null || continue
+            for d in dl/*; do
+              [ -d "$d" ] || continue
+              n=$(basename "$d"); date=${n#*-}
+              if [ -f "$d/briefing.mp4" ]; then f="daily-$date.mp4"; src="$d/briefing.mp4";
+              elif [ -f "$d/short.mp4" ]; then f="short-$date.mp4"; src="$d/short.mp4"; else continue; fi
+              echo "$HAVE" | grep -qx "$f" && continue
+              cp "$src" "$f" && gh release upload videos "$f" -R "$R" --clobber && HAVE="$HAVE"$'\n'"$f" && echo "added $f"
+            done
+          done
