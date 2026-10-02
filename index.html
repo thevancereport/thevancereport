@@ -35,7 +35,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <script type="application/ld+json">
@@ -68,6 +68,7 @@
         --hold: #c9a24a;
         --mono: "IBM Plex Mono", ui-monospace, monospace;
         --serif: "Instrument Serif", Georgia, serif;
+        --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
       }
       * {
         box-sizing: border-box;
@@ -780,10 +781,190 @@
     <div class="shell">
       <header class="ticker">
         <div class="wrap ticker-in" style="justify-content: center; gap: 24px;">
-<span class="tick-stat hide-sm">Universe <b>US equities &gt; $300M</b></span>
+<span class="tick-stat hide-sm">Ranking <b>US companies worth $300M+</b></span>
           <span class="tick-stat"><span class="live" id="liveIndicator"><i aria-hidden="true"></i><span id="liveLabel">Loading&hellip;</span></span></span>
         </div>
       </header>
+
+      <!-- ============ MARKETS NOW (live widgets from TradingView; free embed, attribution below) ============ -->
+      <section class="markets" aria-label="Markets now">
+        <div class="mk-tape"><div class="tradingview-widget-container "><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+{
+ "symbols": [
+  {
+   "proName": "FOREXCOM:SPXUSD",
+   "title": "S&P 500"
+  },
+  {
+   "proName": "FOREXCOM:NSXUSD",
+   "title": "Nasdaq 100"
+  },
+  {
+   "proName": "FOREXCOM:DJI",
+   "title": "Dow 30"
+  },
+  {
+   "proName": "AMEX:IWM",
+   "title": "Russell 2000 (IWM)"
+  },
+  {
+   "proName": "NASDAQ:AAPL",
+   "title": "Apple"
+  },
+  {
+   "proName": "NASDAQ:MSFT",
+   "title": "Microsoft"
+  },
+  {
+   "proName": "NASDAQ:NVDA",
+   "title": "Nvidia"
+  },
+  {
+   "proName": "NASDAQ:AMZN",
+   "title": "Amazon"
+  },
+  {
+   "proName": "NASDAQ:GOOGL",
+   "title": "Alphabet"
+  },
+  {
+   "proName": "NASDAQ:META",
+   "title": "Meta"
+  },
+  {
+   "proName": "NASDAQ:TSLA",
+   "title": "Tesla"
+  },
+  {
+   "proName": "NYSE:BRK.B",
+   "title": "Berkshire B"
+  },
+  {
+   "proName": "OANDA:XAUUSD",
+   "title": "Gold"
+  },
+  {
+   "proName": "BITSTAMP:BTCUSD",
+   "title": "Bitcoin"
+  },
+  {
+   "proName": "FX:EURUSD",
+   "title": "EUR/USD"
+  }
+ ],
+ "showSymbolLogo": true,
+ "isTransparent": true,
+ "displayMode": "adaptive",
+ "colorTheme": "dark",
+ "locale": "en"
+}
+</script></div></div>
+        <div class="wrap">
+          <div class="mk-head">
+            <h2>Markets now</h2>
+            <p class="mk-meta"><span class="mk-live"><i aria-hidden="true"></i>Live</span> Quotes may be delayed. <a href="#engine">Our ranking updates after the close &darr;</a></p>
+          </div>
+          <div class="mk-indices">
+            <div class="mk-card mk-mini" aria-label="S&amp;P 500"><span class="mk-wait">S&amp;P 500&hellip;</span><div class="tradingview-widget-container "><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+{
+ "symbol": "FOREXCOM:SPXUSD",
+ "width": "100%",
+ "height": "100%",
+ "locale": "en",
+ "dateRange": "1D",
+ "colorTheme": "dark",
+ "isTransparent": true,
+ "autosize": true,
+ "largeChartUrl": "",
+ "chartOnly": false,
+ "noTimeScale": false
+}
+</script></div></div>
+            <div class="mk-card mk-mini" aria-label="Nasdaq 100"><span class="mk-wait">Nasdaq 100&hellip;</span><div class="tradingview-widget-container "><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+{
+ "symbol": "FOREXCOM:NSXUSD",
+ "width": "100%",
+ "height": "100%",
+ "locale": "en",
+ "dateRange": "1D",
+ "colorTheme": "dark",
+ "isTransparent": true,
+ "autosize": true,
+ "largeChartUrl": "",
+ "chartOnly": false,
+ "noTimeScale": false
+}
+</script></div></div>
+            <div class="mk-card mk-mini" aria-label="Dow 30"><span class="mk-wait">Dow 30&hellip;</span><div class="tradingview-widget-container "><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+{
+ "symbol": "FOREXCOM:DJI",
+ "width": "100%",
+ "height": "100%",
+ "locale": "en",
+ "dateRange": "1D",
+ "colorTheme": "dark",
+ "isTransparent": true,
+ "autosize": true,
+ "largeChartUrl": "",
+ "chartOnly": false,
+ "noTimeScale": false
+}
+</script></div></div>
+            <div class="mk-card mk-mini" aria-label="Russell 2000 (IWM)"><span class="mk-wait">Russell 2000 (IWM)&hellip;</span><div class="tradingview-widget-container "><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+{
+ "symbol": "AMEX:IWM",
+ "width": "100%",
+ "height": "100%",
+ "locale": "en",
+ "dateRange": "1D",
+ "colorTheme": "dark",
+ "isTransparent": true,
+ "autosize": true,
+ "largeChartUrl": "",
+ "chartOnly": false,
+ "noTimeScale": false
+}
+</script></div></div>
+          </div>
+          <div class="mk-main">
+            <div class="mk-card mk-heat"><div class="mk-label">S&amp;P 500 today, by sector</div><div class="mk-frame"><span class="mk-wait">Loading the market map&hellip;</span><div class="tradingview-widget-container "><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+{
+ "exchanges": [],
+ "dataSource": "SPX500",
+ "grouping": "sector",
+ "blockSize": "market_cap_basic",
+ "blockColor": "change",
+ "locale": "en",
+ "symbolUrl": "",
+ "colorTheme": "dark",
+ "hasTopBar": false,
+ "isDataSetEnabled": false,
+ "isZoomEnabled": true,
+ "hasSymbolTooltip": true,
+ "isMonoSize": false,
+ "width": "100%",
+ "height": "100%"
+}
+</script></div></div></div>
+            <div class="mk-card mk-movers"><div class="mk-label">US movers</div><div class="mk-frame"><span class="mk-wait">Loading movers&hellip;</span><div class="tradingview-widget-container "><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-hotlists.js" async>
+{
+ "colorTheme": "dark",
+ "dateRange": "1D",
+ "exchange": "US",
+ "showChart": false,
+ "locale": "en",
+ "largeChartUrl": "",
+ "isTransparent": true,
+ "showSymbolLogo": true,
+ "showFloatingTooltip": false,
+ "width": "100%",
+ "height": "100%"
+}
+</script></div></div></div>
+          </div>
+          <p class="mk-credit">Live charts and quotes by <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">TradingView</a>. Market data is shown for context only; it is not part of the Vance ranking.</p>
+        </div>
+      </section>
 
       <!-- ============ HERO ============ -->
       <section class="hero">
@@ -793,19 +974,23 @@
               <span style="border: 1px solid var(--amber); color: var(--amber); font-family: var(--mono); font-size: 17.5px; padding: 2px 8px; margin-right: 12px; vertical-align: middle;">VR</span>The Vance Report
             </div>
             <p class="eyebrow">The Vance Value Screener</p>
-            <h1>A&nbsp;daily&nbsp;ranking of&nbsp;US&nbsp;companies, from&nbsp;their&nbsp;own&nbsp;filings.</h1>
+            <h1>1,100+ US&nbsp;companies, ranked every&nbsp;weeknight. Free.</h1>
             <p class="hero-lede">
-              Ranked on <b>cheapness, quality, safety and confirmation</b>,
-              each scored against the company&rsquo;s own sector:
-              <span id="hero-universe-count">&mdash;</span> companies today,
-              updated every weekday after the close. A high rank is a reason
-              to look, not a reason to buy.
-              Data as of <b id="hero-run-date">&mdash;</b>.
+              We read each company&rsquo;s own SEC filings and score how
+              <b>cheap</b>, how <b>profitable</b> and how <b>financially safe</b>
+              it is, compared with others in its industry. Then we put all
+              <span id="hero-universe-count">&mdash;</span> in order, so you know
+              where to start looking. A high rank is a reason to look, not a
+              reason to buy. Data as of <b id="hero-run-date">&mdash;</b>.
             </p>
             <div class="cta-row">
-              <button type="button" class="btn-cta" data-open-alerts>
-                Sign up for daily alerts
-              </button>
+              <form class="hero-signup" id="heroSignup" novalidate>
+                <p hidden aria-hidden="true"><label>Do not fill this out: <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
+                <label class="vr-sr" for="heroEmail">Email address</label>
+                <input type="email" id="heroEmail" name="email" autocomplete="email" placeholder="you@example.com" required />
+                <button type="submit" class="btn-cta" id="heroSubmit">Get it free</button>
+                <p class="hero-note" id="heroNote" role="status">The top of the ranking and what changed, by email after each close. Unsubscribe any time.</p>
+              </form>
               <a class="report-link" href="report.html">View Daily Inbox Report <span aria-hidden="true">&#8599;</span></a>
             </div>
           </div>
@@ -828,7 +1013,7 @@
             </div>
 
             <!-- ============ TESTIMONIALS (hero side card) ============ -->
-            <div class="testimonial-card" id="testimonials">
+            <div class="testimonial-card" id="testimonials" hidden>
               <div class="th-head">
                 <h2>Help Us Improve</h2>
                 <a href="reviews.html">Leave a review &rarr;</a>
@@ -1131,7 +1316,7 @@
             <p hidden aria-hidden="true">
               <label>Do not fill this out: <input name="bot-field" tabindex="-1" /></label>
             </p>
-            <input type="email" id="alertsEmail" name="email" autocomplete="email" placeholder="name@firm.com" required />
+            <input type="email" id="alertsEmail" name="email" autocomplete="email" placeholder="you@example.com" required />
             <button type="submit" class="submit" id="alertsSubmit">Submit</button>
             <p class="form-note" id="alertsNote" hidden></p>
           </form>
@@ -1491,11 +1676,9 @@
             var data = await res.json();
             var reviews = Array.isArray(data.reviews) ? data.reviews : [];
 
-            if (!reviews.length) {
-              container.innerHTML =
-                '<div class="state-msg" style="padding: 6px 0;">No reviews yet — <a href="reviews.html" style="color: var(--amber);">be the first</a>.</div>';
-              return;
-            }
+            if (!reviews.length) return; // the card stays hidden until there is something to show
+            var card = document.getElementById("testimonials");
+            if (card) card.hidden = false;
 
             container.innerHTML = reviews.map(function (r) {
               return (
@@ -1507,7 +1690,7 @@
             }).join("");
           } catch (err) {
             console.error("Failed to load reviews:", err);
-            container.innerHTML = '<div class="state-msg" style="padding: 6px 0;">Reviews are temporarily unavailable.</div>';
+            // leave the card hidden: an error box on the front page looks like a broken site
           }
         }
 
@@ -2116,5 +2299,92 @@
   .scan-sub { white-space: normal; line-height: 1.3; }
 }
 </style>
-</body>
+    <!-- ============ MARKETS + HERO SIGNUP + READABILITY (2 Oct 2026) ============ -->
+    <style id="vr-markets">
+      /* Paragraphs in a readable sans; the mono stays for labels, numbers and tables. */
+      .hero-lede, .block p, .sec-meta, .modal p, .t5-card p, .intro-card p, .mk-meta, .mk-credit, .hero-note {
+        font-family: var(--sans); font-weight: 400; letter-spacing: 0;
+      }
+      .vr-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+      .markets { border-bottom: 1px solid var(--rule); padding: 0 0 34px; }
+      .mk-tape { border-bottom: 1px solid var(--rule); min-height: 46px; background: rgba(19, 15, 10, 0.6); }
+      .mk-head { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin: 28px 0 16px; }
+      .mk-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1; }
+      .mk-meta { margin: 0; color: var(--paper-faint); font-size: 14.5px; }
+      .mk-meta a { color: var(--amber); text-decoration: none; border-bottom: 1px solid transparent; }
+      .mk-meta a:hover { border-bottom-color: var(--amber); }
+      .mk-live { display: inline-flex; align-items: center; gap: 6px; color: var(--pass); font-family: var(--mono);
+        font-size: 12px; letter-spacing: .16em; text-transform: uppercase; margin-right: 8px; }
+      .mk-live i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2.4s ease-in-out infinite; }
+      .mk-card { position: relative; border: 1px solid var(--rule); background: var(--ink-2); border-radius: 3px; overflow: hidden; }
+      .mk-wait { position: absolute; inset: 0; display: grid; place-items: center; color: var(--paper-faint);
+        font-size: 12px; letter-spacing: .14em; text-transform: uppercase; pointer-events: none; }
+      .mk-card .tradingview-widget-container { position: relative; z-index: 1; height: 100%; }
+      .mk-indices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      .mk-mini { height: 168px; }
+      .mk-main { display: grid; grid-template-columns: 1fr 340px; gap: 14px; margin-top: 14px; }
+      .mk-label { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--paper-faint);
+        padding: 10px 14px; border-bottom: 1px solid var(--rule-soft); }
+      .mk-frame { position: relative; height: 470px; }
+      .mk-credit { margin: 12px 0 0; font-size: 13px; color: var(--paper-faint); }
+      .mk-credit a { color: var(--paper-dim); }
+      .tradingview-widget-copyright { display: none; } /* credit is given once, in .mk-credit */
+
+      /* Hero: a calmer headline size now that it is a sentence, and the signup inline. */
+      .hero { padding: 64px 0 60px; }
+      .hero h1 { font-size: clamp(44px, 5.6vw, 74px); line-height: 0.98; }
+      .hero-signup { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; width: 100%; max-width: 560px; }
+      .hero-signup input[type=email] { flex: 1 1 240px; min-width: 0; background: var(--ink); color: var(--paper);
+        border: 1px solid var(--rule); border-radius: 0; padding: 15px 16px; font: 400 16px var(--sans); }
+      .hero-signup input[type=email]:focus { outline: none; border-color: var(--amber); }
+      .hero-signup .btn-cta { padding: 15px 26px; }
+      .hero-signup .btn-cta:disabled { opacity: .6; cursor: default; }
+      .hero-note { flex-basis: 100%; margin: 4px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--paper-faint); }
+      .hero-note.ok { color: var(--pass); }
+      .hero-note.err { color: var(--fail); }
+
+      @media (max-width: 980px) {
+        .mk-indices { grid-template-columns: repeat(2, 1fr); }
+        .mk-main { grid-template-columns: 1fr; }
+        .mk-movers .mk-frame { height: 420px; }
+      }
+      @media (max-width: 640px) {
+        .mk-head { margin: 20px 0 12px; }
+        .mk-head h2 { font-size: 28px; }
+        .mk-indices { gap: 10px; }
+        .mk-mini { height: 150px; }
+        .mk-frame { height: 380px; }
+        .mk-movers { display: none; } /* the heatmap carries the page on a phone; movers are a scroll too far */
+        .hero { padding: 40px 0 44px; }
+        .hero-signup .btn-cta { width: 100%; justify-content: center; }
+        /* Lift the page above the notice bar so it never covers a button. */
+        body { padding-bottom: 96px; }
+      }
+    </style>
+    <script>
+      (function () {
+        var f = document.getElementById("heroSignup"); if (!f) return;
+        var b = document.getElementById("heroSubmit"), n = document.getElementById("heroNote"), e = document.getElementById("heroEmail");
+        var hint = n.textContent;
+        function say(t, c) { n.textContent = t; n.className = "hero-note " + (c || ""); }
+        f.addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          if (!e.checkValidity()) { say("Please enter a valid email address.", "err"); e.focus(); return; }
+          b.disabled = true; b.textContent = "Signing up…"; say(hint);
+          fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: e.value, "bot-field": f.elements["bot-field"].value }) })
+            .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) {
+              if (!r.ok) throw new Error(d.error || "");
+              e.hidden = true; b.hidden = true;
+              say("Almost done. Check your inbox and confirm your address. The first email arrives after the next close.", "ok");
+              if (window.gtag) gtag("event", "sign_up", { method: "hero" });
+            }); })
+            .catch(function (err) { b.disabled = false; b.textContent = "Get it free";
+              say((err && err.message) || "We couldn't sign you up just now. Please try again.", "err"); });
+        });
+      })();
+    </script>
+
+  </body>
 </html>
