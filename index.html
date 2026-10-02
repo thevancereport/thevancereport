@@ -962,7 +962,12 @@
 }
 </script></div></div></div>
           </div>
-          <p class="mk-credit">Live charts and quotes by <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">TradingView</a>. Market data is shown for context only; it is not part of the Vance ranking.</p>
+          <div class="mk-card vt-card" id="vtCard">
+            <div class="mk-label vt-head"><span>The Vance top ten, trading today</span><span class="vt-sub" id="vtSub">Ranked on the last close &middot; colour is today&rsquo;s move</span></div>
+            <div class="vt-grid" id="vtGrid"><span class="mk-wait" style="position:static;padding:40px 0">Loading the top ten&hellip;</span></div>
+            <div class="vt-scale" aria-hidden="true"><span>&minus;3%</span><i></i><span>+3%</span></div>
+          </div>
+          <p class="mk-credit">Live charts and quotes by <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">TradingView</a>; top-ten quotes from Nasdaq, may be delayed. Today&rsquo;s moves are shown for context only; the Vance ranking is built from the last close, and a rank is not a recommendation.</p>
         </div>
       </section>
 
@@ -2324,7 +2329,7 @@
       .mk-indices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
       .mk-mini { height: 168px; }
       .mk-main { display: grid; grid-template-columns: 1fr 340px; gap: 14px; margin-top: 14px; }
-      .mk-label { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--paper-faint);
+      .mk-label { font-size: 13px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #fff;
         padding: 10px 14px; border-bottom: 1px solid var(--rule-soft); }
       .mk-frame { position: relative; height: 470px; }
       .mk-credit { margin: 12px 0 0; font-size: 13px; color: var(--paper-faint); }
@@ -2332,6 +2337,9 @@
       .tradingview-widget-copyright { display: none; } /* credit is given once, in .mk-credit */
       /* Hide the "Loading" labels once a widget has drawn (the widgets are transparent, so the label showed through). */
       .mk-card:has(iframe) .mk-wait { display: none; }
+      /* Section headings and their captions: bold and white, so they read at a glance. */
+      .sec-head h2, .mk-head h2 { color: #fff; }
+      .sec-meta { color: #fff; font-weight: 600; }
 
       /* Use the width of large screens: about 80% of the window, up to 1760px. Home page only. */
       @media (min-width: 1300px) {
@@ -2393,6 +2401,79 @@
             .catch(function (err) { b.disabled = false; b.textContent = "Get it free";
               say((err && err.message) || "We couldn't sign you up just now. Please try again.", "err"); });
         });
+      })();
+    </script>
+
+      <!-- ============ VANCE TOP TEN HEATMAP: ranks from value_screen.json, today's move from /api/quote ============ -->
+    <style id="vr-top10">
+      .vt-card { margin-top: 14px; }
+      .vt-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+      .vt-sub { letter-spacing: .02em; text-transform: none; font-family: var(--sans); font-weight: 400; font-size: 13px; color: var(--paper-dim); }
+      .vt-grid { display: grid; grid-template-columns: minmax(0,1.45fr) repeat(3, minmax(0,1fr)); gap: 3px; padding: 3px; background: #0b0907; }
+      .vt-tile { position: relative; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; min-height: 118px;
+        padding: 12px 14px; color: #fff; text-decoration: none; background: #2a2a2a; transition: filter .15s ease; }
+      .vt-tile:hover { filter: brightness(1.18); }
+      .vt-tile.is-1 { grid-row: span 3; }
+      .vt-rank { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; opacity: .8; }
+      .vt-sym { font-family: var(--mono); font-weight: 600; font-size: 22px; letter-spacing: .04em; line-height: 1.1; }
+      .vt-tile.is-1 .vt-sym { font-size: 34px; }
+      .vt-name { font-family: var(--sans); font-size: 12.5px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .vt-chg { font-family: var(--mono); font-weight: 600; font-size: 18px; }
+      .vt-tile.is-1 .vt-chg { font-size: 26px; }
+      .vt-meta { font-family: var(--mono); font-size: 11.5px; opacity: .85; display: flex; justify-content: space-between; gap: 8px; }
+      .vt-scale { display: flex; align-items: center; gap: 10px; padding: 8px 14px 10px; font-family: var(--mono); font-size: 11px; color: var(--paper-faint); }
+      .vt-scale i { flex: 0 1 220px; height: 6px; border-radius: 3px;
+        background: linear-gradient(to right, #f23645, #8b2a33, #3a3a3a, #1f6b46, #089981); }
+      
+      @media (max-width: 640px) {
+        .vt-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        .vt-tile.is-1 { grid-row: auto; }
+        .vt-tile.is-1 .vt-sym { font-size: 26px; } .vt-tile.is-1 .vt-chg { font-size: 20px; }
+        .vt-meta { flex-wrap: wrap; }
+        .vt-tile { min-height: 104px; padding: 10px 12px; }
+      }
+    </style>
+    <script>
+      (function () {
+        var grid = document.getElementById("vtGrid"); if (!grid) return;
+        var rows = [];
+        function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+        function title(n) { return String(n || "").toLowerCase().replace(/\b([a-z])/g, function (m) { return m.toUpperCase(); })
+          .replace(/\b(Inc|Corp|Co|Ltd|Plc)\b\.?/g, function (m) { return m; }); }
+        // TradingView-style scale: -3% deep red, 0 grey, +3% deep green.
+        function colour(p) {
+          if (p == null || !isFinite(p)) return "#2a2a2a";
+          var t = Math.max(-1, Math.min(1, p / 3)), a = Math.abs(t);
+          var base = [58, 58, 58], hi = t < 0 ? [242, 54, 69] : [8, 153, 129];
+          var k = 0.25 + 0.75 * a;
+          if (a < 0.03) return "rgb(58,58,58)";
+          return "rgb(" + base.map(function (b, i) { return Math.round(b + (hi[i] - b) * k); }).join(",") + ")";
+        }
+        function pct(p) { return (p > 0 ? "+" : p < 0 ? "−" : "") + Math.abs(p).toFixed(2) + "%"; }
+        function draw() {
+          grid.innerHTML = rows.map(function (r) {
+            var q = r.q, live = q && q.change_pct != null;
+            return '<a class="vt-tile' + (r.rank === 1 ? " is-1" : "") + '" style="background:' + colour(live ? q.change_pct : null) + '"' +
+              ' href="stock.html?symbol=' + encodeURIComponent(r.symbol) + '" title="' + esc(r.name) + ', rank ' + r.rank + ', score ' + r.score.toFixed(1) + '">' +
+              '<div><div class="vt-rank">#' + r.rank + '</div><div class="vt-sym">' + esc(r.symbol) + '</div><div class="vt-name">' + esc(title(r.name)) + '</div></div>' +
+              '<div><div class="vt-chg">' + (live ? pct(q.change_pct) : "&mdash;") + '</div>' +
+              '<div class="vt-meta"><span>$' + (live ? q.price : r.price).toFixed(2) + '</span><span>Score ' + r.score.toFixed(1) + '</span></div></div></a>';
+          }).join("");
+        }
+        function quotes() {
+          return Promise.all(rows.map(function (r) {
+            return fetch("/api/quote?symbol=" + encodeURIComponent(r.symbol))
+              .then(function (res) { return res.ok ? res.json() : null; })
+              .then(function (q) { if (q && q.price != null) r.q = q; })
+              .catch(function () {});
+          })).then(draw);
+        }
+        fetch("value_screen.json").then(function (r) { return r.json(); }).then(function (v) {
+          rows = (v.ranked || []).slice(0, 10).map(function (x) { return { rank: x.rank, symbol: x.symbol, name: x.name, score: x.score, price: x.price }; });
+          if (!rows.length) throw new Error("empty");
+          draw(); quotes();
+          setInterval(function () { if (!document.hidden) quotes(); }, 60000);
+        }).catch(function () { var c = document.getElementById("vtCard"); if (c) c.hidden = true; });
       })();
     </script>
 
