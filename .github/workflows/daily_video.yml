@@ -234,3 +234,18 @@ jobs:
             sleep 10
           done
           echo "::error::couldn't push social.json after three tries"; exit 1
+
+      # Tonight's video and short also go to the "videos" release, so they can
+      # be downloaded without signing in (and copied to Ardie's computer).
+      - name: Add tonight's videos to the downloads release
+        if: steps.check.outputs.go == 'yes'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eo pipefail
+          gh release view videos >/dev/null 2>&1 || gh release create videos --title "Video downloads" \
+            --notes "Every Vance Report video as an mp4: special reports, daily top-five videos and the vertical shorts. Educational research only, not investment advice."
+          D="${{ steps.check.outputs.as_of }}"
+          cp build/briefing.mp4 "daily-$D.mp4" && gh release upload videos "daily-$D.mp4" --clobber
+          if [ -f build/short.mp4 ]; then cp build/short.mp4 "short-$D.mp4" && gh release upload videos "short-$D.mp4" --clobber; fi
