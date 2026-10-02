@@ -733,6 +733,69 @@ Sources: The Vance Report&rsquo;s own screen file for 1 October 2026, built from
 </article>
 </main>
 
+      <!-- ============ NOTE SIGNUP (kept outside <main> so each night's note inherits it) ============ -->
+      <section class="note-signup" aria-labelledby="nsTitle">
+        <div class="wrap">
+          <div class="ns-card">
+            <div class="ns-copy">
+              <p class="ns-eyebrow">Free &middot; Each weeknight</p>
+              <h2 id="nsTitle">Get the five by email.</h2>
+              <p>The top of the screen and what changed, after each close. One email to confirm. Unsubscribe any time.</p>
+            </div>
+            <form class="ns-form" id="nsForm" novalidate>
+              <p hidden aria-hidden="true"><label>Do not fill this out: <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
+              <label class="ns-sr" for="nsEmail">Email address</label>
+              <input type="email" id="nsEmail" name="email" autocomplete="email" placeholder="you@example.com" required />
+              <button type="submit" id="nsSubmit">Sign up</button>
+              <p class="ns-note" id="nsNote" role="status" hidden></p>
+            </form>
+          </div>
+        </div>
+      </section>
+      <style>
+        .note-signup { position: relative; z-index: 1; margin: 8px 0 56px; }
+        .ns-card { border: 1px solid var(--rule); border-top: 2px solid var(--amber); background: var(--ink-2);
+          border-radius: 3px; padding: 28px 30px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: center; }
+        .ns-eyebrow { margin: 0 0 6px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+        .ns-copy h2 { margin: 0 0 8px; font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.1; color: var(--paper); }
+        .ns-copy p:last-child { margin: 0; color: var(--paper-dim); font-size: 15.5px; line-height: 1.6; }
+        .ns-form { display: flex; flex-wrap: wrap; gap: 10px; }
+        .ns-form input[type=email] { flex: 1 1 220px; min-width: 0; background: var(--ink); color: var(--paper);
+          border: 1px solid var(--rule); border-radius: 3px; padding: 12px 14px; font: 400 15px var(--mono); }
+        .ns-form input[type=email]:focus { outline: none; border-color: var(--amber); }
+        .ns-form button { background: var(--amber); color: var(--ink); border: 0; border-radius: 3px; padding: 12px 20px;
+          font: 600 13px var(--mono); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+        .ns-form button:hover { background: var(--amber-deep); }
+        .ns-form button:disabled { opacity: .6; cursor: default; }
+        .ns-note { flex-basis: 100%; margin: 4px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--paper-dim); }
+        .ns-note.ok { color: #61a887; }
+        .ns-note.err { color: #cc8a50; }
+        .ns-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+        @media (max-width: 760px) { .ns-card { grid-template-columns: 1fr; padding: 22px 20px; gap: 18px; } .ns-copy h2 { font-size: 28px; } }
+      </style>
+      <script>
+        (function () {
+          var f = document.getElementById("nsForm"); if (!f) return;
+          var b = document.getElementById("nsSubmit"), n = document.getElementById("nsNote"), e = document.getElementById("nsEmail");
+          function say(t, c) { n.textContent = t; n.className = "ns-note " + c; n.hidden = false; }
+          f.addEventListener("submit", function (ev) {
+            ev.preventDefault();
+            if (!e.checkValidity()) { say("Please enter a valid email address.", "err"); e.focus(); return; }
+            b.disabled = true; b.textContent = "Signing up…"; n.hidden = true;
+            fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: e.value, "bot-field": f.elements["bot-field"].value }) })
+              .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) {
+                if (!r.ok) throw new Error(d.error || "");
+                e.hidden = true; b.hidden = true;
+                say("Almost done. Check your inbox and confirm your address. The first email arrives after the next close.", "ok");
+              }); })
+              .catch(function (err) { b.disabled = false; b.textContent = "Sign up";
+                say((err && err.message) || "We couldn't sign you up just now. Please try again.", "err"); });
+          });
+        })();
+      </script>
+
+
       <footer>
         <div class="wrap foot">
           <span class="foot-note"
