@@ -186,6 +186,7 @@ def api(method: str, url: str, key: str, payload: dict | None = None) -> dict:
     req = urllib.request.Request(url, data=data, method=method, headers={
         "Authorization": f"Token {key}",
         "Content-Type": "application/json",
+                "X-Buttondown-Live-Dangerously": "true",
     })
     with urllib.request.urlopen(req, timeout=30) as res:
         return json.loads(res.read() or b"{}")
