@@ -208,6 +208,22 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
+      # Tonight's video and short also go to the "videos" release, so they can
+      # be downloaded without signing in (and copied to Ardie's computer), and so
+      # Instagram can fetch the short from a link in the next step.
+      - name: Add tonight's videos to the downloads release
+        if: steps.check.outputs.go == 'yes'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eo pipefail
+          gh release view videos >/dev/null 2>&1 || gh release create videos --title "Video downloads" \
+            --notes "Every Vance Report video as an mp4: special reports, daily top-five videos and the vertical shorts. Educational research only, not investment advice."
+          D="${{ steps.check.outputs.as_of }}"
+          cp build/briefing.mp4 "daily-$D.mp4" && gh release upload videos "daily-$D.mp4" --clobber
+          if [ -f build/short.mp4 ]; then cp build/short.mp4 "short-$D.mp4" && gh release upload videos "short-$D.mp4" --clobber; fi
+
       # Facebook gets the full video, Instagram the short as a Reel. If either
       # file is missing it falls back to a link post and the thumbnail picture.
       # social.json remembers what went out, so a re-run never posts twice.
@@ -216,11 +232,14 @@ jobs:
         continue-on-error: true
         env:
           META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+          REEL_URL: https://github.com/${{ github.repository }}/releases/download/videos/short-${{ steps.check.outputs.as_of }}.mp4
         run: |
           set -eo pipefail
           REEL=""
           if [ -f build/short.json ] && python3 -c "import json,sys; sys.exit(0 if json.load(open('build/short.json'))['narrated'] else 1)"; then
             REEL="--reel build/short.mp4"
+            # The release copy (uploaded in the step before) is what Instagram fetches.
+            if [ "$(curl -sIL -o /dev/null -w '%{http_code}' "$REEL_URL")" = "200" ]; then REEL="$REEL --reel-url $REEL_URL"; fi
           fi
           git pull --rebase origin main || true
           python3 scripts/social_post.py --video build/briefing.mp4 $REEL
@@ -234,18 +253,3 @@ jobs:
             sleep 10
           done
           echo "::error::couldn't push social.json after three tries"; exit 1
-
-      # Tonight's video and short also go to the "videos" release, so they can
-      # be downloaded without signing in (and copied to Ardie's computer).
-      - name: Add tonight's videos to the downloads release
-        if: steps.check.outputs.go == 'yes'
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -eo pipefail
-          gh release view videos >/dev/null 2>&1 || gh release create videos --title "Video downloads" \
-            --notes "Every Vance Report video as an mp4: special reports, daily top-five videos and the vertical shorts. Educational research only, not investment advice."
-          D="${{ steps.check.outputs.as_of }}"
-          cp build/briefing.mp4 "daily-$D.mp4" && gh release upload videos "daily-$D.mp4" --clobber
-          if [ -f build/short.mp4 ]; then cp build/short.mp4 "short-$D.mp4" && gh release upload videos "short-$D.mp4" --clobber; fi
