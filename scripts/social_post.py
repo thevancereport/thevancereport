@@ -119,6 +119,16 @@ def ig_reel(path, caption, token):
     return call("POST", f"{IG_ID}/media_publish", {"creation_id": cid}, token).get("id")
 
 
+def ig_reel_url(url, caption, token):
+    """Ask Instagram to fetch the short from a public link (the downloads
+    release) instead of sending the file; Instagram's direct upload has been
+    failing with ProcessingFailedError. Returns the media id."""
+    c = call("POST", f"{IG_ID}/media", {"media_type": "REELS", "video_url": url,
+                                         "caption": caption, "share_to_feed": "true"}, token)
+    wait_ready(c["id"], token, tries=60, every=10)
+    return call("POST", f"{IG_ID}/media_publish", {"creation_id": c["id"]}, token).get("id")
+
+
 def wait_ready(cid, token, tries=20, every=6):
     for _ in range(tries):
         s = call("GET", cid, {"fields": "status_code,status"}, token)
@@ -149,6 +159,7 @@ def main():
     ap.add_argument("--root", default=str(ROOT))
     ap.add_argument("--video", help="the full video, for the Facebook Page")
     ap.add_argument("--reel", help="the vertical short, for Instagram")
+    ap.add_argument("--reel-url", help="a public link to the same short; tried before --reel")
     a = ap.parse_args()
     root = Path(a.root)
 
@@ -169,7 +180,7 @@ def main():
     fb_video_file = a.video if a.video and Path(a.video).exists() else None
     reel_file = a.reel if a.reel and Path(a.reel).exists() else None
     print("FACEBOOK (" + ("video " + fb_video_file if fb_video_file else "link post") + "):\n" + fb_text +
-          "\n\nINSTAGRAM (" + ("reel " + reel_file if reel_file else "image " + (image or "none")) + "):\n" + ig_text + "\n")
+          "\n\nINSTAGRAM (" + ("reel " + (a.reel_url or reel_file) if (a.reel_url or reel_file) else "image " + (image or "none")) + "):\n" + ig_text + "\n")
     if a.dry_run:
         return 0
 
@@ -206,7 +217,14 @@ def main():
         print("Facebook already posted for", day)
 
     if not done.get("instagram"):
-        if reel_file:
+        if a.reel_url:
+            try:
+                done["instagram"] = ig_reel_url(a.reel_url, ig_text, token)
+                done["instagram_kind"] = "reel"
+                print("Instagram reel (from link):", done["instagram"])
+            except Exception as e:  # noqa: BLE001
+                problems.append(f"Instagram reel from link: {e}" + ("; trying the file upload" if reel_file else ""))
+        if reel_file and not done.get("instagram"):
             try:
                 done["instagram"] = ig_reel(reel_file, ig_text, token)
                 done["instagram_kind"] = "reel"
