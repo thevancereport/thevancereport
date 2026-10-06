@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-10-02",
-  "published": "2026-10-02",
-  "page": "top-five-2026-10-02.html",
-  "universe": 1160,
-  "blurb": "Cricut is first with a score of 82.0, as it was the session before. Consolidated Water Co. joins the five, and Nutex Health drops out. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "u9wd7z742_Y",
+  "date": "2026-10-05",
+  "published": "2026-10-05",
+  "page": "top-five-2026-10-05.html",
+  "universe": 1157,
+  "blurb": "Cricut is first with a score of 82.1, as it was the session before. The same five names as the session before. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
       "symbol": "CRCT",
       "rank": 1,
-      "score": 82.04,
-      "price": 6.52
+      "score": 82.1,
+      "price": 6.47
     },
     {
       "symbol": "NRDS",
       "rank": 2,
-      "score": 80.58,
-      "price": 8.63
+      "score": 80.67,
+      "price": 8.83
     },
     {
       "symbol": "YELP",
       "rank": 3,
       "score": 80.43,
-      "price": 18.26
+      "price": 18.5
     },
     {
       "symbol": "PGNY",
       "rank": 4,
-      "score": 78.84,
-      "price": 25.23
+      "score": 78.8,
+      "price": 25.86
     },
     {
       "symbol": "CWCO",
       "rank": 5,
-      "score": 78.83,
-      "price": 30.15
+      "score": 78.66,
+      "price": 30.32
     }
-  ],
-  "duration": "3:43"
+  ]
 }
