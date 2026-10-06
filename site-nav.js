@@ -32,17 +32,32 @@
     if (!m) return null;
     return m[2] === "rem" ? parseFloat(m[1]) * 16 : parseFloat(m[1]);
   }
+  function bigger(px) { return Math.min(Math.round(px * GROW * 10) / 10, CAP_PX); }
   function growStyle(st) {
-    var px = toPx(st.fontSize);
-    if (px && px < SMALL_PX) {
-      st.setProperty("font-size", Math.min(Math.round(px * GROW * 10) / 10, CAP_PX) + "px",
-                     st.getPropertyPriority("font-size"));
+    var fs = st.fontSize;
+    var pri = st.getPropertyPriority("font-size") || st.getPropertyPriority("font");
+    // "font: 500 13px var(--sans)" leaves fontSize empty, because the browser
+    // can't split a shorthand that uses var() until it draws the page. Read
+    // the size out of the shorthand itself (5 Oct 2026).
+    if (!fs) {
+      var m = /(?:^|\s)([\d.]+)px(?:\s*\/|\s)/.exec(st.getPropertyValue("font") + " ");
+      if (!m) return;
+      fs = m[1] + "px";
+    }
+    var px = toPx(fs);
+    if (px && px < SMALL_PX) { st.setProperty("font-size", bigger(px) + "px", pri); return; }
+    // clamp(9px, 1.7cqw, 14px): raise the floor and the ceiling the same way.
+    var c = /^clamp\(\s*([\d.]+)px\s*,(.*),\s*([\d.]+)px\s*\)$/.exec(fs);
+    if (c && parseFloat(c[1]) < SMALL_PX) {
+      var lo = bigger(parseFloat(c[1])), hi = Math.max(parseFloat(c[3]), lo);
+      if (parseFloat(c[3]) < SMALL_PX) hi = Math.max(bigger(parseFloat(c[3])), lo);
+      st.setProperty("font-size", "clamp(" + lo + "px," + c[2] + "," + hi + "px)", pri);
     }
   }
   function growRules(rules) {
     for (var i = 0; i < rules.length; i++) {
       var r = rules[i];
-      if (r.style && r.style.fontSize) growStyle(r.style);
+      if (r.style && (r.style.fontSize || r.style.getPropertyValue("font"))) growStyle(r.style);
       if (r.cssRules) growRules(r.cssRules);
     }
   }
@@ -62,10 +77,10 @@
   }
   function growInline(root) {
     if (!root || root.nodeType !== 1) return;
-    var els = [root].concat(Array.prototype.slice.call(root.querySelectorAll('[style*="font-size"]')));
+    var els = [root].concat(Array.prototype.slice.call(root.querySelectorAll('[style*="font"]')));
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
-      if (el.hasAttribute("data-vr-grown") || !/font-size/.test(el.getAttribute("style") || "")) continue;
+      if (el.hasAttribute("data-vr-grown") || !/font(-size)?\s*:/.test(el.getAttribute("style") || "")) continue;
       if (el.closest && el.closest(".vr-nav")) continue;
       growStyle(el.style);
       el.setAttribute("data-vr-grown", "");
