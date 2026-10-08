@@ -2497,6 +2497,214 @@
      "price": 22.19
     }
    ]
+  },
+  {
+   "session": "2026-10-07",
+   "prices_through": "2026-10-07",
+   "generated_at": "2026-10-08T01:35:26.810301+00:00",
+   "universe": 1183,
+   "top": [
+    {
+     "rank": 1,
+     "symbol": "FLXS",
+     "name": "FLEXSTEEL INDUSTRIES INC",
+     "sector": "Materials",
+     "score": 82.98,
+     "price": 86.5
+    },
+    {
+     "rank": 2,
+     "symbol": "CRCT",
+     "name": "CRICUT, INC.",
+     "sector": "Industrials",
+     "score": 82.8,
+     "price": 6.36
+    },
+    {
+     "rank": 3,
+     "symbol": "NRDS",
+     "name": "NERDWALLET, INC.",
+     "sector": "Technology",
+     "score": 80.84,
+     "price": 9.09
+    },
+    {
+     "rank": 4,
+     "symbol": "GNTX",
+     "name": "GENTEX CORP",
+     "sector": "Autos & Transport Equipment",
+     "score": 80.15,
+     "price": 21.08
+    },
+    {
+     "rank": 5,
+     "symbol": "YELP",
+     "name": "YELP INC",
+     "sector": "Consumer Services",
+     "score": 80.06,
+     "price": 18.4
+    },
+    {
+     "rank": 6,
+     "symbol": "PGNY",
+     "name": "PROGYNY, INC.",
+     "sector": "Healthcare Services",
+     "score": 79.72,
+     "price": 27.55
+    },
+    {
+     "rank": 7,
+     "symbol": "CART",
+     "name": "MAPLEBEAR INC.",
+     "sector": "Business Services",
+     "score": 78.48,
+     "price": 45.21
+    },
+    {
+     "rank": 8,
+     "symbol": "NUTX",
+     "name": "NUTEX HEALTH, INC.",
+     "sector": "Business Services",
+     "score": 77.65,
+     "price": 213.02
+    },
+    {
+     "rank": 9,
+     "symbol": "DFIN",
+     "name": "DONNELLEY FINANCIAL SOLUTIONS, INC.",
+     "sector": "Business Services",
+     "score": 77.31,
+     "price": 49.8
+    },
+    {
+     "rank": 10,
+     "symbol": "TCMD",
+     "name": "TACTILE SYSTEMS TECHNOLOGY INC",
+     "sector": "Medical Devices",
+     "score": 76.68,
+     "price": 22.02
+    },
+    {
+     "rank": 11,
+     "symbol": "ED",
+     "name": "CONSOLIDATED EDISON INC",
+     "sector": "Utilities",
+     "score": 76.62,
+     "price": 104.64
+    },
+    {
+     "rank": 12,
+     "symbol": "CWCO",
+     "name": "CONSOLIDATED WATER CO. LTD.",
+     "sector": "Utilities",
+     "score": 76.59,
+     "price": 30.25
+    },
+    {
+     "rank": 13,
+     "symbol": "USLM",
+     "name": "UNITED STATES LIME & MINERALS INC",
+     "sector": "Metals & Mining",
+     "score": 76.32,
+     "price": 110.27
+    },
+    {
+     "rank": 14,
+     "symbol": "PCRX",
+     "name": "PACIRA BIOSCIENCES, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 76.24,
+     "price": 25.2
+    },
+    {
+     "rank": 15,
+     "symbol": "NRC",
+     "name": "NATIONAL RESEARCH CORP",
+     "sector": "Biotech & Pharma",
+     "score": 75.97,
+     "price": 20.19
+    },
+    {
+     "rank": 16,
+     "symbol": "DECK",
+     "name": "DECKERS OUTDOOR CORP",
+     "sector": "Materials",
+     "score": 75.72,
+     "price": 80.38
+    },
+    {
+     "rank": 17,
+     "symbol": "COLM",
+     "name": "COLUMBIA SPORTSWEAR CO",
+     "sector": "Textiles & Apparel",
+     "score": 75.69,
+     "price": 56.53
+    },
+    {
+     "rank": 18,
+     "symbol": "CLH",
+     "name": "CLEAN HARBORS INC",
+     "sector": "Utilities",
+     "score": 75.21,
+     "price": 315.54
+    },
+    {
+     "rank": 19,
+     "symbol": "IPAR",
+     "name": "INTERPARFUMS INC",
+     "sector": "Chemicals",
+     "score": 75.16,
+     "price": 111.0
+    },
+    {
+     "rank": 20,
+     "symbol": "WFRD",
+     "name": "WEATHERFORD INTERNATIONAL PLC",
+     "sector": "Industrials",
+     "score": 74.55,
+     "price": 76.42
+    },
+    {
+     "rank": 21,
+     "symbol": "BWA",
+     "name": "BORGWARNER INC",
+     "sector": "Autos & Transport Equipment",
+     "score": 74.48,
+     "price": 62.36
+    },
+    {
+     "rank": 22,
+     "symbol": "EXEL",
+     "name": "EXELIXIS, INC.",
+     "sector": "Biotech & Pharma",
+     "score": 74.34,
+     "price": 58.44
+    },
+    {
+     "rank": 23,
+     "symbol": "EPAM",
+     "name": "EPAM SYSTEMS, INC.",
+     "sector": "Technology",
+     "score": 74.32,
+     "price": 108.32
+    },
+    {
+     "rank": 24,
+     "symbol": "YETI",
+     "name": "YETI HOLDINGS, INC.",
+     "sector": "Consumer Goods",
+     "score": 74.27,
+     "price": 39.47
+    },
+    {
+     "rank": 25,
+     "symbol": "ADBE",
+     "name": "ADOBE INC.",
+     "sector": "Technology",
+     "score": 73.88,
+     "price": 232.77
+    }
+   ]
   }
  ],
  "entry_rank": 10,
@@ -2612,6 +2820,27 @@
    "entry_price": 21.74,
    "name": "GENTEX CORP",
    "sector": "Autos & Transport Equipment"
+  },
+  "FLXS": {
+   "entered": "2026-10-07",
+   "entry_rank": 1,
+   "entry_price": 86.5,
+   "name": "FLEXSTEEL INDUSTRIES INC",
+   "sector": "Materials"
+  },
+  "DFIN": {
+   "entered": "2026-10-07",
+   "entry_rank": 9,
+   "entry_price": 49.8,
+   "name": "DONNELLEY FINANCIAL SOLUTIONS, INC.",
+   "sector": "Business Services"
+  },
+  "TCMD": {
+   "entered": "2026-10-07",
+   "entry_rank": 10,
+   "entry_price": 22.02,
+   "name": "TACTILE SYSTEMS TECHNOLOGY INC",
+   "sector": "Medical Devices"
   }
  },
  "prices": {
@@ -2627,7 +2856,8 @@
    "2026-10-01": 18.11,
    "2026-10-02": 18.26,
    "2026-10-05": 18.5,
-   "2026-10-06": 18.14
+   "2026-10-06": 18.14,
+   "2026-10-07": 18.4
   },
   "NRDS": {
    "2026-09-21": 9.08,
@@ -2641,7 +2871,8 @@
    "2026-10-01": 8.57,
    "2026-10-02": 8.63,
    "2026-10-05": 8.83,
-   "2026-10-06": 8.86
+   "2026-10-06": 8.86,
+   "2026-10-07": 9.09
   },
   "CRCT": {
    "2026-09-21": 5.65,
@@ -2655,7 +2886,8 @@
    "2026-10-01": 6.51,
    "2026-10-02": 6.52,
    "2026-10-05": 6.47,
-   "2026-10-06": 6.38
+   "2026-10-06": 6.38,
+   "2026-10-07": 6.36
   },
   "CRL": {
    "2026-09-21": 279.01,
@@ -2669,7 +2901,8 @@
    "2026-10-01": 286.83,
    "2026-10-02": 290.19,
    "2026-10-05": 310.77,
-   "2026-10-06": 304.96
+   "2026-10-06": 304.96,
+   "2026-10-07": 300.3
   },
   "NUTX": {
    "2026-09-21": 201.48,
@@ -2683,7 +2916,8 @@
    "2026-10-01": 212.31,
    "2026-10-02": 216.5,
    "2026-10-05": 225.0,
-   "2026-10-06": 218.4
+   "2026-10-06": 218.4,
+   "2026-10-07": 213.02
   },
   "PGNY": {
    "2026-09-21": 26.86,
@@ -2697,7 +2931,8 @@
    "2026-10-01": 24.85,
    "2026-10-02": 25.23,
    "2026-10-05": 25.86,
-   "2026-10-06": 25.91
+   "2026-10-06": 25.91,
+   "2026-10-07": 27.55
   },
   "FE": {
    "2026-09-21": 44.97,
@@ -2711,7 +2946,8 @@
    "2026-10-01": 43.4,
    "2026-10-02": 43.34,
    "2026-10-05": 43.64,
-   "2026-10-06": 44.26
+   "2026-10-06": 44.26,
+   "2026-10-07": 44.58
   },
   "PCRX": {
    "2026-09-21": 24.11,
@@ -2725,7 +2961,8 @@
    "2026-10-01": 25.01,
    "2026-10-02": 25.21,
    "2026-10-05": 25.05,
-   "2026-10-06": 24.76
+   "2026-10-06": 24.76,
+   "2026-10-07": 25.2
   },
   "BWA": {
    "2026-09-21": 63.32,
@@ -2739,7 +2976,8 @@
    "2026-10-01": 60.39,
    "2026-10-02": 60.52,
    "2026-10-05": 60.26,
-   "2026-10-06": 63.36
+   "2026-10-06": 63.36,
+   "2026-10-07": 62.36
   },
   "COLL": {
    "2026-09-21": 23.04,
@@ -2753,7 +2991,8 @@
    "2026-10-01": 21.84,
    "2026-10-02": 22.02,
    "2026-10-05": 21.87,
-   "2026-10-06": 21.88
+   "2026-10-06": 21.88,
+   "2026-10-07": 21.93
   },
   "MD": {
    "2026-09-22": 26.35,
@@ -2765,42 +3004,57 @@
    "2026-10-01": 25.76,
    "2026-10-02": 25.97,
    "2026-10-05": 26.1,
-   "2026-10-06": 26.0
+   "2026-10-06": 26.0,
+   "2026-10-07": 25.83
   },
   "CWCO": {
    "2026-09-30": 28.02,
    "2026-10-01": 28.81,
    "2026-10-02": 30.15,
    "2026-10-05": 30.32,
-   "2026-10-06": 30.38
+   "2026-10-06": 30.38,
+   "2026-10-07": 30.25
   },
   "COLM": {
    "2026-09-30": 57.41,
    "2026-10-01": 57.69,
    "2026-10-02": 57.27,
    "2026-10-05": 56.93,
-   "2026-10-06": 57.45
+   "2026-10-06": 57.45,
+   "2026-10-07": 56.53
   },
   "CART": {
    "2026-09-30": 43.12,
    "2026-10-01": 44.11,
    "2026-10-02": 44.25,
    "2026-10-05": 45.67,
-   "2026-10-06": 45.47
+   "2026-10-06": 45.47,
+   "2026-10-07": 45.21
   },
   "USLM": {
    "2026-09-30": 113.11,
    "2026-10-01": 111.36,
    "2026-10-02": 111.01,
    "2026-10-05": 110.78,
-   "2026-10-06": 111.81
+   "2026-10-06": 111.81,
+   "2026-10-07": 110.27
   },
   "GNTX": {
    "2026-09-30": 21.74,
    "2026-10-01": 21.95,
    "2026-10-02": 22.08,
    "2026-10-05": 21.91,
-   "2026-10-06": 21.55
+   "2026-10-06": 21.55,
+   "2026-10-07": 21.08
+  },
+  "FLXS": {
+   "2026-10-07": 86.5
+  },
+  "DFIN": {
+   "2026-10-07": 49.8
+  },
+  "TCMD": {
+   "2026-10-07": 22.02
   }
  }
 }
