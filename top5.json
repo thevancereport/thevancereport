@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-10-07",
-  "published": "2026-10-07",
-  "page": "top-five-2026-10-07.html",
-  "universe": 1183,
-  "blurb": "Flexsteel Industries is first with a score of 83.0. Flexsteel Industries and Gentex join the five, and Progyny and Consolidated Water Co. drop out. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "tq22lIpJRI4",
+  "date": "2026-10-08",
+  "published": "2026-10-08",
+  "page": "top-five-2026-10-08.html",
+  "universe": 1179,
+  "blurb": "Flexsteel Industries is first with a score of 83.0, as it was the session before. The same five names as the session before. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
       "symbol": "FLXS",
       "rank": 1,
       "score": 82.98,
-      "price": 86.5
+      "price": 86.52
     },
     {
       "symbol": "CRCT",
       "rank": 2,
-      "score": 82.8,
-      "price": 6.36
+      "score": 82.44,
+      "price": 6.4
     },
     {
       "symbol": "NRDS",
       "rank": 3,
-      "score": 80.84,
-      "price": 9.09
+      "score": 81.33,
+      "price": 9.79
     },
     {
       "symbol": "GNTX",
       "rank": 4,
-      "score": 80.15,
-      "price": 21.08
+      "score": 80.52,
+      "price": 21.15
     },
     {
       "symbol": "YELP",
       "rank": 5,
-      "score": 80.06,
-      "price": 18.4
+      "score": 80.43,
+      "price": 19.37
     }
-  ],
-  "duration": "3:51"
+  ]
 }
