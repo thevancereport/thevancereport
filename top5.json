@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-10-08",
-  "published": "2026-10-08",
-  "page": "top-five-2026-10-08.html",
-  "universe": 1179,
+  "date": "2026-10-09",
+  "published": "2026-10-09",
+  "page": "top-five-2026-10-09.html",
+  "universe": 1178,
   "blurb": "Flexsteel Industries is first with a score of 83.0, as it was the session before. The same five names as the session before. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "e0EaBVI4OG4",
+  "video_id": null,
   "names": [
     {
       "symbol": "FLXS",
       "rank": 1,
       "score": 82.98,
-      "price": 86.52
+      "price": 85.17
     },
     {
       "symbol": "CRCT",
       "rank": 2,
-      "score": 82.44,
-      "price": 6.4
+      "score": 82.74,
+      "price": 6.39
     },
     {
       "symbol": "NRDS",
       "rank": 3,
-      "score": 81.33,
-      "price": 9.79
+      "score": 81.23,
+      "price": 9.74
     },
     {
       "symbol": "GNTX",
       "rank": 4,
       "score": 80.52,
-      "price": 21.15
+      "price": 21.04
     },
     {
       "symbol": "YELP",
       "rank": 5,
       "score": 80.43,
-      "price": 19.37
+      "price": 18.59
     }
-  ],
-  "duration": "3:51"
+  ]
 }
