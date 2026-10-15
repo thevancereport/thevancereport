@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-10-13",
-  "published": "2026-10-13",
-  "page": "top-five-2026-10-13.html",
-  "universe": 1142,
-  "blurb": "Cricut is first with a score of 83.1, as it was the session before. Progyny joins the five, and Gentex drops out. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "Nkx3qnBVLmY",
+  "date": "2026-10-14",
+  "published": "2026-10-14",
+  "page": "top-five-2026-10-14.html",
+  "universe": 1169,
+  "blurb": "Cricut is first with a score of 82.7, as it was the session before. Gentex joins the five, and Progyny drops out. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
       "symbol": "CRCT",
       "rank": 1,
-      "score": 83.09,
-      "price": 6.55
+      "score": 82.73,
+      "price": 6.49
     },
     {
       "symbol": "FLXS",
       "rank": 2,
-      "score": 83.02,
-      "price": 87.09
+      "score": 82.61,
+      "price": 85.53
     },
     {
       "symbol": "NRDS",
       "rank": 3,
-      "score": 81.34,
-      "price": 9.64
+      "score": 81.37,
+      "price": 9.55
+    },
+    {
+      "symbol": "GNTX",
+      "rank": 4,
+      "score": 80.65,
+      "price": 20.78
     },
     {
       "symbol": "YELP",
-      "rank": 4,
-      "score": 80.62,
-      "price": 18.92
-    },
-    {
-      "symbol": "PGNY",
       "rank": 5,
-      "score": 79.52,
-      "price": 27.39
+      "score": 80.43,
+      "price": 19.45
     }
-  ],
-  "duration": "3:50"
+  ]
 }
