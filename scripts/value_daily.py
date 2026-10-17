@@ -272,6 +272,29 @@ def main():
             + (f" now run to {topped}." if topped else " -- none used."))
         log(vp.report() + "\n")
 
+    # Nasdaq's quote sometimes keeps the previous day's date on a new close
+    # (Friday 16 Oct 2026 was stamped "Oct 15" all weekend), so the top-up
+    # above finds nothing newer and the night publishes nothing. When that
+    # happens, ask the history table instead for every name that stops short
+    # of the as-of date. It is slower, but its dates are right once it has
+    # caught up, which by late evening or the next morning it has.
+    if not topped:
+        behind = [s for s, (d, _c, _v) in prices.items() if d and d[-1] < as_of and s not in fetched]
+        if behind:
+            log(f"Top-up found no newer close; asking the history table for {len(behind):,} names instead.")
+            refreshed = 0
+            with ThreadPoolExecutor(max_workers=PRICE_WORKERS) as pool:
+                for sym, p in pool.map(grab, behind):
+                    if p:
+                        vcache.put(cache, sym, *p)
+                        fetched.add(sym)
+                        got = vcache.series(cache, sym)
+                        if got:
+                            prices[sym] = got
+                            refreshed += 1
+            log(f"  {refreshed:,} histories refetched.")
+            log(vp.report() + "\n")
+
     # Carry tonight's work into tomorrow. Anything that looked like a split is
     # forgotten rather than repaired, so tomorrow fetches it from source.
     for sym in jumped:
