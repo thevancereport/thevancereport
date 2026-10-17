@@ -125,6 +125,7 @@
     { key: "index",         href: "index.html",         label: "Today\u2019s screen" },
     { key: "how",           href: "vance-value-screener.html", label: "How it works" },
     { key: "scorecard",     href: "scorecard.html",            label: "Track record" },
+    { key: "leaps",         href: "leaps.html",                label: "LEAPS" },
     { key: "report",        href: "report.html",        label: "Inbox report" },
     { key: "stock",         href: "stock.html",         label: "Stock lookup" },
     { key: "blog",          href: "blog.html",          label: "Field notes" },
@@ -155,15 +156,15 @@
       "padding:2px 6px;letter-spacing:.08em}" +
     ".vr-links{display:flex;gap:2px;margin:0 0 0 auto;padding:0;list-style:none}" +
     ".vr-links li{margin:0;padding:0}" +
-    ".vr-links a{display:block;padding:9px 11px;color:#aea59d;text-decoration:none;" +
-      "font-size:13px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;" +
+    ".vr-links a{display:block;padding:9px 7px;color:#aea59d;text-decoration:none;" +
+      "font-size:13px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;" +
       "border-bottom:1px solid transparent}" +
     ".vr-links a:hover{color:#e7e3d8}" +
     ".vr-links a:focus-visible,.vr-brand:focus-visible,.vr-toggle:focus-visible" +
       "{outline:1px solid #e0a33c;outline-offset:2px}" +
     ".vr-links a[aria-current=page]{color:#e0a33c;border-bottom-color:#e0a33c}" +
     ".vr-toggle{display:none}" +
-    "@media (max-width:1080px){" +
+    "@media (max-width:1280px){" +
       ".vr-nav-in{padding:0 18px;height:52px}" +
       ".vr-toggle{display:inline-flex;align-items:center;margin-left:auto;" +
         "background:none;border:1px solid #372d23;color:#e7e3d8;cursor:pointer;" +
