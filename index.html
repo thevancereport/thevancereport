@@ -1424,6 +1424,66 @@
         </div>
       </section>
 
+
+      <!-- ============ THE VANCE SCREENERS (counts read from value_screen.json and leaps_screen.json) ============ -->
+      <section class="block" id="screeners" aria-label="The Vance Screeners">
+        <div class="wrap">
+          <div class="sec-head">
+            <h2>The Vance Screeners</h2>
+            <span class="sec-meta">Strict on purpose.<br>Most companies don&rsquo;t make it.</span>
+          </div>
+          <div class="hub-grid">
+            <a class="hub-card" href="#scanResults" id="hubValue">
+              <span class="hub-kicker">Value screen &middot; nightly</span>
+              <span class="hub-title">Every company, ranked on its own filings</span>
+              <span class="hub-count"><b id="hubValueTop">&mdash;</b> <small id="hubValueSub">tonight&rsquo;s first place</small></span>
+              <span class="hub-body">How cheap, how profitable and how financially safe each company is, against others in its industry. <span id="hubValueN">&mdash;</span> ranked; the top decile is where the reading starts.</span>
+              <span class="hub-go">See tonight&rsquo;s ranking <span aria-hidden="true">&rarr;</span></span>
+            </a>
+            <a class="hub-card" href="leaps.html" id="hubLeaps">
+              <span class="hub-kicker">LEAPS screen &middot; new</span>
+              <span class="hub-title">Long-dated options on the best-ranked companies</span>
+              <span class="hub-count"><b id="hubLeapsN">&mdash;</b> <small id="hubLeapsSub">passed all five filters tonight</small></span>
+              <span class="hub-body">Deep in-the-money calls, Poor Man&rsquo;s Covered Calls and index hedges, checked for delta, time to expiry, volatility, liquidity and trend. <span id="hubLeapsNames"></span></span>
+              <span class="hub-go">Open the LEAPS screen <span aria-hidden="true">&rarr;</span></span>
+            </a>
+          </div>
+          <p class="hub-note">Educational research only, not investment advice. Options can lose 100% of what is paid for them.</p>
+        </div>
+      </section>
+      <style id="vr-hub">
+        .hub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+        .hub-card { display: grid; gap: 12px; align-content: start; padding: 26px 26px 22px; border: 1px solid var(--rule);
+          background: var(--ink-2); color: var(--paper); text-decoration: none; transition: border-color .16s ease; }
+        .hub-card:hover, .hub-card:focus-visible { border-color: var(--amber); }
+        .hub-card:focus-visible { outline: 1px solid var(--amber); outline-offset: 3px; }
+        .hub-kicker { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+        .hub-title { font-family: var(--serif); font-size: 30px; line-height: 1.1; }
+        .hub-count b { font-family: var(--serif); font-weight: 400; font-size: 46px; color: var(--amber); line-height: 1; }
+        .hub-count small { font-family: var(--mono); font-size: 14px; color: var(--paper-dim); margin-left: 8px; }
+        .hub-body { font-size: 15.5px; line-height: 1.6; color: var(--paper-dim); }
+        .hub-go { font-family: var(--mono); font-size: 13.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--amber); }
+        .hub-note { margin: 16px 0 0; font-family: var(--mono); font-size: 13px; color: var(--paper-faint); }
+        @media (max-width: 760px) { .hub-grid { grid-template-columns: 1fr; } .hub-title { font-size: 26px; } }
+      </style>
+      <script id="vr-hub-js">
+      (function () {
+        function j(u) { return fetch(u + "?v=" + Date.now(), { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.json(); }); }
+        function set(id, t) { var e = document.getElementById(id); if (e) e.textContent = t; }
+        j("value_screen.json").then(function (d) {
+          var r = d.ranked || [];
+          if (r[0]) { set("hubValueTop", r[0].symbol); set("hubValueSub", "first of " + r.length.toLocaleString("en-US") + " tonight"); }
+          set("hubValueN", r.length.toLocaleString("en-US") + " companies");
+        }).catch(function () {});
+        j("leaps_screen.json").then(function (d) {
+          var m = d._meta || {}, pass = (d.stock_replacement || []).filter(function (x) { return x.all_pass; });
+          set("hubLeapsN", m.all_pass + " of " + m.checked);
+          set("hubLeapsSub", "passed all five filters");
+          set("hubLeapsNames", pass.length ? "Tonight: " + pass.map(function (x) { return x.symbol; }).join(", ") + "." : "None passes tonight; the near misses are on the page.");
+        }).catch(function () {});
+      })();
+      </script>
+
       <!-- ============ MARKETS NOW (live widgets from TradingView; free embed, attribution below) ============ -->
       <section class="markets" aria-label="Markets now">
         <div class="mk-tape"><div class="tradingview-widget-container "><div class="tradingview-widget-container__widget"></div><script type="text/plain" data-tv-src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js">
