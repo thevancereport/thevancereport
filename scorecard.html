@@ -488,8 +488,9 @@ table.t5.sc td.sym { font-size: 18px; }
 table.t5.sc td.sym small { font-size: 10px; letter-spacing: .06em; line-height: 1.35; white-space: normal; }
 table.t5.sc td.num { white-space: nowrap; }
 table.t5.sc td.sub small { display: block; color: var(--paper-faint); font-size: 10.5px; }
-/* Phones: one card per company instead of a table. */
-@media (max-width: 760px) {
+/* Phones and tablets: one card per company instead of a table. The table
+   needs about 1,000px; below that it ran off the side (fixed 19 Oct 2026). */
+@media (max-width: 1100px) {
   table.t5.sc thead { display: none; }
   table.t5.sc, table.t5.sc tbody, table.t5.sc tr, table.t5.sc td { display: block; width: 100%; }
   table.t5.sc tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; padding: 16px 0; border-bottom: 1px solid var(--rule); }

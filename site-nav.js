@@ -121,11 +121,19 @@
   }
 
 
+  // "Screeners" opens a submenu: the stock screener and the options
+  // screener's four pages (19 Oct 2026). Pages inside it light up the
+  // Screeners item as well as their own line.
   var ITEMS = [
-    { key: "index",         href: "index.html",         label: "Today\u2019s screen" },
+    { key: "screeners", label: "Screeners", children: [
+      { key: "stock-screener",          href: "stock-screener.html",          label: "Value Stock Screener" },
+      { key: "leaps",                   href: "leaps.html",                   label: "Options Screener: overview", sep: true },
+      { key: "leaps-stock-replacement", href: "leaps-stock-replacement.html", label: "\u2014 Stock replacement" },
+      { key: "leaps-pmcc",              href: "leaps-pmcc.html",              label: "\u2014 Poor Man\u2019s Covered Call" },
+      { key: "leaps-hedges",            href: "leaps-hedges.html",            label: "\u2014 Hedges" }
+    ] },
     { key: "how",           href: "vance-value-screener.html", label: "How it works" },
     { key: "scorecard",     href: "scorecard.html",            label: "Track record" },
-    { key: "leaps",         href: "leaps.html",                label: "LEAPS" },
     { key: "report",        href: "report.html",        label: "Inbox report" },
     { key: "stock",         href: "stock.html",         label: "Stock lookup" },
     { key: "blog",          href: "blog.html",          label: "Field notes" },
@@ -163,6 +171,18 @@
     ".vr-links a:focus-visible,.vr-brand:focus-visible,.vr-toggle:focus-visible" +
       "{outline:1px solid #e0a33c;outline-offset:2px}" +
     ".vr-links a[aria-current=page]{color:#e0a33c;border-bottom-color:#e0a33c}" +
+    ".vr-has-sub{position:relative}" +
+    ".vr-sub-btn{display:block;padding:9px 7px;background:none;border:0;border-bottom:1px solid transparent;" +
+      "color:#aea59d;font:inherit;font-size:13px;letter-spacing:.08em;text-transform:uppercase;" +
+      "white-space:nowrap;cursor:pointer}" +
+    ".vr-sub-btn:hover,.vr-has-sub.is-open .vr-sub-btn{color:#e7e3d8}" +
+    ".vr-has-sub.is-here .vr-sub-btn{color:#e0a33c;border-bottom-color:#e0a33c}" +
+    ".vr-sub-btn:focus-visible{outline:1px solid #e0a33c;outline-offset:2px}" +
+    ".vr-sub{display:none;position:absolute;left:0;top:100%;min-width:290px;margin:6px 0 0;padding:8px 0;" +
+      "list-style:none;background:#130f0a;border:1px solid #372d23;box-shadow:0 14px 30px rgba(0,0,0,.55)}" +
+    ".vr-has-sub.is-open .vr-sub{display:block}" +
+    ".vr-sub a{padding:10px 16px !important;border-bottom:0 !important;letter-spacing:.06em !important}" +
+    ".vr-sub li.vr-sep{border-top:1px solid #29221a;margin-top:6px;padding-top:6px}" +
     ".vr-toggle{display:none}" +
     "@media (max-width:1280px){" +
       ".vr-nav-in{padding:0 18px;height:52px}" +
@@ -178,15 +198,27 @@
       ".vr-links a{padding:14px 18px;font-size:14px;border-bottom:0;" +
         "border-left:2px solid transparent}" +
       ".vr-links a[aria-current=page]{border-left-color:#e0a33c}" +
+      ".vr-sub-btn{display:none}" +
+      ".vr-sub{display:block;position:static;min-width:0;margin:0;padding:0;border:0;box-shadow:none;background:none}" +
+      ".vr-sub a{padding:12px 18px 12px 30px !important;border-left:2px solid transparent}" +
+      ".vr-sub li.vr-sep{border-top:0;margin:0;padding:0}" +
     "}";
 
   var style = document.createElement("style");
   style.id = "vr-nav-css";   // the menu keeps its own sizes
   style.textContent = CSS;
 
-  var links = ITEMS.map(function (it) {
+  function linkHtml(it) {
     var cur = it.key === here ? ' aria-current="page"' : "";
-    return '<li><a href="' + it.href + '"' + cur + ">" + it.label + "</a></li>";
+    return '<li' + (it.sep ? ' class="vr-sep"' : "") + '><a href="' + it.href + '"' + cur + ">" + it.label + "</a></li>";
+  }
+  var links = ITEMS.map(function (it) {
+    if (!it.children) return linkHtml(it);
+    var inside = it.children.some(function (c) { return c.key === here; });
+    return '<li class="vr-has-sub' + (inside ? " is-here" : "") + '">' +
+      '<button type="button" class="vr-sub-btn" aria-expanded="false" aria-controls="vr-sub-' + it.key + '">' +
+      it.label + ' <span aria-hidden="true">\u25be</span></button>' +
+      '<ul class="vr-sub" id="vr-sub-' + it.key + '">' + it.children.map(linkHtml).join("") + "</ul></li>";
   }).join("");
 
   var nav = document.createElement("nav");
@@ -216,6 +248,21 @@
   if (pt || pl || pr) {
     nav.style.margin = -pt + "px " + -pr + "px " + pt + "px " + -pl + "px";
   }
+
+  Array.prototype.forEach.call(nav.querySelectorAll(".vr-has-sub"), function (li) {
+    var b = li.querySelector(".vr-sub-btn");
+    function set(open) { li.classList.toggle("is-open", open); b.setAttribute("aria-expanded", open ? "true" : "false"); }
+    // With a mouse the list opens on hover, so a click there only ever opens it;
+    // on touch screens a tap toggles it.
+    b.addEventListener("click", function (e) {
+      e.stopPropagation();
+      set(window.matchMedia("(hover: hover)").matches ? true : !li.classList.contains("is-open"));
+    });
+    li.addEventListener("mouseenter", function () { if (window.matchMedia("(hover: hover)").matches) set(true); });
+    li.addEventListener("mouseleave", function () { if (window.matchMedia("(hover: hover)").matches) set(false); });
+    document.addEventListener("click", function (e) { if (!li.contains(e.target)) set(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && li.classList.contains("is-open")) { set(false); b.focus(); } });
+  });
 
   var btn = nav.querySelector(".vr-toggle");
   function setOpen(open) {

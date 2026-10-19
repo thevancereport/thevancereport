@@ -10,21 +10,21 @@
     </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>LEAPS screen: long-dated options on top-ranked value stocks — The Vance Report</title>
-<meta name="description" content="Long-dated options (LEAPS) on the top quarter of The Vance Report value screen: deep in-the-money calls as a stock replacement, Poor Man's Covered Call pairs, and SPY/QQQ put hedges, checked against five filters every night. Educational research only.">
+        <title>Vance Value Options Screener: LEAPS on top-ranked value stocks — The Vance Report</title>
+<meta name="description" content="The Vance Value Options Screener: LEAPS setups on the top 300 of the Vance value ranking, checked every weeknight for delta, time to expiry, volatility, liquidity and trend. Educational research only.">
 <link rel="canonical" href="https://thevancereport.com/leaps.html">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="The Vance Report">
-<meta property="og:title" content="LEAPS screen — The Vance Report">
-<meta property="og:description" content="Long-dated options (LEAPS) on the top quarter of The Vance Report value screen: deep in-the-money calls as a stock replacement, Poor Man's Covered Call pairs, and SPY/QQQ put hedges, checked against five filters every night. Educational research only.">
+<meta property="og:title" content="Vance Value Options Screener — The Vance Report">
+<meta property="og:description" content="The Vance Value Options Screener: LEAPS setups on the top 300 of the Vance value ranking, checked every weeknight for delta, time to expiry, volatility, liquidity and trend. Educational research only.">
 <meta property="og:url" content="https://thevancereport.com/leaps.html">
 <meta property="og:image" content="https://thevancereport.com/og-card.png">
 
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="LEAPS screen — The Vance Report">
-<meta name="twitter:description" content="Long-dated options (LEAPS) on the top quarter of The Vance Report value screen: deep in-the-money calls as a stock replacement, Poor Man's Covered Call pairs, and SPY/QQQ put hedges, checked against five filters every night. Educational research only.">
+<meta name="twitter:title" content="Vance Value Options Screener — The Vance Report">
+<meta name="twitter:description" content="The Vance Value Options Screener: LEAPS setups on the top 300 of the Vance value ranking, checked every weeknight for delta, time to expiry, volatility, liquidity and trend. Educational research only.">
 <meta name="twitter:image" content="https://thevancereport.com/og-card.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -546,6 +546,21 @@ table.t5.sc tr.group td { font-family: var(--mono); font-size: 11px; letter-spac
   table.t5.sc tr.group { display: block; padding: 22px 0 0; border: 0; }
   table.t5.sc td.wide { grid-column: 1 / -1; }
 }
+
+.op-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 30px 0 34px; }
+.op-card { display: grid; gap: 10px; align-content: start; padding: 22px; border: 1px solid var(--rule);
+  background: var(--ink-2); color: var(--paper); text-decoration: none; transition: border-color .16s ease; }
+.op-card:hover, .op-card:focus-visible { border-color: var(--amber); }
+.op-card .k { font-family: var(--mono); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--amber); }
+.op-card .t { font-family: var(--serif); font-size: 25px; line-height: 1.1; }
+.op-card .n { font-family: var(--mono); font-size: 14px; color: var(--paper); }
+.op-card .d { font-size: 14.5px; line-height: 1.55; color: var(--paper-dim); }
+.op-card .go { font-family: var(--mono); font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--amber); }
+.op-crumbs { font-family: var(--mono); font-size: 13px; letter-spacing: .08em; color: var(--paper-faint); margin: 0 0 18px; }
+.op-crumbs a { color: var(--amber); text-decoration: none; }
+.op-next { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 34px 0 6px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.op-next a { font-family: var(--mono); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); text-decoration: none; }
+@media (max-width: 900px) { .op-cards { grid-template-columns: 1fr; } }
 </style></head>
   <body>
     <!-- One menu for the whole site; see site-nav.js. -->
@@ -557,11 +572,10 @@ table.t5.sc tr.group td { font-family: var(--mono); font-size: 11px; letter-spac
 <header class="article-head">
 <div class="wrap head-grid">
 <div>
-<p class="eyebrow">LEAPS Screen · Options research</p>
-<h1>Long-dated options on the screen’s best-ranked companies, <em>and what they cost.</em></h1>
-<p class="dek">
-Every night the top quarter of the value ranking is checked for three LEAPS setups: a deep in-the-money call in place of 100 shares, a Poor Man’s Covered Call, and index puts as a hedge. Five filters, shown pass or fail for every company.
-</p>
+<p class="op-crumbs"><a href="leaps.html">Vance Value Options Screener</a></p>
+<p class="eyebrow">Options screener · Overview</p>
+<h1>Long-dated options on the screen’s best-ranked companies, <em>checked five ways.</em></h1>
+<p class="dek">The Vance Value Options Screener takes the top 300 of the value ranking every weeknight and checks three LEAPS setups: a deep in-the-money call in place of 100 shares, the Poor Man’s Covered Call, and index puts as a hedge.</p>
 </div>
 <dl class="story-meta">
 <div><dt>Universe</dt><dd id="lp-uni">Top 300 value names</dd></div>
@@ -573,59 +587,21 @@ Every night the top quarter of the value ranking is checked for three LEAPS setu
 <article>
 <div class="wrap article-grid">
 <aside class="rail" aria-label="Article classification">
-<strong>LEAPS screen</strong>
+<strong>Options screener</strong>
 <div class="rail-line"></div>
 Updated nightly<br>Delayed quotes<br>Research, not advice
 </aside>
 <div class="prose">
 <p class="lead" id="lp-lead">Loading tonight’s option chains…</p>
 <div class="sc-stats" id="lp-stats"></div>
-
 <div class="lp-risk">
 <p><b>Read this first.</b> Options are not a safer way to own a stock. A call bought for $2,000 can be worth nothing at expiry if the stock ends below the strike, and the leverage that makes a LEAP cheap works just as hard on the way down. Quotes here are delayed, midpoints between bid and ask; the price you would actually get can be worse. Educational research only, not investment advice.</p>
 </div>
-
-<h2>1. Stock replacement: a deep in-the-money call instead of 100 shares</h2>
-<p>
-One call per company, 12 to 24 months out, with a delta between 0.75 and 0.85, so it moves roughly 75–85 cents for every dollar the stock moves. Most of its price is <em>intrinsic</em> value (how far the stock is above the strike); the rest is <em>time premium</em>, the part that melts away by expiry. The lower that share, the closer the call behaves to owning the shares.
-</p>
-<div class="t5-wrap sc-wrap">
-<table class="t5 sc">
-<thead>
-<tr><th>Company</th><th>Call</th><th>Cost vs 100&nbsp;shares</th><th>Time premium</th><th>Breakeven</th><th>Liquidity</th><th>Filters</th></tr>
-</thead>
-<tbody id="lp-sr"></tbody>
-</table>
+<div class="op-cards">
+<a class="op-card" href="leaps-stock-replacement.html"><span class="k">1 · Stock replacement</span><span class="t">A deep in-the-money call instead of 100 shares</span><span class="n" id="lp-card-sr">&mdash;</span><span class="d">12–24 months out, delta 0.75–0.85, five filters, pass or fail.</span><span class="go">Open <span aria-hidden="true">&rarr;</span></span></a>
+<a class="op-card" href="leaps-pmcc.html"><span class="k">2 · Poor Man’s Covered Call</span><span class="t">A LEAP base with a monthly short call</span><span class="n" id="lp-card-pm">&mdash;</span><span class="d">Only pairs that pass the strike check, with one month’s premium.</span><span class="go">Open <span aria-hidden="true">&rarr;</span></span></a>
+<a class="op-card" href="leaps-hedges.html"><span class="k">3 · Hedges</span><span class="t">SPY and QQQ puts, one and two years out</span><span class="n" id="lp-card-hd">&mdash;</span><span class="d">What protection 5–10% below today costs per year.</span><span class="go">Open <span aria-hidden="true">&rarr;</span></span></a>
 </div>
-<p class="sc-note" id="lp-sr-note"></p>
-
-<h2>2. Poor Man’s Covered Call</h2>
-<p>
-A deep in-the-money LEAP (delta 0.80–0.90) stands in for the shares, and a short call 30–45 days out (delta near 0.25) is sold against it, month after month. The premium column is one month’s short call as a share of what the LEAP cost. The strike check matters: if the gap between the two strikes is smaller than the net cost, being called away early locks in a loss.
-</p>
-<div class="t5-wrap sc-wrap">
-<table class="t5 sc">
-<thead>
-<tr><th>Company</th><th>Long LEAP</th><th>Short call</th><th>Net cost</th><th>One month’s premium</th><th>Strike check</th><th>LEAP liquidity</th></tr>
-</thead>
-<tbody id="lp-pm"></tbody>
-</table>
-</div>
-<p class="sc-note" id="lp-pm-note"></p>
-
-<h2>3. Hedging: SPY and QQQ puts</h2>
-<p>
-Puts 5–10% below today’s price, about one and two years out, on the S&amp;P 500 (SPY) and the Nasdaq-100 (QQQ). A put gains as the index falls below its strike, so it can offset part of a portfolio’s loss in a deep pullback. The cost is what that insurance runs per year, as a share of the index.
-</p>
-<div class="t5-wrap sc-wrap">
-<table class="t5 sc">
-<thead>
-<tr><th>Index</th><th>Put</th><th>Below today</th><th>Cost per contract</th><th>Cost, % of index</th><th>Per year</th><th>Liquidity</th></tr>
-</thead>
-<tbody id="lp-hd"></tbody>
-</table>
-</div>
-
 <h2>The five filters</h2>
 <ul class="lp-filters" id="lp-filters">
 <li><b>Δ Delta 0.75–0.85.</b> Deep in the money, so the price is mostly intrinsic value and the call tracks the stock closely.</li>
@@ -635,12 +611,10 @@ Puts 5–10% below today’s price, about one and two years out, on the S&amp;P 
 <li><b>Trend Above the 200-day average.</b> Calls work best when the stock is already in an established uptrend.</li>
 </ul>
 <p class="sc-note" id="lp-volnote"></p>
-
 <h2>What can go wrong</h2>
 <p>
 A LEAP has an expiry date: the stock can be right in two years and the call still expire worthless if the move comes too late. A deep in-the-money call does not collect dividends. A Poor Man’s Covered Call caps the upside for each month a call is sold, and can be assigned early. Puts cost money every year in which nothing bad happens. And a company passing every filter here says only that the arithmetic and the option market line up tonight; it is not a forecast and not a recommendation.
 </p>
-
 <div class="sc-cta" id="sc-cta">
 <p><strong>Get the day’s top ten after each close.</strong> One email to confirm; unsubscribe any time.</p>
 <form id="scForm" novalidate="">
@@ -649,7 +623,7 @@ A LEAP has an expiry date: the stock can be right in two years and the call stil
 <button type="submit">Sign up</button>
 </form>
 <p class="sc-form-note" id="scNote" hidden=""></p>
-</div>
+</div><div class="op-next"><a href="leaps-stock-replacement.html">Stock replacement <span aria-hidden="true">&rarr;</span></a><a href="leaps-pmcc.html">Poor Man’s Covered Call <span aria-hidden="true">&rarr;</span></a><a href="leaps-hedges.html">Hedges <span aria-hidden="true">&rarr;</span></a><a href="stock-screener.html">Value Stock Screener <span aria-hidden="true">&rarr;</span></a></div>
 </div>
 </div>
 </article>
@@ -686,11 +660,12 @@ A LEAP has an expiry date: the stock can be right in two years and the call stil
   function cls(v) { return isNum(v) ? (v > 0 ? "up" : v < 0 ? "dn" : "") : ""; }
   function mean(a) { return a.length ? a.reduce(function (x, y) { return x + y; }, 0) / a.length : null; }
 
+  function $id(i) { return document.getElementById(i) || {}; }
   fetch("leaps_screen.json?v=" + Date.now(), { cache: "no-store" })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(render)
     .catch(function () {
-      document.getElementById("lp-lead").textContent =
+      $id("lp-lead").textContent =
         "The first LEAPS screen is written after the next value screen publishes. Check back after this evening's close.";
     });
 
@@ -715,9 +690,9 @@ A LEAP has an expiry date: the stock can be right in two years and the call stil
 
   function render(d) {
     var m = d._meta || {}, sr = d.stock_replacement || [], pm = d.pmcc || [], hd = d.hedges || [];
-    document.getElementById("lp-n").textContent = isNum(m.all_pass) ? m.all_pass : "—";
-    document.getElementById("lp-asof").innerHTML = dlong(m.quotes_as_of || m.as_of);
-    if (m.universe) document.getElementById("lp-uni").textContent = m.universe.replace("of the Vance value ranking", "value names");
+    $id("lp-n").textContent = isNum(m.all_pass) ? m.all_pass : "—";
+    $id("lp-asof").innerHTML = dlong(m.quotes_as_of || m.as_of);
+    if (m.universe) $id("lp-uni").textContent = m.universe.replace("of the Vance value ranking", "value names");
 
     var pass = sr.filter(function (r) { return r.all_pass; });
     var near = sr.filter(function (r) { return !r.all_pass && r.passes === 4; });
@@ -726,11 +701,11 @@ A LEAP has an expiry date: the stock can be right in two years and the call stil
       (m.all_pass === 0 ? "none passes all five filters." : m.all_pass === 1 ? "one passes all five filters: " + pass[0].symbol + "." :
         m.all_pass + " pass all five filters: " + pass.map(function (r) { return r.symbol; }).join(", ") + ".") +
       " Liquidity is the filter most of them miss: the companies a value screen finds tend to have thin long-dated option markets.";
-    document.getElementById("lp-lead").textContent = lead;
+    $id("lp-lead").textContent = lead;
 
     var liq = sr.filter(function (r) { return r.checks.liquidity; }).length;
     var spyRow = hd.filter(function (h) { return h.symbol === "SPY"; })[0];
-    document.getElementById("lp-stats").innerHTML =
+    $id("lp-stats").innerHTML =
       "<div><span>Checked</span><b>" + esc(m.checked) + "</b><small>" + esc(m.with_options) + " have listed options</small></div>" +
       "<div><span>LEAP in range</span><b>" + esc(m.with_leap) + "</b><small>12–24 months, delta 0.75–0.85</small></div>" +
       "<div><span>Pass all five</span><b>" + esc(m.all_pass) + "</b><small>" + near.length + " more miss by one</small></div>" +
@@ -751,13 +726,13 @@ A LEAP has an expiry date: the stock can be right in two years and the call stil
     if (pass.length) html += "<tr class=\"group\"><td colspan=\"7\">Pass all five filters</td></tr>" + pass.map(srRow).join("");
     if (near.length) html += "<tr class=\"group\"><td colspan=\"7\">Miss by one filter</td></tr>" + near.map(srRow).join("");
     if (!html) html = "<tr><td class=\"muted\" colspan=\"7\">No company passes four or more filters tonight.</td></tr>";
-    document.getElementById("lp-sr").innerHTML = html;
-    document.getElementById("lp-sr-note").innerHTML =
+    $id("lp-sr").innerHTML = html;
+    $id("lp-sr-note").innerHTML =
       "Sorted by filters passed, then value rank. Cost is the midpoint for one contract (100 shares). Time premium is the part of the price above intrinsic value; " +
       "per year, it is that premium spread over the months to expiry, as a share of the stock price. Breakeven is the strike plus the price paid, at expiry.";
 
     var good = pm.filter(function (r) { return r.pmcc.sound && r.pmcc.long.oi >= 100; }).slice(0, 15);
-    document.getElementById("lp-pm").innerHTML = good.length ? good.map(function (r) {
+    $id("lp-pm").innerHTML = good.length ? good.map(function (r) {
       var p = r.pmcc, L = p.long, S = p.short;
       return "<tr>" + company(r) +
         "<td class=\"num sub\" data-l=\"Long LEAP\">" + px(L.strike) + " call<small>" + dmy(L.expiry) + " &middot; Δ " + L.delta.toFixed(2) + "</small></td>" +
@@ -767,11 +742,11 @@ A LEAP has an expiry date: the stock can be right in two years and the call stil
         "<td class=\"num sub up\" data-l=\"Strike check\">Sound<small>gap " + px(p.strike_width) + "</small></td>" +
         "<td class=\"num sub\" data-l=\"LEAP liquidity\">" + L.oi.toLocaleString("en-US") + " open<small>spread " + pc(L.spread_pct) + "</small></td></tr>";
     }).join("") : "<tr><td class=\"muted\" colspan=\"7\">No sound pair with a tradeable LEAP tonight.</td></tr>";
-    document.getElementById("lp-pm-note").innerHTML =
+    $id("lp-pm-note").innerHTML =
       "Only pairs that pass the strike check and whose LEAP has at least 100 contracts open are shown, by value rank. " +
       "The premium is one cycle; it is not a yield you can count on, because each month’s call is priced on that month’s market.";
 
-    document.getElementById("lp-hd").innerHTML = hd.map(function (h) {
+    $id("lp-hd").innerHTML = hd.map(function (h) {
       var c = h.contract;
       return "<tr><td class=\"sym\">" + esc(h.symbol) + "<small>at " + px(h.spot) + "</small></td>" +
         "<td class=\"num sub\" data-l=\"Put\">" + px(c.strike) + " put<small>" + dmy(c.expiry) + " &middot; " + c.dte + " days</small></td>" +
@@ -782,7 +757,11 @@ A LEAP has an expiry date: the stock can be right in two years and the call stil
         "<td class=\"num sub\" data-l=\"Liquidity\">" + c.oi.toLocaleString("en-US") + " open<small>spread " + pc(c.spread_pct) + "</small></td></tr>";
     }).join("") || "<tr><td class=\"muted\" colspan=\"7\">Index quotes unavailable tonight.</td></tr>";
 
-    if (m.vol_rank_note) document.getElementById("lp-volnote").textContent = m.vol_rank_note + " " + (m.source || "") + ".";
+    var nSound = pm.filter(function (r) { return r.pmcc.sound && r.pmcc.long.oi >= 100; }).length;
+    $id("lp-card-sr").textContent = m.all_pass + " of " + m.checked + " passed all five filters tonight";
+    $id("lp-card-pm").textContent = nSound + " sound pair" + (nSound === 1 ? "" : "s") + " tonight";
+    $id("lp-card-hd").textContent = spyRow ? "SPY from " + spyRow.cost_pct_per_year.toFixed(1) + "% a year" : "";
+    if (m.vol_rank_note) $id("lp-volnote").textContent = m.vol_rank_note + " " + (m.source || "") + ".";
   }
 
 
