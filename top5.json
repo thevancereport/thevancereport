@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-10-23",
-  "published": "2026-10-24",
-  "page": "top-five-2026-10-23.html",
-  "universe": 1165,
-  "blurb": "Cricut is first with a score of 83.7, as it was the session before. The same five names as the session before. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "N-ZrjsIiJ1c",
+  "date": "2026-10-26",
+  "published": "2026-10-27",
+  "page": "top-five-2026-10-26.html",
+  "universe": 1158,
+  "blurb": "Cricut is first with a score of 83.6, as it was the session before. The same five names as the session before. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
       "symbol": "CRCT",
       "rank": 1,
-      "score": 83.67,
-      "price": 6.25
+      "score": 83.58,
+      "price": 6.34
     },
     {
       "symbol": "FLXS",
       "rank": 2,
-      "score": 83.03,
-      "price": 84.18
+      "score": 83.27,
+      "price": 82.55
     },
     {
       "symbol": "NRDS",
       "rank": 3,
-      "score": 81.6,
-      "price": 10.93
+      "score": 81.62,
+      "price": 10.8
     },
     {
       "symbol": "GNTX",
       "rank": 4,
-      "score": 80.76,
-      "price": 20.66
+      "score": 81.05,
+      "price": 20.64
     },
     {
       "symbol": "PGNY",
       "rank": 5,
-      "score": 80.45,
-      "price": 28.97
+      "score": 80.44,
+      "price": 28.13
     }
-  ],
-  "duration": "3:45"
+  ]
 }
