@@ -32,7 +32,7 @@
   </url>
   <url>
     <loc>https://thevancereport.com/blog.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-10-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -267,6 +267,12 @@
   <url>
     <loc>https://thevancereport.com/top-five-2026-10-27.html</loc>
     <lastmod>2026-10-28</lastmod>
+    <changefreq>never</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://thevancereport.com/top-five-2026-10-28.html</loc>
+    <lastmod>2026-10-29</lastmod>
     <changefreq>never</changefreq>
     <priority>0.6</priority>
   </url>
