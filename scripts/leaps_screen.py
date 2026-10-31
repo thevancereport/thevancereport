@@ -54,7 +54,7 @@ IV_FILE = os.environ.get("IV_HISTORY_FILE", "leaps_iv_history.json")
 
 UNIVERSE_TOP = int(os.environ.get("LEAPS_UNIVERSE", "300"))
 HEDGE_SYMBOLS = ("SPY", "QQQ")
-WORKERS = 6
+WORKERS = 10                         # parallel Cboe fetches; 6 took 7-8 min a night
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 CHAIN_URL = "https://cdn.cboe.com/api/global/delayed_quotes/options/{sym}.json"
