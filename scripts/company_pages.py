@@ -280,7 +280,10 @@ def sitemap(syms, asof):
 def feed_item(meta, ranked):
     top = ranked[:5]
     first = top[0]
-    link = SITE + slug(first["symbol"])
+    # Link to that night's report ("The five at the top"); fall back to the #1 company page
+    # if the report did not publish.
+    report = f"top-five-{meta['as_of']}.html"
+    link = SITE + report if os.path.exists(os.path.join(ROOT, report)) else SITE + slug(first["symbol"])
     # StockTwits (via Zapier) cuts posts at 140 characters, and the Zap posts "title link".
     # Pick the fullest wording that fits; no apostrophes (they arrive HTML-escaped).
     budget = 140 - len(link) - 1
