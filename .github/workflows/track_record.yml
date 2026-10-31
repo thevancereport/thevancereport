@@ -27,7 +27,7 @@ jobs:
   record:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -67,7 +67,7 @@ jobs:
       - name: LEAPS screen
         if: steps.check.outputs.go == 'yes'
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 20   # 300 option chains take 7-8 min on GitHub; 8 cut it off on slow nights
         run: |
           (cd scripts && python test_leaps_screen.py)
           python3 scripts/leaps_screen.py
