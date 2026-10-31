@@ -3,3 +3,4 @@ Allow: /
 Disallow: /admin-reviews.html
 
 Sitemap: https://thevancereport.com/sitemap.xml
+Sitemap: https://thevancereport.com/sitemap-stocks.xml
