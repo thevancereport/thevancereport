@@ -280,10 +280,22 @@ def sitemap(syms, asof):
 def feed_item(meta, ranked):
     top = ranked[:5]
     first = top[0]
-    text = (f"${first['symbol']} ranks #1 of {len(ranked):,} US companies on tonight's Vance value screen "
-            f"(score {first['score']:.0f}/100). Top five: " + " ".join("$" + r["symbol"] for r in top) +
-            ". Free research, not advice.")
-    return {"guid": f"vance-screen-{meta['as_of']}", "title": text, "link": SITE + slug(first["symbol"]),
+    link = SITE + slug(first["symbol"])
+    # StockTwits (via Zapier) cuts posts at 140 characters, and the Zap posts "title link".
+    # Pick the fullest wording that fits; no apostrophes (they arrive HTML-escaped).
+    budget = 140 - len(link) - 1
+    lead = f"${first['symbol']} is #1 of {len(ranked):,} on the Vance value screen"
+    nxt = " ".join("$" + r["symbol"] for r in top[1:])
+    nxt3 = " ".join("$" + r["symbol"] for r in top[1:4])
+    candidates = [
+        f"{lead} ({first['score']:.0f}/100). Next: {nxt}. Not advice.",
+        f"{lead} ({first['score']:.0f}/100). Next: {nxt}.",
+        f"{lead}. Next: {nxt}.",
+        f"{lead}. Next: {nxt3}.",
+        f"{lead}.",
+    ]
+    text = next((c for c in candidates if len(c) <= budget), candidates[-1])
+    return {"guid": f"vance-screen-{meta['as_of']}", "title": text, "link": link,
             "date": meta["as_of"]}
 
 
