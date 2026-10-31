@@ -72,6 +72,15 @@ jobs:
           (cd scripts && python test_leaps_screen.py)
           python3 scripts/leaps_screen.py
 
+      # One static page per top-ranked company (<symbol>-stock.html), the A-Z
+      # index, sitemap-stocks.xml and stock_feed.xml (read by Zapier, posted to
+      # StockTwits). Same commit, so still one deploy a night.
+      - name: Company pages and StockTwits feed
+        if: steps.check.outputs.go == 'yes'
+        continue-on-error: true
+        timeout-minutes: 5
+        run: python3 scripts/company_pages.py
+
       - name: Commit
         if: steps.check.outputs.go == 'yes'
         run: |
@@ -80,6 +89,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- scorecard.json vance_index.json
           git add -- leaps_screen.json leaps_iv_history.json 2>/dev/null || true
+          git add -- ./*-stock.html stocks.html sitemap-stocks.xml stock_feed.xml 2>/dev/null || true
           if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
           git commit -m "Track record for ${{ steps.check.outputs.as_of }}"
           for i in 1 2 3; do
