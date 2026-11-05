@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-11-03",
-  "published": "2026-11-04",
-  "page": "top-five-2026-11-03.html",
-  "universe": 1156,
-  "blurb": "Cricut is first with a score of 84.0, as it was the session before. Flexsteel Industries joins the five, and Progyny drops out. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "rHJP55NiRPk",
+  "date": "2026-11-04",
+  "published": "2026-11-05",
+  "page": "top-five-2026-11-04.html",
+  "universe": 1160,
+  "blurb": "Flexsteel Industries is first with a score of 82.4, up from #2 the session before. Progyny joins the five, and Cricut drops out. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
-      "symbol": "CRCT",
+      "symbol": "FLXS",
       "rank": 1,
-      "score": 84.05,
-      "price": 5.97
+      "score": 82.4,
+      "price": 74.99
     },
     {
-      "symbol": "FLXS",
+      "symbol": "NRDS",
       "rank": 2,
-      "score": 82.72,
-      "price": 73.12
+      "score": 81.94,
+      "price": 11.81
     },
     {
       "symbol": "GNTX",
       "rank": 3,
-      "score": 81.99,
-      "price": 20.09
-    },
-    {
-      "symbol": "NRDS",
-      "rank": 4,
-      "score": 81.93,
-      "price": 10.84
+      "score": 81.0,
+      "price": 20.82
     },
     {
       "symbol": "YELP",
+      "rank": 4,
+      "score": 80.94,
+      "price": 22.05
+    },
+    {
+      "symbol": "PGNY",
       "rank": 5,
-      "score": 79.83,
-      "price": 19.83
+      "score": 80.05,
+      "price": 30.1
     }
-  ],
-  "duration": "3:52"
+  ]
 }
