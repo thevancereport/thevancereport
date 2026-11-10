@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-11-06",
-  "published": "2026-11-07",
-  "page": "top-five-2026-11-06.html",
-  "universe": 1144,
-  "blurb": "NerdWallet is first with a score of 81.3, up from #2 the session before. Pacira Biosciences joins the five, and Flexsteel Industries drops out. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "M8VthgjI5zU",
+  "date": "2026-11-09",
+  "published": "2026-11-10",
+  "page": "top-five-2026-11-09.html",
+  "universe": 1153,
+  "blurb": "Flexsteel Industries is first with a score of 83.3. Flexsteel Industries joins the five, and Pacira Biosciences drops out. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
-      "symbol": "NRDS",
+      "symbol": "FLXS",
       "rank": 1,
-      "score": 81.32,
-      "price": 7.89
-    },
-    {
-      "symbol": "YELP",
-      "rank": 2,
-      "score": 80.34,
-      "price": 19.46
+      "score": 83.28,
+      "price": 74.12
     },
     {
       "symbol": "GNTX",
+      "rank": 2,
+      "score": 81.14,
+      "price": 19.5
+    },
+    {
+      "symbol": "NRDS",
       "rank": 3,
-      "score": 80.21,
-      "price": 19.88
+      "score": 80.74,
+      "price": 7.82
     },
     {
       "symbol": "CRCT",
       "rank": 4,
-      "score": 79.69,
-      "price": 8.78
+      "score": 80.27,
+      "price": 8.79
     },
     {
-      "symbol": "PCRX",
+      "symbol": "YELP",
       "rank": 5,
-      "score": 79.21,
-      "price": 36.43
+      "score": 80.16,
+      "price": 19.57
     }
-  ],
-  "duration": "3:56"
+  ]
 }
