@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-11-17",
-  "published": "2026-11-18",
-  "page": "top-five-2026-11-17.html",
-  "universe": 1134,
-  "blurb": "Gentex is first with a score of 81.2, as it was the session before. The same five names as the session before. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "6SLDNmvoFmM",
+  "date": "2026-11-18",
+  "published": "2026-11-19",
+  "page": "top-five-2026-11-18.html",
+  "universe": 1131,
+  "blurb": "Gentex is first with a score of 81.2, as it was the session before. Consolidated Edison joins the five, and Pacira Biosciences drops out. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
       "symbol": "GNTX",
       "rank": 1,
       "score": 81.25,
-      "price": 18.79
+      "price": 19.33
     },
     {
       "symbol": "YELP",
       "rank": 2,
-      "score": 80.53,
-      "price": 20.15
+      "score": 80.94,
+      "price": 19.99
     },
     {
       "symbol": "NRDS",
       "rank": 3,
-      "score": 80.41,
-      "price": 7.07
+      "score": 80.33,
+      "price": 6.98
     },
     {
       "symbol": "CRCT",
       "rank": 4,
-      "score": 80.25,
-      "price": 8.5
+      "score": 80.04,
+      "price": 8.55
     },
     {
-      "symbol": "PCRX",
+      "symbol": "ED",
       "rank": 5,
-      "score": 79.19,
-      "price": 36.48
+      "score": 77.15,
+      "price": 119.27
     }
-  ],
-  "duration": "3:55"
+  ]
 }
