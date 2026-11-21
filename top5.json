@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-11-19",
-  "published": "2026-11-20",
-  "page": "top-five-2026-11-19.html",
-  "universe": 1123,
-  "blurb": "Gentex is first with a score of 81.1, as it was the session before. The same five names as the session before. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "lih3NChu2Ho",
+  "date": "2026-11-20",
+  "published": "2026-11-21",
+  "page": "top-five-2026-11-20.html",
+  "universe": 1125,
+  "blurb": "Sandisk is first with a score of 84.1. Sandisk joins the five, and Consolidated Edison drops out. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
-      "symbol": "GNTX",
+      "symbol": "SNDK",
       "rank": 1,
-      "score": 81.12,
+      "score": 84.11,
+      "price": 79.24
+    },
+    {
+      "symbol": "GNTX",
+      "rank": 2,
+      "score": 81.5,
       "price": 19.17
     },
     {
       "symbol": "YELP",
-      "rank": 2,
+      "rank": 3,
       "score": 80.8,
       "price": 18.56
     },
     {
       "symbol": "NRDS",
-      "rank": 3,
-      "score": 80.43,
-      "price": 7.02
+      "rank": 4,
+      "score": 80.56,
+      "price": 7.14
     },
     {
       "symbol": "CRCT",
-      "rank": 4,
-      "score": 80.06,
-      "price": 8.3
-    },
-    {
-      "symbol": "ED",
       "rank": 5,
-      "score": 77.07,
-      "price": 119.09
+      "score": 80.12,
+      "price": 8.3
     }
-  ],
-  "duration": "3:54"
+  ]
 }
