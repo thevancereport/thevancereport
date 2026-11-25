@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-11-20",
-  "published": "2026-11-21",
-  "page": "top-five-2026-11-20.html",
-  "universe": 1125,
-  "blurb": "Sandisk is first with a score of 84.1. Sandisk joins the five, and Consolidated Edison drops out. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "PXlR3iNtB2c",
+  "date": "2026-11-24",
+  "published": "2026-11-25",
+  "page": "top-five-2026-11-24.html",
+  "universe": 1123,
+  "blurb": "Sandisk is first with a score of 84.2, as it was the session before. The same five names as the session before, with NerdWallet and Yelp changing places. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
       "symbol": "SNDK",
       "rank": 1,
-      "score": 84.11,
-      "price": 79.24
+      "score": 84.24,
+      "price": 76.45
     },
     {
       "symbol": "GNTX",
       "rank": 2,
-      "score": 81.5,
-      "price": 19.17
-    },
-    {
-      "symbol": "YELP",
-      "rank": 3,
-      "score": 80.8,
-      "price": 18.56
+      "score": 81.09,
+      "price": 19.54
     },
     {
       "symbol": "NRDS",
+      "rank": 3,
+      "score": 80.71,
+      "price": 7.5
+    },
+    {
+      "symbol": "YELP",
       "rank": 4,
-      "score": 80.56,
-      "price": 7.14
+      "score": 80.62,
+      "price": 18.95
     },
     {
       "symbol": "CRCT",
       "rank": 5,
-      "score": 80.12,
-      "price": 8.3
+      "score": 79.14,
+      "price": 8.87
     }
-  ],
-  "duration": "3:41"
+  ]
 }
