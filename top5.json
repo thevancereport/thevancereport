@@ -1,42 +1,41 @@
 {
   "_about": "The day's note and the video of it. index.html reads this. Written by the screen run; ranks are from the file the note was written from, never today's. Set orientation to 'vertical' only when the upload really is a 9:16 cut.",
-  "date": "2026-11-24",
-  "published": "2026-11-25",
-  "page": "top-five-2026-11-24.html",
-  "universe": 1123,
-  "blurb": "Sandisk is first with a score of 84.2, as it was the session before. The same five names as the session before, with NerdWallet and Yelp changing places. What the screen likes in each of the five, and what it doesn't.",
-  "video_id": "o900tNzm-f0",
+  "date": "2026-11-25",
+  "published": "2026-11-26",
+  "page": "top-five-2026-11-25.html",
+  "universe": 1113,
+  "blurb": "Sandisk is first with a score of 84.2, as it was the session before. The same five names as the session before. What the screen likes in each of the five, and what it doesn't.",
+  "video_id": null,
   "names": [
     {
       "symbol": "SNDK",
       "rank": 1,
-      "score": 84.24,
-      "price": 76.45
+      "score": 84.21,
+      "price": 73.61
     },
     {
       "symbol": "GNTX",
       "rank": 2,
-      "score": 81.09,
-      "price": 19.54
+      "score": 80.76,
+      "price": 19.66
     },
     {
       "symbol": "NRDS",
       "rank": 3,
-      "score": 80.71,
-      "price": 7.5
+      "score": 80.72,
+      "price": 8.02
     },
     {
       "symbol": "YELP",
       "rank": 4,
       "score": 80.62,
-      "price": 18.95
+      "price": 19.22
     },
     {
       "symbol": "CRCT",
       "rank": 5,
-      "score": 79.14,
-      "price": 8.87
+      "score": 79.26,
+      "price": 8.8
     }
-  ],
-  "duration": "3:49"
+  ]
 }
